@@ -24,6 +24,7 @@ export const Component = () => {
   const [currentSection, setCurrentSection] = useState(0);
   const [isReady, setIsReady] = useState(false);
   const totalSections = 3;
+  const currentSectionRef = useRef(0);
   
   const threeRefs = useRef({
     scene: null,
@@ -495,63 +496,105 @@ export const Component = () => {
     };
   }, [isReady]);
 
-  // Scroll handling
+  // Horizontal slide handling (0,1,2) with discrete steps and progress fill per slide
   useEffect(() => {
-    const handleScroll = () => {
-      const scrollY = window.scrollY;
-      const windowHeight = window.innerHeight;
-      const documentHeight = document.documentElement.scrollHeight;
-      const maxScroll = documentHeight - windowHeight;
-      const progress = Math.min(scrollY / maxScroll, 1);
-      
-      setScrollProgress(progress);
-      const newSection = Math.floor(progress * totalSections);
-      setCurrentSection(newSection);
+    const { current: refs } = threeRefs;
+    const maxIndex = totalSections - 1;
+    let isThrottled = false;
 
-      const { current: refs } = threeRefs;
-      
-      // Calculate smooth progress through all sections
-      const totalProgress = progress * totalSections;
-      const sectionProgress = totalProgress % 1;
-      
-      // Define camera positions for each section
-      const cameraPositions = [
-        { x: 0, y: 30, z: 300 },    // Section 0 - BREATHE
-        { x: 0, y: 40, z: -50 },     // Section 1 - REFLECT
-        { x: 0, y: 50, z: -700 }       // Section 2 - RISE
-      ];
-      
-      // Get current and next positions
-      const currentPos = cameraPositions[newSection] || cameraPositions[0];
-      const nextPos = cameraPositions[newSection + 1] || currentPos;
-      
-      // Set target positions (actual smoothing happens in animate loop)
-      refs.targetCameraX = currentPos.x + (nextPos.x - currentPos.x) * sectionProgress;
-      refs.targetCameraY = currentPos.y + (nextPos.y - currentPos.y) * sectionProgress;
-      refs.targetCameraZ = currentPos.z + (nextPos.z - currentPos.z) * sectionProgress;
-      // Smooth parallax for mountains
+    const cameraPositions = [
+      { x: 0, y: 30, z: 300 },
+      { x: 0, y: 40, z: -50 },
+      { x: 0, y: 50, z: -700 }
+    ];
+
+    const goToSection = (index) => {
+      const clamped = Math.max(0, Math.min(index, maxIndex));
+      currentSectionRef.current = clamped;
+      setCurrentSection(clamped);
+      // Progress fills slide-by-slide: 0 -> 0%, 1 -> 50%, 2 -> 100%
+      setScrollProgress(clamped / maxIndex);
+
+      const pos = cameraPositions[clamped] || cameraPositions[0];
+      refs.targetCameraX = pos.x;
+      refs.targetCameraY = pos.y;
+      refs.targetCameraZ = pos.z;
+
+      // Toggle mountains visibility on the last slide
       refs.mountains.forEach((mountain, i) => {
-        const speed = 1 + i * 0.9;
-        const targetZ = mountain.userData.baseZ + scrollY * speed * 0.5;
-        refs.nebula.position.z = (targetZ + progress * speed * 0.01) - 100
-        
-        // Use the same smoothing approach
-        mountain.userData.targetZ = targetZ;
-        const location = mountain.position.z
-        if (progress > 0.7) {
+        if (clamped === maxIndex) {
           mountain.position.z = 600000;
-        }
-        if (progress < 0.7) {
-          mountain.position.z = refs.locations[i]
+        } else {
+          mountain.position.z = refs.locations[i];
         }
       });
-      refs.nebula.position.z = refs.mountains[3].position.z
+      if (refs.mountains[3]) {
+        refs.nebula.position.z = refs.mountains[3].position.z;
+      }
     };
 
-    window.addEventListener('scroll', handleScroll);
-    handleScroll(); // Set initial position
-    
-    return () => window.removeEventListener('scroll', handleScroll);
+    const onWheel = (e) => {
+      e.preventDefault();
+      if (isThrottled) return;
+      isThrottled = true;
+      const direction = e.deltaY > 0 || e.deltaX > 0 ? 1 : -1;
+      goToSection(currentSectionRef.current + direction);
+      setTimeout(() => { isThrottled = false; }, 700);
+    };
+
+    const onKeyDown = (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+        e.preventDefault();
+        onWheel({ preventDefault: () => {}, deltaY: 1, deltaX: 1 });
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        onWheel({ preventDefault: () => {}, deltaY: -1, deltaX: -1 });
+      }
+    };
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+    const onTouchStart = (e) => {
+      const t = e.touches[0];
+      touchStartX = t.clientX;
+      touchStartY = t.clientY;
+    };
+    const onTouchMove = (e) => {
+      const t = e.touches[0];
+      const dx = t.clientX - touchStartX;
+      const dy = t.clientY - touchStartY;
+      // Only treat as horizontal swipe when horizontal intent is stronger
+      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 30) {
+        e.preventDefault();
+        if (dx < 0) {
+          onWheel({ preventDefault: () => {}, deltaY: 1, deltaX: 1 });
+        } else {
+          onWheel({ preventDefault: () => {}, deltaY: -1, deltaX: -1 });
+        }
+        touchStartX = t.clientX;
+        touchStartY = t.clientY;
+      }
+    };
+
+    // Disable native page scrolling while in hero
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    window.addEventListener('wheel', onWheel, { passive: false });
+    window.addEventListener('keydown', onKeyDown, { passive: false });
+    window.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('touchmove', onTouchMove, { passive: false });
+
+    // Initialize to current section positions
+    goToSection(currentSectionRef.current);
+
+    return () => {
+      window.removeEventListener('wheel', onWheel);
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('touchmove', onTouchMove);
+      document.body.style.overflow = originalOverflow;
+    };
   }, [totalSections]);
 
 
@@ -565,7 +608,8 @@ export const Component = () => {
 
   const getCurrentTitle = () => {
     const titles = ['BREATHE', 'REFLECT', 'RISE'];
-    return titles[currentSection] || titles[0];
+    const index = Math.min(Math.max(currentSection, 0), titles.length - 1);
+    return titles[index];
   };
 
   const getCurrentSubtitle = () => {
@@ -583,7 +627,8 @@ export const Component = () => {
         line2: 'meet the horizon of a new day.'
       }
     ];
-    return subtitles[currentSection] || subtitles[0];
+    const index = Math.min(Math.max(currentSection, 0), subtitles.length - 1);
+    return subtitles[index];
   };
 
   return (
@@ -602,11 +647,11 @@ export const Component = () => {
 
       {/* Main content */}
       <div className="hero-content cosmos-content">
-        <h1 ref={titleRef} className="hero-title font-michroma text-red-500 font-black text-8xl">
+        <h1 ref={titleRef} className="hero-title text-red-500 tracking-tight leading-none text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-[9rem] drop-shadow-lg font-extrabold">
           {splitTitle(getCurrentTitle())}
         </h1>
         
-        <div ref={subtitleRef} className="hero-subtitle cosmos-subtitle">
+        <div ref={subtitleRef} className="hero-subtitle cosmos-subtitle font-michroma">
           <p className="subtitle-line">
             {getCurrentSubtitle().line1}
           </p>
@@ -614,19 +659,21 @@ export const Component = () => {
             {getCurrentSubtitle().line2}
           </p>
         </div>
-      </div>
 
-      {/* Scroll progress indicator */}
-      <div ref={scrollProgressRef} className="scroll-progress" style={{ visibility: 'hidden' }}>
-        <div className="scroll-text text-red-500">SCROLL</div>
-        <div className="progress-track bg-white/20">
-          <div 
-            className="progress-fill bg-red-500" 
-            style={{ width: `${scrollProgress * 100}%` }}
-          />
-        </div>
-        <div className="section-counter text-red-500">
-          {String(currentSection).padStart(2, '0')} / 03
+        {/* Scroll progress indicator */}
+        <div ref={scrollProgressRef} className="scroll-progress" style={{ visibility: 'hidden' }}>
+          <div className="scroll-text">SCROLL</div>
+          <div className="progress-track bg-white/20">
+            <div 
+              className="progress-fill bg-red-500" 
+              style={{ 
+                width: `${scrollProgress * 100}%`
+              }}
+            />
+          </div>
+          <div className="section-counter">
+            {String(currentSection).padStart(2, '0')} / 02
+          </div>
         </div>
       </div>
 

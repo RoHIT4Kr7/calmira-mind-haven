@@ -207,7 +207,13 @@ All colors MUST be HSL.
     z-index: 10;
     width: 100%;
     max-width: 1200px;
-    padding: 0 2rem;
+    padding: 0 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .hero-content {
+      padding: 0 2rem;
+    }
   }
 
   .hero-title {
@@ -219,7 +225,7 @@ All colors MUST be HSL.
   }
 
   .hero-subtitle {
-    font-size: clamp(1rem, 2vw, 1.5rem);
+    font-size: clamp(0.875rem, 1.5vw, 1.25rem);
     line-height: 1.6;
     opacity: 0.9;
     max-width: 600px;
@@ -231,42 +237,63 @@ All colors MUST be HSL.
   }
 
   .scroll-progress {
-    position: fixed;
-    bottom: 2rem;
-    right: 2rem;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
+    justify-content: center;
     gap: 1rem;
+    margin-top: 2rem;
     z-index: 100;
+    width: 100%;
+  }
+
+  @media (min-width: 640px) {
+    .scroll-progress {
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
   }
 
   .scroll-text {
     font-size: 0.75rem;
+    font-weight: 600;
     letter-spacing: 0.25rem;
     color: white;
-    opacity: 0.7;
+    opacity: 0.9;
+    white-space: nowrap;
   }
 
   .progress-track {
-    width: 2px;
-    height: 100px;
+    width: 120px;
+    height: 8px;
     background: rgba(255, 255, 255, 0.2);
-    border-radius: 1px;
+    border-radius: 4px;
     position: relative;
+    overflow: hidden;
+  }
+
+  @media (min-width: 640px) {
+    .progress-track {
+      width: 200px;
+      height: 10px;
+      border-radius: 5px;
+    }
   }
 
   .progress-fill {
     height: 100%;
     background: white;
-    border-radius: 1px;
-    transition: width 0.3s ease;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    min-height: 2px;
   }
 
   .section-counter {
     font-size: 0.875rem;
+    font-weight: 600;
     color: white;
-    opacity: 0.7;
+    opacity: 0.9;
+    white-space: nowrap;
   }
 
   .scroll-sections {
@@ -286,5 +313,51 @@ All colors MUST be HSL.
 
   .title-char {
     display: inline-block;
+  }
+
+  /* Custom Launch Button Styles */
+  .custom-launch-button {
+    display: flex;
+    align-items: center;
+    font-family: inherit;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 17px;
+    padding: 0.8em 0.9em;
+    color: white;
+    background: linear-gradient(to right, #0f0c29, #302b63, #24243e);
+    border: none;
+    letter-spacing: 0.05em;
+    border-radius: 16px;
+    transition: all 0.3s ease;
+  }
+
+  @media (min-width: 640px) {
+    .custom-launch-button {
+      padding: 0.8em 1.3em 0.8em 0.9em;
+    }
+  }
+
+  .custom-launch-button svg {
+    margin-right: 3px;
+    transform: rotate(30deg);
+    transition: transform 0.5s cubic-bezier(0.76, 0, 0.24, 1);
+  }
+
+  .custom-launch-button span {
+    transition: transform 0.5s cubic-bezier(0.76, 0, 0.24, 1);
+  }
+
+  .custom-launch-button:hover svg {
+    transform: translateX(5px) rotate(90deg);
+  }
+
+  .custom-launch-button:hover span {
+    transform: translateX(7px);
+  }
+
+  .custom-launch-button:hover {
+    background: linear-gradient(to right, #1a1a2e, #16213e, #0f3460);
+    box-shadow: 0 4px 15px rgba(48, 43, 99, 0.3);
   }
 }
