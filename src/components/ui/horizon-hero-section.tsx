@@ -563,6 +563,29 @@ export const Component = () => {
     ));
   };
 
+  const getCurrentTitle = () => {
+    const titles = ['BREATHE', 'REFLECT', 'RISE'];
+    return titles[currentSection] || titles[0];
+  };
+
+  const getCurrentSubtitle = () => {
+    const subtitles = [
+      {
+        line1: 'In the simple rhythm of your breath,',
+        line2: 'find the anchor for your soul.'
+      },
+      {
+        line1: 'In the quiet space of your own thoughts,',
+        line2: 'discover the strength you already hold.'
+      },
+      {
+        line1: 'With a calm mind and a hopeful heart,',
+        line2: 'meet the horizon of a new day.'
+      }
+    ];
+    return subtitles[currentSection] || subtitles[0];
+  };
+
   return (
     <div ref={containerRef} className="hero-container cosmos-style">
       <canvas ref={canvasRef} className="hero-canvas" />
@@ -580,15 +603,15 @@ export const Component = () => {
       {/* Main content */}
       <div className="hero-content cosmos-content">
         <h1 ref={titleRef} className="hero-title font-michroma text-red-500 font-black text-8xl">
-          {splitTitle('BREATHE')}
+          {splitTitle(getCurrentTitle())}
         </h1>
         
         <div ref={subtitleRef} className="hero-subtitle cosmos-subtitle">
           <p className="subtitle-line">
-            In the simple rhythm of your breath,
+            {getCurrentSubtitle().line1}
           </p>
           <p className="subtitle-line">
-            find the anchor for your soul.
+            {getCurrentSubtitle().line2}
           </p>
         </div>
       </div>
@@ -607,38 +630,10 @@ export const Component = () => {
         </div>
       </div>
 
-      {/* Additional sections for scrolling */}
+      {/* Spacer sections for scrolling */}
       <div className="scroll-sections">
-       {[...Array(2)].map((_, i) => {
-          const titles = ['REFLECT', 'RISE'];
-          const subtitles = [
-            {
-              line1: 'In the quiet space of your own thoughts,',
-              line2: 'discover the strength you already hold.'
-            },
-            {
-              line1: 'With a calm mind and a hopeful heart,',
-              line2: 'meet the horizon of a new day.'
-            }
-          ];
-          
-          return (
-            <section key={i} className="content-section">
-              <h1 className="hero-title font-michroma text-red-500 font-black text-8xl">
-                {splitTitle(titles[i])}
-              </h1>
-          
-              <div className="hero-subtitle cosmos-subtitle">
-                <p className="subtitle-line">
-                  {subtitles[i].line1}
-                </p>
-                <p className="subtitle-line">
-                  {subtitles[i].line2}
-                </p>
-              </div>
-            </section>
-          );
-        })}
+        <section className="content-section"></section>
+        <section className="content-section"></section>
       </div>
     </div>
   );
