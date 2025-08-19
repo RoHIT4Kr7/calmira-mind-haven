@@ -61,7 +61,13 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				'purple-glow': 'hsl(var(--purple-glow))',
+				'pink-glow': 'hsl(var(--pink-glow))',
+				'blue-glow': 'hsl(var(--blue-glow))'
+			},
+			fontFamily: {
+				'michroma': ['Michroma', 'sans-serif'],
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
