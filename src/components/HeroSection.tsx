@@ -22,18 +22,17 @@ const HeroSection = () => {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Unicorn Studio Background */}
+      {/* Unicorn Studio Background - Full Screen */}
       <div className="unicorn-container">
         <div 
           ref={unicornRef}
           className="unicorn-embed"
           data-us-project="8ang4pHeAG7s5edlM5DX"
-          style={{ width: "1440px", height: "900px" }}
         />
       </div>
       
-      {/* Overlay for better text readability */}
-      <div className="absolute inset-0 bg-background/20" />
+      {/* Glass overlay effect */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background/10 via-transparent to-background/20 backdrop-blur-[0.5px]" />
       
       {/* Hero Content */}
       <div className="relative z-10 text-center max-w-4xl mx-auto px-6">
