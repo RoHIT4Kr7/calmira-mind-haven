@@ -579,7 +579,7 @@ export const Component = () => {
 
       {/* Main content */}
       <div className="hero-content cosmos-content">
-        <h1 ref={titleRef} className="hero-title font-michroma gradient-text">
+        <h1 ref={titleRef} className="hero-title font-michroma text-red-500 font-black text-8xl">
           {splitTitle('BREATHE')}
         </h1>
         
@@ -595,54 +595,45 @@ export const Component = () => {
 
       {/* Scroll progress indicator */}
       <div ref={scrollProgressRef} className="scroll-progress" style={{ visibility: 'hidden' }}>
-        <div className="scroll-text">SCROLL</div>
-        <div className="progress-track">
+        <div className="scroll-text text-red-500">SCROLL</div>
+        <div className="progress-track bg-white/20">
           <div 
-            className="progress-fill" 
+            className="progress-fill bg-red-500" 
             style={{ width: `${scrollProgress * 100}%` }}
           />
         </div>
-        <div className="section-counter">
-          {String(currentSection).padStart(2, '0')} / {String(totalSections).padStart(2, '0')}
+        <div className="section-counter text-red-500">
+          {String(currentSection).padStart(2, '0')} / 03
         </div>
       </div>
 
       {/* Additional sections for scrolling */}
       <div className="scroll-sections">
        {[...Array(2)].map((_, i) => {
-          const titles = {
-            0: 'BREATHE',
-            1: 'REFLECT',
-            2: 'RISE'
-          };
-          
-          const subtitles = {
-            0: {
-              line1: 'In the simple rhythm of your breath,',
-              line2: 'find the anchor for your soul.'
-            },
-            1: {
+          const titles = ['REFLECT', 'RISE'];
+          const subtitles = [
+            {
               line1: 'In the quiet space of your own thoughts,',
               line2: 'discover the strength you already hold.'
             },
-            2: {
+            {
               line1: 'With a calm mind and a hopeful heart,',
               line2: 'meet the horizon of a new day.'
             }
-          };
+          ];
           
           return (
             <section key={i} className="content-section">
-              <h1 className="hero-title font-michroma gradient-text">
-                {titles[i+1] || 'DEFAULT'}
+              <h1 className="hero-title font-michroma text-red-500 font-black text-8xl">
+                {splitTitle(titles[i])}
               </h1>
           
               <div className="hero-subtitle cosmos-subtitle">
                 <p className="subtitle-line">
-                  {subtitles[i+1].line1}
+                  {subtitles[i].line1}
                 </p>
                 <p className="subtitle-line">
-                  {subtitles[i+1].line2}
+                  {subtitles[i].line2}
                 </p>
               </div>
             </section>
