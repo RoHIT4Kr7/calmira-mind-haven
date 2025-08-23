@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 const Navbar = () => {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-black/20 backdrop-blur-md border-b border-red-500/20">
@@ -5,7 +7,7 @@ const Navbar = () => {
         <div className="font-michroma text-xl font-bold text-white">
           Calmira AI
         </div>
-        <button className="custom-launch-button font-michroma">
+        <Link to="/mental-wellness" className="custom-launch-button font-michroma">
           <svg
             height="24"
             width="24"
@@ -19,7 +21,7 @@ const Navbar = () => {
             ></path>
           </svg>
           <span className="hidden sm:inline">Get Started</span>
-        </button>
+        </Link>
       </div>
     </nav>
   );
