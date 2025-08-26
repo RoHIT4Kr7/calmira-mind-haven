@@ -203,12 +203,31 @@ const MangaViewer = ({ storyData }: MangaViewerProps) => {
               onTouchEnd={onTouchEnd}
             >
               <div className="relative rounded-xl overflow-hidden shadow-2xl bg-gradient-to-br from-gray-900/80 to-gray-800/60 backdrop-blur-lg border border-white/10">
+                {/* Progress bar OVER the image */}
+                <div className="absolute top-0 left-0 w-full z-20">
+                  <div className="w-full bg-white/20 h-2 overflow-hidden">
+                    <motion.div
+                      className="bg-gradient-to-r from-purple-400 to-pink-400 h-2"
+                      initial={{ width: 0 }}
+                      animate={{
+                        width: `${
+                          ((currentPanelIndex + 1) / mangaPanels.length) * 100
+                        }%`,
+                      }}
+                      transition={{ duration: 0.5 }}
+                    />
+                  </div>
+                </div>
+
+                {/* Manga Image */}
                 <img
                   src={currentPanel.image}
                   alt={`Panel ${currentPanelIndex + 1}`}
                   className="w-full h-auto object-cover"
                   style={{ maxHeight: "70vh" }}
                 />
+
+                {/* Mute/Unmute Button */}
                 <Button
                   variant="ghost"
                   size="icon"
@@ -220,25 +239,6 @@ const MangaViewer = ({ storyData }: MangaViewerProps) => {
               </div>
             </motion.div>
           </AnimatePresence>
-        </div>
-
-        {/* Progress bar */}
-        <div className="mt-8 text-center max-w-2xl w-full">
-          <p className="text-white/90">
-            Panel {currentPanelIndex + 1} of {mangaPanels.length}
-          </p>
-          <div className="w-full bg-white/20 rounded-full h-2 overflow-hidden">
-            <motion.div
-              className="bg-gradient-to-r from-purple-400 to-pink-400 h-2"
-              initial={{ width: 0 }}
-              animate={{
-                width: `${
-                  ((currentPanelIndex + 1) / mangaPanels.length) * 100
-                }%`,
-              }}
-              transition={{ duration: 0.5 }}
-            />
-          </div>
         </div>
 
         {/* Reactions Section */}
