@@ -193,29 +193,31 @@ const MangaViewer = ({ storyData }: MangaViewerProps) => {
           <AnimatePresence mode="wait">
             <motion.div
               key={currentPanelIndex}
-              initial={{ opacity: 0, x: 100 , scale: 0.8}} // slide in from right
-              animate={{ opacity: 1, x: 0 , scale: 1}} // enter
-              exit={{ opacity: 0, x: -100 , scale: 1.2}} // exit left
+              initial={{ opacity: 0, y: 30, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -30, scale: 0.95 }}
               transition={{ duration: 0.6, ease: "easeInOut" }}
-              className="bg-gradient-to-br from-white/95 to-gray-50/95 rounded-xl shadow-2xl overflow-hidden"
+              className="w-full max-w-3xl mx-auto p-4"
               onTouchStart={onTouchStart}
               onTouchMove={onTouchMove}
               onTouchEnd={onTouchEnd}
             >
-              <img
-                src={currentPanel.image}
-                alt={`Panel ${currentPanelIndex + 1}`}
-                className="w-full h-auto object-cover"
-                style={{ maxHeight: "70vh" }}
-              />
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleMute}
-                className="absolute bottom-4 right-4 bg-black/30 text-white"
-              >
-                {isAudioMuted ? <VolumeX /> : <Volume2 />}
-              </Button>
+              <div className="relative rounded-xl overflow-hidden shadow-2xl bg-gradient-to-br from-gray-900/80 to-gray-800/60 backdrop-blur-lg border border-white/10">
+                <img
+                  src={currentPanel.image}
+                  alt={`Panel ${currentPanelIndex + 1}`}
+                  className="w-full h-auto object-cover"
+                  style={{ maxHeight: "70vh" }}
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={toggleMute}
+                  className="absolute bottom-4 right-4 bg-black/30 text-white"
+                >
+                  {isAudioMuted ? <VolumeX /> : <Volume2 />}
+                </Button>
+              </div>
             </motion.div>
           </AnimatePresence>
         </div>
