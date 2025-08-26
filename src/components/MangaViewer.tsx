@@ -252,25 +252,27 @@ const MangaViewer = ({ storyData }: MangaViewerProps) => {
         </div>
 
         {/* Reactions Section */}
-        <div className="mt-6 flex justify-center space-x-4">
+        <div className="mt-6 flex flex-wrap justify-center gap-4">
           {reactions.map((reaction) => (
             <button
               key={reaction.value}
               onClick={() => handleReaction(reaction.value)}
-              className={`p-3 rounded-full transition-all duration-200 hover:scale-110 ${
+              className={`p-2 sm:p-3 md:p-4 rounded-full transition-all duration-200 hover:scale-110 ${
                 userReaction === reaction.value
                   ? "bg-white/20 backdrop-blur-sm border border-white/30 shadow-lg"
                   : "bg-black/20 backdrop-blur-sm border border-white/10 hover:bg-black/30"
               }`}
               title={reaction.label}
             >
-              <span className="text-2xl">{reaction.emoji}</span>
+              <span className="text-lg sm:text-xl md:text-2xl">
+                {reaction.emoji}
+              </span>
             </button>
           ))}
         </div>
 
         {/* Mobile Navigation */}
-        <div className="md:hidden flex justify-center mt-6 space-x-4">
+        <div className="md:hidden flex justify-center sm:text-2xl mt-6 space-x-4">
           <Button
             variant="outline"
             onClick={goToPreviousPanel}
