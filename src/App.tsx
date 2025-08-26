@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import OnboardingScreen from "./components/OnboardingScreen";
 import LoadingScreen from "./components/LoadingScreen";
-import MangaViewer from "./components/MangaViewer";
+import MangaViewer from "./components/MangaViewer/MangaViewer";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
