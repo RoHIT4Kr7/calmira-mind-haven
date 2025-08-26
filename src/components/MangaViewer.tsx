@@ -7,7 +7,9 @@ import {
   Volume2,
   VolumeX,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+
+//audio files
 import dialogue1 from "../assets/audio/dialogue1.mp3";
 import dialogue2 from "../assets/audio/dialogue2.mp3";
 import dialogue3 from "../assets/audio/dialogue3.mp3";
@@ -188,32 +190,34 @@ const MangaViewer = ({ storyData }: MangaViewerProps) => {
           </div>
 
           {/* Manga Panel */}
-          <motion.div
-            key={currentPanelIndex}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.6, ease: "easeInOut" }}
-            className="bg-gradient-to-br from-white/95 to-gray-50/95 rounded-xl shadow-2xl overflow-hidden"
-            onTouchStart={onTouchStart}
-            onTouchMove={onTouchMove}
-            onTouchEnd={onTouchEnd}
-          >
-            <img
-              src={currentPanel.image}
-              alt={`Panel ${currentPanelIndex + 1}`}
-              className="w-full h-auto object-cover"
-              style={{ maxHeight: "70vh" }}
-            />
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleMute}
-              className="absolute bottom-4 right-4 bg-black/30 text-white"
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentPanelIndex}
+              initial={{ opacity: 0, x: 100 , scale: 0.8}} // slide in from right
+              animate={{ opacity: 1, x: 0 , scale: 1}} // enter
+              exit={{ opacity: 0, x: -100 , scale: 1.2}} // exit left
+              transition={{ duration: 0.6, ease: "easeInOut" }}
+              className="bg-gradient-to-br from-white/95 to-gray-50/95 rounded-xl shadow-2xl overflow-hidden"
+              onTouchStart={onTouchStart}
+              onTouchMove={onTouchMove}
+              onTouchEnd={onTouchEnd}
             >
-              {isAudioMuted ? <VolumeX /> : <Volume2 />}
-            </Button>
-          </motion.div>
+              <img
+                src={currentPanel.image}
+                alt={`Panel ${currentPanelIndex + 1}`}
+                className="w-full h-auto object-cover"
+                style={{ maxHeight: "70vh" }}
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleMute}
+                className="absolute bottom-4 right-4 bg-black/30 text-white"
+              >
+                {isAudioMuted ? <VolumeX /> : <Volume2 />}
+              </Button>
+            </motion.div>
+          </AnimatePresence>
         </div>
 
         {/* Progress bar */}
@@ -283,7 +287,8 @@ const MangaViewer = ({ storyData }: MangaViewerProps) => {
             transition={{ delay: 0.5 }}
             className="mt-6"
           >
-            <Button variant="outline"
+            <Button
+              variant="outline"
               onClick={restartStory}
               className="bg-white/10 backdrop-blur-sm text-white border-white/20 hover:bg-white/20"
             >
