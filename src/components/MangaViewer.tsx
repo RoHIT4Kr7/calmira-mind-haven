@@ -1,14 +1,23 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, RotateCcw, Volume2, VolumeX } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import {
+  ChevronLeft,
+  ChevronRight,
+  RotateCcw,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
+import { motion } from "framer-motion";
+import dialogue1 from "../assets/audio/dialogue1.mp3";
+import dialogue2 from "../assets/audio/dialogue2.mp3";
+import dialogue3 from "../assets/audio/dialogue3.mp3";
+import dialogue4 from "../assets/audio/dialogue4.mp3";
+import background from "../assets/audio/background-music.mp3";
 
 interface MangaPanel {
   id: string;
   image: string;
-  dialogue: string;
-  caption: string;
-  audio: string;
+  dialogueAudio: string; // dialogue audio instead of text
 }
 
 interface MangaViewerProps {
@@ -17,101 +26,103 @@ interface MangaViewerProps {
 
 const MangaViewer = ({ storyData }: MangaViewerProps) => {
   const [currentPanelIndex, setCurrentPanelIndex] = useState(0);
-  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+  const [isStoryFinished, setIsStoryFinished] = useState(false);
+  const [isAudioMuted, setIsAudioMuted] = useState(false);
   const [userReaction, setUserReaction] = useState<string | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Dummy manga data with immersive content
+  const bgMusicRef = useRef<HTMLAudioElement | null>(null);
+  const dialogueAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Panels with dialogue audio
   const mangaPanels: MangaPanel[] = [
     {
       id: "1",
-      image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop",
-      dialogue: "I will overcome this challenge!",
-      caption: "The hero stands at the crossroads of destiny, ready to face whatever lies ahead...",
-      audio: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"
+      image:
+        "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop",
+      dialogueAudio: dialogue1,
     },
     {
       id: "2",
-      image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop",
-      dialogue: "Every step forward is a victory...",
-      caption: "Through the darkness, a glimmer of hope emerges like the first light of dawn.",
-      audio: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"
+      image:
+        "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop",
+      dialogueAudio: dialogue2,
     },
     {
       id: "3",
-      image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=600&fit=crop",
-      dialogue: "The journey within begins now!",
-      caption: "In the quiet moments, we discover our true strength and purpose.",
-      audio: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"
+      image:
+        "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=600&fit=crop",
+      dialogueAudio: dialogue3,
     },
     {
       id: "4",
-      image: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&h=600&fit=crop",
-      dialogue: "This is just the beginning of my story...",
-      caption: "And so, the hero's journey continues, with endless possibilities ahead.",
-      audio: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"
-    }
+      image:
+        "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&h=600&fit=crop",
+      dialogueAudio: dialogue4,
+    },
   ];
 
   const currentPanel = mangaPanels[currentPanelIndex];
   const isFirstPanel = currentPanelIndex === 0;
   const isLastPanel = currentPanelIndex === mangaPanels.length - 1;
 
-  // Audio playback effect
+  // Play looping background music once
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      
-      if (currentPanel?.audio) {
-        audioRef.current.src = currentPanel.audio;
-        if (isAudioPlaying) {
-          audioRef.current.play().catch((error) => {
-            console.log("Audio playback failed:", error);
-            setIsAudioPlaying(false);
-          });
-        }
-      }
+    if (bgMusicRef.current) {
+      bgMusicRef.current.loop = true;
+      bgMusicRef.current.volume = 0.4;
+      bgMusicRef.current.currentTime = 0;
+      bgMusicRef.current
+        .play()
+        .catch(() => console.log("Background autoplay blocked"));
     }
+  }, []);
 
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
-    };
-  }, [currentPanelIndex, currentPanel?.audio, isAudioPlaying]);
+  // Handle dialogue audio playback
+  useEffect(() => {
+    if (dialogueAudioRef.current) {
+      dialogueAudioRef.current.pause();
+      dialogueAudioRef.current.src = currentPanel.dialogueAudio;
+      dialogueAudioRef.current.currentTime = 0;
+
+      dialogueAudioRef.current
+        .play()
+        .catch(() => console.log("Dialogue autoplay blocked"));
+
+      dialogueAudioRef.current.onended = () => {
+        if (!isLastPanel) {
+          setCurrentPanelIndex((prev) => prev + 1);
+        } else {
+          setIsStoryFinished(true);
+          if (bgMusicRef.current) {
+            bgMusicRef.current.pause();
+          }
+        }
+      };
+    }
+  }, [currentPanelIndex]);
 
   const goToNextPanel = () => {
-    if (!isLastPanel) {
-      setCurrentPanelIndex(prev => prev + 1);
-      setUserReaction(null); // Reset reaction for new panel
-    }
+    if (!isLastPanel) setCurrentPanelIndex((prev) => prev + 1);
   };
 
   const goToPreviousPanel = () => {
-    if (!isFirstPanel) {
-      setCurrentPanelIndex(prev => prev - 1);
-      setUserReaction(null); // Reset reaction for new panel
-    }
+    if (!isFirstPanel) setCurrentPanelIndex((prev) => prev - 1);
   };
 
   const restartStory = () => {
     setCurrentPanelIndex(0);
-    setUserReaction(null);
+    setIsStoryFinished(false);
+
+    if (bgMusicRef.current) {
+      bgMusicRef.current.currentTime = 0;
+      bgMusicRef.current.play().catch(() => console.log("BG restart blocked"));
+    }
   };
 
-  const toggleAudio = () => {
-    if (audioRef.current) {
-      if (isAudioPlaying) {
-        audioRef.current.pause();
-        setIsAudioPlaying(false);
-      } else {
-        audioRef.current.play().catch((error) => {
-          console.log("Audio playback failed:", error);
-          setIsAudioPlaying(false);
-        });
-        setIsAudioPlaying(true);
-      }
+  const toggleMute = () => {
+    if (bgMusicRef.current) {
+      bgMusicRef.current.muted = !isAudioMuted;
+      setIsAudioMuted(!isAudioMuted);
     }
   };
 
@@ -119,63 +130,49 @@ const MangaViewer = ({ storyData }: MangaViewerProps) => {
     setUserReaction(userReaction === reaction ? null : reaction);
   };
 
-  // Touch/swipe functionality for mobile
+  // Touch/swipe functionality
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
-
   const minSwipeDistance = 50;
 
   const onTouchStart = (e: React.TouchEvent) => {
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
   };
-
   const onTouchMove = (e: React.TouchEvent) => {
     setTouchEnd(e.targetTouches[0].clientX);
   };
-
   const onTouchEnd = () => {
     if (!touchStart || !touchEnd) return;
-    
     const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-
-    if (isLeftSwipe && !isLastPanel) {
-      goToNextPanel();
-    } else if (isRightSwipe && !isFirstPanel) {
-      goToPreviousPanel();
-    }
+    if (distance > minSwipeDistance && !isLastPanel) goToNextPanel();
+    if (distance < -minSwipeDistance && !isFirstPanel) goToPreviousPanel();
   };
 
   const reactions = [
     { emoji: "❤️", label: "Love", value: "love" },
     { emoji: "😢", label: "Touched", value: "touched" },
     { emoji: "🌸", label: "Beautiful", value: "beautiful" },
-    { emoji: "✨", label: "Inspired", value: "inspired" }
+    { emoji: "✨", label: "Inspired", value: "inspired" },
   ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col">
-      {/* Hidden audio element */}
-      <audio 
-        ref={audioRef} 
-        preload="auto" 
-        onEnded={() => setIsAudioPlaying(false)}
-        onError={() => setIsAudioPlaying(false)}
-      />
-      
+      {/* Hidden audio elements */}
+      <audio ref={bgMusicRef} src={background} preload="auto" />
+      <audio ref={dialogueAudioRef} preload="auto" />
+
       {/* Main content */}
       <div className="flex-1 flex flex-col items-center justify-center p-4 relative">
         <div className="relative max-w-4xl w-full">
-          {/* Navigation arrows - Desktop */}
+          {/* Arrows Desktop */}
           <div className="hidden md:flex absolute inset-0 items-center justify-between pointer-events-none z-10">
             <Button
               variant="ghost"
               size="icon"
               onClick={goToPreviousPanel}
               disabled={isFirstPanel}
-              className="pointer-events-auto bg-black/20 backdrop-blur-sm text-white hover:bg-black/40 disabled:opacity-50 border border-white/20"
+              className="pointer-events-auto bg-black/20 text-white"
             >
               <ChevronLeft className="h-8 w-8" />
             </Button>
@@ -184,85 +181,56 @@ const MangaViewer = ({ storyData }: MangaViewerProps) => {
               size="icon"
               onClick={goToNextPanel}
               disabled={isLastPanel}
-              className="pointer-events-auto bg-black/20 backdrop-blur-sm text-white hover:bg-black/40 disabled:opacity-50 border border-white/20"
+              className="pointer-events-auto bg-black/20 text-white"
             >
               <ChevronRight className="h-8 w-8" />
             </Button>
           </div>
 
-          {/* Manga Panel Container */}
-          <div
-            className="relative w-full max-w-2xl mx-auto"
+          {/* Manga Panel */}
+          <motion.div
+            key={currentPanelIndex}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.6, ease: "easeInOut" }}
+            className="bg-gradient-to-br from-white/95 to-gray-50/95 rounded-xl shadow-2xl overflow-hidden"
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
           >
-            <motion.div
-              key={currentPanelIndex}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.5, ease: "easeInOut" }}
-              className="relative"
+            <img
+              src={currentPanel.image}
+              alt={`Panel ${currentPanelIndex + 1}`}
+              className="w-full h-auto object-cover"
+              style={{ maxHeight: "70vh" }}
+            />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleMute}
+              className="absolute bottom-4 right-4 bg-black/30 text-white"
             >
-              {/* Panel Card */}
-              <div className="bg-gradient-to-br from-white/95 to-gray-50/95 rounded-xl shadow-2xl overflow-hidden border border-white/20 backdrop-blur-sm">
-                {/* Panel Image */}
-                <div className="relative">
-                  <img
-                    src={currentPanel.image}
-                    alt={`Panel ${currentPanelIndex + 1}`}
-                    className="w-full h-auto object-cover"
-                    style={{ maxHeight: "70vh" }}
-                  />
-                  
-                  {/* Speech Bubble */}
-                  <div className="absolute top-4 left-4 right-4">
-                    <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-4 shadow-lg border border-white/50 max-w-xs">
-                      <p className="text-gray-800 font-medium text-sm leading-relaxed">
-                        "{currentPanel.dialogue}"
-                      </p>
-                      {/* Speech bubble tail */}
-                      <div className="absolute -bottom-2 left-6 w-4 h-4 bg-white/95 transform rotate-45 border-r border-b border-white/50"></div>
-                    </div>
-                  </div>
-
-                  {/* Audio Control Button */}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={toggleAudio}
-                    className="absolute bottom-4 right-4 bg-black/20 backdrop-blur-sm text-white hover:bg-black/40 border border-white/20"
-                  >
-                    {isAudioPlaying ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
-                  </Button>
-                </div>
-
-                {/* Caption Bar */}
-                <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white p-4">
-                  <p className="text-sm leading-relaxed font-medium">
-                    {currentPanel.caption}
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-          </div>
+              {isAudioMuted ? <VolumeX /> : <Volume2 />}
+            </Button>
+          </motion.div>
         </div>
 
-        {/* Progress Section */}
-        <div className="mt-8 text-center space-y-4 max-w-2xl w-full">
-          {/* Panel Counter */}
-          <p className="text-white/90 font-medium text-lg">
+        {/* Progress bar */}
+        <div className="mt-8 text-center max-w-2xl w-full">
+          <p className="text-white/90">
             Panel {currentPanelIndex + 1} of {mangaPanels.length}
           </p>
-          
-          {/* Progress Bar */}
           <div className="w-full bg-white/20 rounded-full h-2 overflow-hidden">
-            <motion.div 
-              className="bg-gradient-to-r from-purple-400 to-pink-400 h-2 rounded-full"
+            <motion.div
+              className="bg-gradient-to-r from-purple-400 to-pink-400 h-2"
               initial={{ width: 0 }}
-              animate={{ width: `${((currentPanelIndex + 1) / mangaPanels.length) * 100}%` }}
-              transition={{ duration: 0.5, ease: "easeInOut" }}
+              animate={{
+                width: `${
+                  ((currentPanelIndex + 1) / mangaPanels.length) * 100
+                }%`,
+              }}
+              transition={{ duration: 0.5 }}
             />
           </div>
         </div>
@@ -307,21 +275,19 @@ const MangaViewer = ({ storyData }: MangaViewerProps) => {
           </Button>
         </div>
 
-        {/* Read Again button - only on last panel */}
-        {isLastPanel && (
-          <motion.div 
-            className="mt-6"
+        {/* Read Again */}
+        {isStoryFinished && (
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
+            className="mt-6"
           >
-            <Button
-              variant="outline"
+            <Button variant="outline"
               onClick={restartStory}
               className="bg-white/10 backdrop-blur-sm text-white border-white/20 hover:bg-white/20"
             >
-              <RotateCcw className="h-4 w-4 mr-2" />
-              Read Again
+              <RotateCcw className="mr-2" /> Read Again
             </Button>
           </motion.div>
         )}
