@@ -1,21 +1,31 @@
 import { useState, useEffect } from "react";
 
-const LoadingScreen = () => {
+interface LoadingScreenProps {
+  progressMessage?: string;
+}
+
+const LoadingScreen = ({ progressMessage }: LoadingScreenProps) => {
   const [messageIndex, setMessageIndex] = useState(0);
-  
-  const messages = [
+
+  const defaultMessages = [
     "Sketching your first panel...",
     "Inking the details...",
     "Bringing your story to life..."
   ];
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setMessageIndex((prev) => (prev + 1) % messages.length);
-    }, 3000);
+    // Only cycle through default messages if no specific progress message is provided
+    if (!progressMessage) {
+      const interval = setInterval(() => {
+        setMessageIndex((prev) => (prev + 1) % defaultMessages.length);
+      }, 3000);
 
-    return () => clearInterval(interval);
-  }, [messages.length]);
+      return () => clearInterval(interval);
+    }
+  }, [progressMessage, defaultMessages.length]);
+
+  // Use provided progress message or cycle through default messages
+  const currentMessage = progressMessage || defaultMessages[messageIndex];
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
@@ -70,23 +80,25 @@ const LoadingScreen = () => {
           </svg>
         </div>
 
-        {/* Cycling message */}
+        {/* Progress message */}
         <div className="space-y-2">
           <p className="text-foreground text-lg font-medium">
-            {messages[messageIndex]}
+            {currentMessage}
           </p>
-          <div className="flex justify-center space-x-1">
-            {messages.map((_, index) => (
-              <div
-                key={index}
-                className={`w-2 h-2 rounded-full transition-colors duration-300 ${
-                  index === messageIndex
-                    ? "bg-primary"
-                    : "bg-muted-foreground/30"
-                }`}
-              />
-            ))}
-          </div>
+          {!progressMessage && (
+            <div className="flex justify-center space-x-1">
+              {defaultMessages.map((_, index) => (
+                <div
+                  key={index}
+                  className={`w-2 h-2 rounded-full transition-colors duration-300 ${
+                    index === messageIndex
+                      ? "bg-primary"
+                      : "bg-muted-foreground/30"
+                  }`}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Additional calming text */}

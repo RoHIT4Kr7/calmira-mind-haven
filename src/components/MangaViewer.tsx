@@ -8,123 +8,176 @@ import {
   VolumeX,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-
-//audio files
-import dialogue1 from "../assets/audio/dialogue1.mp3";
-import dialogue2 from "../assets/audio/dialogue2.mp3";
-import dialogue3 from "../assets/audio/dialogue3.mp3";
-import dialogue4 from "../assets/audio/dialogue4.mp3";
-import background from "../assets/audio/background-music.mp3";
+import { Socket } from "socket.io-client";
+import { useAudioStateMachine, type PanelAudio } from "./AudioStateMachine";
 
 interface MangaPanel {
   id: string;
-  image: string;
-  dialogueAudio: string; // dialogue audio instead of text
+  imageUrl: string;
+  narrationUrl: string;
+  backgroundMusicUrl?: string;
+  panelNumber?: number;
+  ready?: boolean;
 }
 
 interface MangaViewerProps {
-  storyData: any[]; // Keeping original prop for compatibility
+  storyData: MangaPanel[];
+  storyId?: string | null;
+  socket?: Socket | null;
+  onPanelUpdate?: (panels: MangaPanel[]) => void;
 }
 
-const MangaViewer = ({ storyData }: MangaViewerProps) => {
-  const [currentPanelIndex, setCurrentPanelIndex] = useState(0);
-  const [isStoryFinished, setIsStoryFinished] = useState(false);
-  const [isAudioMuted, setIsAudioMuted] = useState(false);
+const MangaViewer = ({ storyData, storyId, socket, onPanelUpdate }: MangaViewerProps) => {
   const [userReaction, setUserReaction] = useState<string | null>(null);
+  const [mangaPanels, setMangaPanels] = useState<MangaPanel[]>(storyData);
+  
+  // Convert initial panel to AudioStateMachine format
+  const initialPanelAudio: PanelAudio | undefined = storyData.length > 0 ? {
+    panelId: storyData[0].id,
+    panelNumber: storyData[0].panelNumber || parseInt(storyData[0].id, 10),
+    narrationUrl: storyData[0].narrationUrl,
+    backgroundMusicUrl: storyData[0].backgroundMusicUrl,
+    ready: Boolean(storyData[0].imageUrl && storyData[0].narrationUrl)
+  } : undefined;
 
-  const bgMusicRef = useRef<HTMLAudioElement | null>(null);
-  const dialogueAudioRef = useRef<HTMLAudioElement | null>(null);
+  // Use Audio State Machine for proper audio orchestration
+  const {
+    currentState,
+    currentPanel,
+    audioQueue,
+    playPanel,
+    pauseAudio,
+    resumeAudio,
+    stopAudio,
+    isAudioMuted,
+    toggleMute
+  } = useAudioStateMachine({
+    storyId,
+    socket,
+    onPanelChange: (panelNumber) => {
+      console.log(`🎬 Panel changed to ${panelNumber}`);
+    },
+    onStateChange: (state) => {
+      console.log(`🎵 Audio state changed to ${state}`);
+      if (state === 'ended') {
+        setIsStoryFinished(true);
+      }
+    },
+    initialPanel: initialPanelAudio
+  });
 
-  // Panels with dialogue audio
-  const mangaPanels: MangaPanel[] = [
-    {
-      id: "1",
-      image:
-        "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop",
-      dialogueAudio: dialogue1,
-    },
-    {
-      id: "2",
-      image:
-        "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop",
-      dialogueAudio: dialogue2,
-    },
-    {
-      id: "3",
-      image:
-        "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=600&fit=crop",
-      dialogueAudio: dialogue3,
-    },
-    {
-      id: "4",
-      image:
-        "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&h=600&fit=crop",
-      dialogueAudio: dialogue4,
-    },
-  ];
+  // Calculate current panel index from audio state machine
+  const currentPanelIndex = mangaPanels.findIndex(panel => 
+    (panel.panelNumber || parseInt(panel.id, 10)) === currentPanel
+  );
+  const validCurrentPanelIndex = currentPanelIndex >= 0 ? currentPanelIndex : 0;
+  const [isStoryFinished, setIsStoryFinished] = useState(false);
 
-  const currentPanel = mangaPanels[currentPanelIndex];
-  const isFirstPanel = currentPanelIndex === 0;
-  const isLastPanel = currentPanelIndex === mangaPanels.length - 1;
-
-  // Play looping background music once
+  // Update panels when storyData changes
   useEffect(() => {
-    if (bgMusicRef.current) {
-      bgMusicRef.current.loop = true;
-      bgMusicRef.current.volume = 0.4;
-      bgMusicRef.current.currentTime = 0;
-      bgMusicRef.current
-        .play()
-        .catch(() => console.log("Background autoplay blocked"));
-    }
-  }, []);
+    // Normalize incoming story data to include panelNumber and readiness
+    const normalized = storyData.map(p => ({
+      ...p,
+      panelNumber: p.panelNumber ?? parseInt(p.id, 10),
+      ready: Boolean(p.imageUrl && p.narrationUrl)
+    }));
+    setMangaPanels(normalized);
+  }, [storyData]);
 
-  // Handle dialogue audio playback
+  // Listen for panel updates via socket (for UI updates)
   useEffect(() => {
-    if (dialogueAudioRef.current) {
-      dialogueAudioRef.current.pause();
-      dialogueAudioRef.current.src = currentPanel.dialogueAudio;
-      dialogueAudioRef.current.currentTime = 0;
+    if (socket && storyId) {
+      const handlePanelUpdate = (data: any) => {
+        console.log('MangaViewer received panel update:', data);
+        
+        if (data.data?.panel_data && data.story_id === storyId) {
+          const panelNum: number = Number(data.data.panel_number);
+          const imageUrl: string = data.data.panel_data.image_url || '';
+          const ttsUrl: string = data.data.panel_data.tts_url || '';
 
-      dialogueAudioRef.current
-        .play()
-        .catch(() => console.log("Dialogue autoplay blocked"));
-
-      dialogueAudioRef.current.onended = () => {
-        if (!isLastPanel) {
-          setCurrentPanelIndex((prev) => prev + 1);
-        } else {
-          setIsStoryFinished(true);
-          if (bgMusicRef.current) {
-            bgMusicRef.current.pause();
+          // Only consider a panel "ready" when both image and narration are available
+          const isReady = Boolean(imageUrl && ttsUrl);
+          if (!isReady) {
+            // Do not add half-baked panels; wait until complete to avoid skipping
+            return;
           }
+
+          const newPanel: MangaPanel = {
+            id: panelNum.toString(),
+            panelNumber: panelNum,
+            imageUrl,
+            narrationUrl: ttsUrl,
+            backgroundMusicUrl: data.data.panel_data.music_url || '/src/assets/audio/background-music.mp3',
+            ready: true
+          };
+          
+          setMangaPanels(prevPanels => {
+            const updatedPanels = [...prevPanels];
+            const existingIndex = updatedPanels.findIndex(p => p.id === newPanel.id);
+            
+            if (existingIndex >= 0) {
+              updatedPanels[existingIndex] = newPanel;
+            } else {
+              updatedPanels.push(newPanel);
+              console.log(`🎬 New panel ${newPanel.id} added to story! Total panels: ${updatedPanels.length}`);
+            }
+            
+            // Sort panels by panelNumber to maintain intended order
+            const sortedPanels = updatedPanels.sort((a, b) => (a.panelNumber ?? parseInt(a.id)) - (b.panelNumber ?? parseInt(b.id)));
+            
+            // Notify parent component
+            if (onPanelUpdate) {
+              onPanelUpdate(sortedPanels);
+            }
+            
+            return sortedPanels;
+          });
         }
       };
+
+      socket.on('panel_update', handlePanelUpdate);
+
+      return () => {
+        socket.off('panel_update', handlePanelUpdate);
+      };
     }
-  }, [currentPanelIndex]);
+  }, [socket, storyId, onPanelUpdate]);
+
+  const currentPanelData = mangaPanels[validCurrentPanelIndex];
+  const isFirstPanel = validCurrentPanelIndex === 0;
+  const isLastPanel = validCurrentPanelIndex === mangaPanels.length - 1;
+
+  // Set story finished when audio state machine ends
+  useEffect(() => {
+    if (currentState === 'ended') {
+      setIsStoryFinished(true);
+    }
+  }, [currentState]);
+
+
 
   const goToNextPanel = () => {
-    if (!isLastPanel) setCurrentPanelIndex((prev) => prev + 1);
+    const nextPanelNumber = currentPanel + 1;
+    const nextPanel = mangaPanels.find(p => (p.panelNumber || parseInt(p.id, 10)) === nextPanelNumber);
+    if (nextPanel && nextPanel.ready) {
+      playPanel(nextPanelNumber);
+    }
   };
 
   const goToPreviousPanel = () => {
-    if (!isFirstPanel) setCurrentPanelIndex((prev) => prev - 1);
-  };
-
-  const restartStory = () => {
-    setCurrentPanelIndex(0);
-    setIsStoryFinished(false);
-
-    if (bgMusicRef.current) {
-      bgMusicRef.current.currentTime = 0;
-      bgMusicRef.current.play().catch(() => console.log("BG restart blocked"));
+    const prevPanelNumber = currentPanel - 1;
+    if (prevPanelNumber >= 1) {
+      const prevPanel = mangaPanels.find(p => (p.panelNumber || parseInt(p.id, 10)) === prevPanelNumber);
+      if (prevPanel && prevPanel.ready) {
+        playPanel(prevPanelNumber);
+      }
     }
   };
 
-  const toggleMute = () => {
-    if (bgMusicRef.current) {
-      bgMusicRef.current.muted = !isAudioMuted;
-      setIsAudioMuted(!isAudioMuted);
+  const restartStory = () => {
+    setIsStoryFinished(false);
+    if (mangaPanels.length > 0) {
+      playPanel(1);
     }
   };
 
@@ -159,10 +212,9 @@ const MangaViewer = ({ storyData }: MangaViewerProps) => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col">
-      {/* Hidden audio elements */}
-      <audio ref={bgMusicRef} src={background} preload="auto" />
-      <audio ref={dialogueAudioRef} preload="auto" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col"
+         data-current-panel={currentPanel}
+         data-audio-state={currentState}>
 
       {/* Main content */}
       <div className="flex-1 flex flex-col items-center justify-center p-4 relative">
@@ -192,7 +244,7 @@ const MangaViewer = ({ storyData }: MangaViewerProps) => {
           {/* Manga Panel */}
           <AnimatePresence mode="wait">
             <motion.div
-              key={currentPanelIndex}
+              key={currentPanel}
               initial={{ opacity: 0, y: 30, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -30, scale: 0.95 }}
@@ -203,12 +255,14 @@ const MangaViewer = ({ storyData }: MangaViewerProps) => {
               onTouchEnd={onTouchEnd}
             >
               <div className="relative rounded-xl overflow-hidden shadow-2xl bg-gradient-to-br from-gray-900/80 to-gray-800/60 backdrop-blur-lg border border-white/10">
-                <img
-                  src={currentPanel.image}
-                  alt={`Panel ${currentPanelIndex + 1}`}
-                  className="w-full h-auto object-cover"
-                  style={{ maxHeight: "70vh" }}
-                />
+                {currentPanelData && (
+                  <img
+                    src={currentPanelData.imageUrl}
+                    alt={`Panel ${currentPanel}`}
+                    className="w-full h-auto object-cover"
+                    style={{ maxHeight: "70vh" }}
+                  />
+                )}
                 <Button
                   variant="ghost"
                   size="icon"
@@ -217,6 +271,15 @@ const MangaViewer = ({ storyData }: MangaViewerProps) => {
                 >
                   {isAudioMuted ? <VolumeX /> : <Volume2 />}
                 </Button>
+                
+                {/* Audio state indicator */}
+                <div className="absolute top-4 left-4 bg-black/50 text-white px-2 py-1 rounded text-xs">
+                  {currentState === 'loading' && '🔄 Loading...'}
+                  {currentState === 'playing' && '▶️ Playing'}
+                  {currentState === 'transitioning' && '⏭️ Next...'}
+                  {currentState === 'ended' && '✅ Complete'}
+                  {currentState === 'idle' && '⏸️ Ready'}
+                </div>
               </div>
             </motion.div>
           </AnimatePresence>
@@ -225,7 +288,8 @@ const MangaViewer = ({ storyData }: MangaViewerProps) => {
         {/* Progress bar */}
         <div className="mt-8 text-center max-w-2xl w-full">
           <p className="text-white/90">
-            Panel {currentPanelIndex + 1} of {mangaPanels.length}
+            Panel {currentPanel} of {mangaPanels.length}
+            {audioQueue.size > 0 && ` (${audioQueue.size} ready)`}
           </p>
           <div className="w-full bg-white/20 rounded-full h-2 overflow-hidden">
             <motion.div
@@ -233,7 +297,7 @@ const MangaViewer = ({ storyData }: MangaViewerProps) => {
               initial={{ width: 0 }}
               animate={{
                 width: `${
-                  ((currentPanelIndex + 1) / mangaPanels.length) * 100
+                  mangaPanels.length > 0 ? (currentPanel / mangaPanels.length) * 100 : 0
                 }%`,
               }}
               transition={{ duration: 0.5 }}
