@@ -9,7 +9,8 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Socket } from "socket.io-client";
-import { useAudioStateMachine, type PanelAudio } from "./AudioStateMachine";
+import { useAudioStateMachine, type PanelAudio } from "../AudioStateMachine";
+import BackgroundVideo from "./BackgroundVideo";
 
 interface MangaPanel {
   id: string;
@@ -27,18 +28,27 @@ interface MangaViewerProps {
   onPanelUpdate?: (panels: MangaPanel[]) => void;
 }
 
-const MangaViewer = ({ storyData, storyId, socket, onPanelUpdate }: MangaViewerProps) => {
+const MangaViewer = ({
+  storyData,
+  storyId,
+  socket,
+  onPanelUpdate,
+}: MangaViewerProps) => {
   const [userReaction, setUserReaction] = useState<string | null>(null);
   const [mangaPanels, setMangaPanels] = useState<MangaPanel[]>(storyData);
-  
+
   // Convert initial panel to AudioStateMachine format
-  const initialPanelAudio: PanelAudio | undefined = storyData.length > 0 ? {
-    panelId: storyData[0].id,
-    panelNumber: storyData[0].panelNumber || parseInt(storyData[0].id, 10),
-    narrationUrl: storyData[0].narrationUrl,
-    backgroundMusicUrl: storyData[0].backgroundMusicUrl,
-    ready: Boolean(storyData[0].imageUrl && storyData[0].narrationUrl)
-  } : undefined;
+  const initialPanelAudio: PanelAudio | undefined =
+    storyData.length > 0
+      ? {
+          panelId: storyData[0].id,
+          panelNumber:
+            storyData[0].panelNumber || parseInt(storyData[0].id, 10),
+          narrationUrl: storyData[0].narrationUrl,
+          backgroundMusicUrl: storyData[0].backgroundMusicUrl,
+          ready: Boolean(storyData[0].imageUrl && storyData[0].narrationUrl),
+        }
+      : undefined;
 
   // Use Audio State Machine for proper audio orchestration
   const {
@@ -50,7 +60,7 @@ const MangaViewer = ({ storyData, storyId, socket, onPanelUpdate }: MangaViewerP
     resumeAudio,
     stopAudio,
     isAudioMuted,
-    toggleMute
+    toggleMute,
   } = useAudioStateMachine({
     storyId,
     socket,
@@ -59,16 +69,16 @@ const MangaViewer = ({ storyData, storyId, socket, onPanelUpdate }: MangaViewerP
     },
     onStateChange: (state) => {
       console.log(`🎵 Audio state changed to ${state}`);
-      if (state === 'ended') {
+      if (state === "ended") {
         setIsStoryFinished(true);
       }
     },
-    initialPanel: initialPanelAudio
+    initialPanel: initialPanelAudio,
   });
 
   // Calculate current panel index from audio state machine
-  const currentPanelIndex = mangaPanels.findIndex(panel => 
-    (panel.panelNumber || parseInt(panel.id, 10)) === currentPanel
+  const currentPanelIndex = mangaPanels.findIndex(
+    (panel) => (panel.panelNumber || parseInt(panel.id, 10)) === currentPanel
   );
   const validCurrentPanelIndex = currentPanelIndex >= 0 ? currentPanelIndex : 0;
   const [isStoryFinished, setIsStoryFinished] = useState(false);
@@ -76,10 +86,10 @@ const MangaViewer = ({ storyData, storyId, socket, onPanelUpdate }: MangaViewerP
   // Update panels when storyData changes
   useEffect(() => {
     // Normalize incoming story data to include panelNumber and readiness
-    const normalized = storyData.map(p => ({
+    const normalized = storyData.map((p) => ({
       ...p,
       panelNumber: p.panelNumber ?? parseInt(p.id, 10),
-      ready: Boolean(p.imageUrl && p.narrationUrl)
+      ready: Boolean(p.imageUrl && p.narrationUrl),
     }));
     setMangaPanels(normalized);
   }, [storyData]);
@@ -88,12 +98,12 @@ const MangaViewer = ({ storyData, storyId, socket, onPanelUpdate }: MangaViewerP
   useEffect(() => {
     if (socket && storyId) {
       const handlePanelUpdate = (data: any) => {
-        console.log('MangaViewer received panel update:', data);
-        
+        console.log("MangaViewer received panel update:", data);
+
         if (data.data?.panel_data && data.story_id === storyId) {
           const panelNum: number = Number(data.data.panel_number);
-          const imageUrl: string = data.data.panel_data.image_url || '';
-          const ttsUrl: string = data.data.panel_data.tts_url || '';
+          const imageUrl: string = data.data.panel_data.image_url || "";
+          const ttsUrl: string = data.data.panel_data.tts_url || "";
 
           // Only consider a panel "ready" when both image and narration are available
           const isReady = Boolean(imageUrl && ttsUrl);
@@ -107,38 +117,48 @@ const MangaViewer = ({ storyData, storyId, socket, onPanelUpdate }: MangaViewerP
             panelNumber: panelNum,
             imageUrl,
             narrationUrl: ttsUrl,
-            backgroundMusicUrl: data.data.panel_data.music_url || '/src/assets/audio/background-music.mp3',
-            ready: true
+            backgroundMusicUrl:
+              data.data.panel_data.music_url ||
+              "/src/assets/audio/background-music.mp3",
+            ready: true,
           };
-          
-          setMangaPanels(prevPanels => {
+
+          setMangaPanels((prevPanels) => {
             const updatedPanels = [...prevPanels];
-            const existingIndex = updatedPanels.findIndex(p => p.id === newPanel.id);
-            
+            const existingIndex = updatedPanels.findIndex(
+              (p) => p.id === newPanel.id
+            );
+
             if (existingIndex >= 0) {
               updatedPanels[existingIndex] = newPanel;
             } else {
               updatedPanels.push(newPanel);
-              console.log(`🎬 New panel ${newPanel.id} added to story! Total panels: ${updatedPanels.length}`);
+              console.log(
+                `🎬 New panel ${newPanel.id} added to story! Total panels: ${updatedPanels.length}`
+              );
             }
-            
+
             // Sort panels by panelNumber to maintain intended order
-            const sortedPanels = updatedPanels.sort((a, b) => (a.panelNumber ?? parseInt(a.id)) - (b.panelNumber ?? parseInt(b.id)));
-            
+            const sortedPanels = updatedPanels.sort(
+              (a, b) =>
+                (a.panelNumber ?? parseInt(a.id)) -
+                (b.panelNumber ?? parseInt(b.id))
+            );
+
             // Notify parent component
             if (onPanelUpdate) {
               onPanelUpdate(sortedPanels);
             }
-            
+
             return sortedPanels;
           });
         }
       };
 
-      socket.on('panel_update', handlePanelUpdate);
+      socket.on("panel_update", handlePanelUpdate);
 
       return () => {
-        socket.off('panel_update', handlePanelUpdate);
+        socket.off("panel_update", handlePanelUpdate);
       };
     }
   }, [socket, storyId, onPanelUpdate]);
@@ -149,16 +169,16 @@ const MangaViewer = ({ storyData, storyId, socket, onPanelUpdate }: MangaViewerP
 
   // Set story finished when audio state machine ends
   useEffect(() => {
-    if (currentState === 'ended') {
+    if (currentState === "ended") {
       setIsStoryFinished(true);
     }
   }, [currentState]);
 
-
-
   const goToNextPanel = () => {
     const nextPanelNumber = currentPanel + 1;
-    const nextPanel = mangaPanels.find(p => (p.panelNumber || parseInt(p.id, 10)) === nextPanelNumber);
+    const nextPanel = mangaPanels.find(
+      (p) => (p.panelNumber || parseInt(p.id, 10)) === nextPanelNumber
+    );
     if (nextPanel && nextPanel.ready) {
       playPanel(nextPanelNumber);
     }
@@ -167,7 +187,9 @@ const MangaViewer = ({ storyData, storyId, socket, onPanelUpdate }: MangaViewerP
   const goToPreviousPanel = () => {
     const prevPanelNumber = currentPanel - 1;
     if (prevPanelNumber >= 1) {
-      const prevPanel = mangaPanels.find(p => (p.panelNumber || parseInt(p.id, 10)) === prevPanelNumber);
+      const prevPanel = mangaPanels.find(
+        (p) => (p.panelNumber || parseInt(p.id, 10)) === prevPanelNumber
+      );
       if (prevPanel && prevPanel.ready) {
         playPanel(prevPanelNumber);
       }
@@ -212,9 +234,16 @@ const MangaViewer = ({ storyData, storyId, socket, onPanelUpdate }: MangaViewerP
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col"
-         data-current-panel={currentPanel}
-         data-audio-state={currentState}>
+    <div
+      className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col"
+      data-current-panel={currentPanel}
+      data-audio-state={currentState}
+    >
+      {/* Background Video */}
+      <BackgroundVideo
+        videoUrl="https://www.dropbox.com/scl/fi/3byxqbbsk0bkrev2go1mo/background.mp4?rlkey=7u3ka7doa68whlv2of61ndocd&st=9pyexi3u&raw=1"
+        fallbackImage="/images/background-fallback.jpg"
+      />
 
       {/* Main content */}
       <div className="flex-1 flex flex-col items-center justify-center p-4 relative">
@@ -271,14 +300,14 @@ const MangaViewer = ({ storyData, storyId, socket, onPanelUpdate }: MangaViewerP
                 >
                   {isAudioMuted ? <VolumeX /> : <Volume2 />}
                 </Button>
-                
+
                 {/* Audio state indicator */}
                 <div className="absolute top-4 left-4 bg-black/50 text-white px-2 py-1 rounded text-xs">
-                  {currentState === 'loading' && '🔄 Loading...'}
-                  {currentState === 'playing' && '▶️ Playing'}
-                  {currentState === 'transitioning' && '⏭️ Next...'}
-                  {currentState === 'ended' && '✅ Complete'}
-                  {currentState === 'idle' && '⏸️ Ready'}
+                  {currentState === "loading" && "🔄 Loading..."}
+                  {currentState === "playing" && "▶️ Playing"}
+                  {currentState === "transitioning" && "⏭️ Next..."}
+                  {currentState === "ended" && "✅ Complete"}
+                  {currentState === "idle" && "⏸️ Ready"}
                 </div>
               </div>
             </motion.div>
@@ -297,7 +326,9 @@ const MangaViewer = ({ storyData, storyId, socket, onPanelUpdate }: MangaViewerP
               initial={{ width: 0 }}
               animate={{
                 width: `${
-                  mangaPanels.length > 0 ? (currentPanel / mangaPanels.length) * 100 : 0
+                  mangaPanels.length > 0
+                    ? (currentPanel / mangaPanels.length) * 100
+                    : 0
                 }%`,
               }}
               transition={{ duration: 0.5 }}
