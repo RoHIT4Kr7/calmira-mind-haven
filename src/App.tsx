@@ -7,7 +7,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
 import OnboardingScreen from "./components/OnboardingScreen";
 import LoadingScreen from "./components/LoadingScreen";
-import MangaViewer from "./components/MangaViewer";
+import MangaViewer from "./components/manga-viewer/MangaViewer";
+
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
