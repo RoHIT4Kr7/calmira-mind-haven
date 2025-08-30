@@ -34,7 +34,7 @@ const MangaViewer = ({
   socket,
   onPanelUpdate,
 }: MangaViewerProps) => {
-  const [userReaction, setUserReaction] = useState<string | null>(null);
+  // const [userReaction, setUserReaction] = useState<string | null>(null);
   const [mangaPanels, setMangaPanels] = useState<MangaPanel[]>(storyData);
 
   // Convert initial panel to AudioStateMachine format
@@ -203,9 +203,9 @@ const MangaViewer = ({
     }
   };
 
-  const handleReaction = (reaction: string) => {
-    setUserReaction(userReaction === reaction ? null : reaction);
-  };
+  // const handleReaction = (reaction: string) => {
+  //   setUserReaction(userReaction === reaction ? null : reaction);
+  // };
 
   // Touch/swipe functionality
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -226,12 +226,12 @@ const MangaViewer = ({
     if (distance < -minSwipeDistance && !isFirstPanel) goToPreviousPanel();
   };
 
-  const reactions = [
-    { emoji: "❤️", label: "Love", value: "love" },
-    { emoji: "😢", label: "Touched", value: "touched" },
-    { emoji: "🌸", label: "Beautiful", value: "beautiful" },
-    { emoji: "✨", label: "Inspired", value: "inspired" },
-  ];
+  // const reactions = [
+  //   { emoji: "❤️", label: "Love", value: "love" },
+  //   { emoji: "😢", label: "Touched", value: "touched" },
+  //   { emoji: "🌸", label: "Beautiful", value: "beautiful" },
+  //   { emoji: "✨", label: "Inspired", value: "inspired" },
+  // ];
 
   return (
     <div
@@ -249,131 +249,92 @@ const MangaViewer = ({
       <div className="flex-1 flex flex-col items-center justify-center p-4 relative">
         <div className="relative max-w-4xl w-full">
           {/* Arrows Desktop */}
-          <div className="hidden md:flex absolute inset-0 items-center justify-between pointer-events-none z-10">
+          <div className="hidden md:flex absolute top-1/2 -translate-y-1/2 w-full justify-between z-20 px-4 pointer-events-none">
             <Button
               variant="ghost"
               size="icon"
               onClick={goToPreviousPanel}
               disabled={isFirstPanel}
-              className="pointer-events-auto bg-black/20 text-white"
+              className="pointer-events-auto bg-black/30 text-white -ml-24"
             >
-              <ChevronLeft className="h-8 w-8" />
+              <ChevronLeft className="h-10 w-10" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
               onClick={goToNextPanel}
               disabled={isLastPanel}
-              className="pointer-events-auto bg-black/20 text-white"
+              className="pointer-events-auto bg-black/30 text-white -mr-24"
             >
-              <ChevronRight className="h-8 w-8" />
+              <ChevronRight className="h-10 w-10" />
             </Button>
           </div>
 
           {/* Manga Panel */}
           <AnimatePresence mode="wait">
-  <motion.div
-    key={currentPanel}
-    initial={{ opacity: 0, y: 30, scale: 0.95 }}
-    animate={{ opacity: 1, y: 0, scale: 1 }}
-    exit={{ opacity: 0, y: -30, scale: 0.95 }}
-    transition={{ duration: 0.6, ease: "easeInOut" }}
-    className="w-full max-w-3xl mx-auto p-4"
-    onTouchStart={onTouchStart}
-    onTouchMove={onTouchMove}
-    onTouchEnd={onTouchEnd}
-  >
-    <div className="relative rounded-xl overflow-hidden shadow-2xl bg-gradient-to-br from-gray-900/80 to-gray-800/60 backdrop-blur-lg border border-white/10">
-
-      {/* Progress Bar on top edge of image */}
-      <div className="absolute top-0 left-0 w-full h-2 z-20">
-        <motion.div
-          className="bg-gradient-to-r from-purple-400 to-pink-400 h-2"
-          initial={{ width: 0 }}
-          animate={{
-            width: `${
-              mangaPanels.length > 0
-                ? (currentPanel / mangaPanels.length) * 100
-                : 0
-            }%`,
-          }}
-          transition={{ duration: 0.5 }}
-        />
-      </div>
-
-      {/* Manga Image */}
-      {currentPanelData && (
-        <img
-          src={currentPanelData.imageUrl}
-          alt={`Panel ${currentPanel}`}
-          className="w-full h-auto object-cover"
-          style={{ maxHeight: "70vh" }}
-        />
-      )}
-
-      {/* Audio button */}
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={toggleMute}
-        className="absolute bottom-4 right-4 bg-black/30 text-white z-20"
-      >
-        {isAudioMuted ? <VolumeX /> : <Volume2 />}
-      </Button>
-
-      {/* Audio state indicator */}
-      <div className="absolute top-4 left-4 bg-black/50 text-white px-2 py-1 rounded text-xs z-20">
-        {currentState === "loading" && "🔄 Loading..."}
-        {currentState === "playing" && "▶️ Playing"}
-        {currentState === "transitioning" && "⏭️ Next..."}
-        {currentState === "ended" && "✅ Complete"}
-        {currentState === "idle" && "⏸️ Ready"}
-      </div>
-    </div>
-  </motion.div>
-</AnimatePresence>
-
-        </div>
-
-        {/* Progress bar
-        <div className="mt-8 text-center max-w-2xl w-full">
-          <p className="text-white/90">
-            Panel {currentPanel} of {mangaPanels.length}
-            {audioQueue.size > 0 && ` (${audioQueue.size} ready)`}
-          </p>
-          <div className="w-full bg-white/20 rounded-full h-2 overflow-hidden">
             <motion.div
-              className="bg-gradient-to-r from-purple-400 to-pink-400 h-2"
-              initial={{ width: 0 }}
-              animate={{
-                width: `${
-                  mangaPanels.length > 0
-                    ? (currentPanel / mangaPanels.length) * 100
-                    : 0
-                }%`,
-              }}
-              transition={{ duration: 0.5 }}
-            />
-          </div>
-        </div> */}
-
-        {/* Reactions Section */}
-        <div className="mt-6 flex justify-center space-x-4">
-          {reactions.map((reaction) => (
-            <button
-              key={reaction.value}
-              onClick={() => handleReaction(reaction.value)}
-              className={`p-3 rounded-full transition-all duration-200 hover:scale-110 ${
-                userReaction === reaction.value
-                  ? "bg-white/20 backdrop-blur-sm border border-white/30 shadow-lg"
-                  : "bg-black/20 backdrop-blur-sm border border-white/10 hover:bg-black/30"
-              }`}
-              title={reaction.label}
+              key={currentPanel}
+              initial={{ opacity: 0, y: 30, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -30, scale: 0.95 }}
+              transition={{ duration: 0.6, ease: "easeInOut" }}
+              className="w-full  max-w-6xl mx-auto p-2"
+              onTouchStart={onTouchStart}
+              onTouchMove={onTouchMove}
+              onTouchEnd={onTouchEnd}
             >
-              <span className="text-2xl">{reaction.emoji}</span>
-            </button>
-          ))}
+              <div className="relative rounded-xl overflow-hidden shadow-2xl bg-gradient-to-br from-gray-900/80 to-gray-800/60 backdrop-blur-lg border border-white/10">
+                {/* Progress Bar on top edge of image */}
+                <div className="absolute top-0 left-0 w-full h-2 z-20">
+                  <motion.div
+                    className="bg-gradient-to-r from-purple-400 to-pink-400 h-2"
+                    initial={{ width: 0 }}
+                    animate={{
+                      width: `${
+                        mangaPanels.length > 0
+                          ? (currentPanel / mangaPanels.length) * 100
+                          : 0
+                      }%`,
+                    }}
+                    transition={{ duration: 0.5 }}
+                  />
+                </div>
+
+                {/* Manga Image */}
+                {currentPanelData && (
+                  
+                  <img
+                    src={currentPanelData.imageUrl}
+                    alt={`Panel ${currentPanel}`}
+                    className="w-full h-auto object-cover"
+                    style={{ maxHeight: "90vh" }}
+                  />
+                )}
+
+                {/* Audio button */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={toggleMute}
+                  className="absolute bottom-4 right-4 bg-black/30 text-white z-20"
+                >
+                  {isAudioMuted ? <VolumeX /> : <Volume2 />}
+                </Button>
+
+                {/* Audio state indicator */}
+                <div className="absolute top-4 left-4 bg-black/50 text-white px-2 py-1 rounded text-xs z-20">
+                  {currentState === "loading" && "🔄 Loading..."}
+                  {currentState === "playing" && "▶️ Playing"}
+                  {currentState === "transitioning" && "⏭️ Next..."}
+                  {currentState === "ended" && "✅ Complete"}
+                  {currentState === "idle" && "⏸️ Ready"}
+                </div>
+              </div>
+            </motion.div>
+          </AnimatePresence>
         </div>
+
+        
 
         {/* Mobile Navigation */}
         <div className="md:hidden flex justify-center mt-6 space-x-4">
