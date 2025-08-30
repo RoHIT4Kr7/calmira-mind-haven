@@ -34,7 +34,6 @@ const MangaViewer = ({
   socket,
   onPanelUpdate,
 }: MangaViewerProps) => {
-  // const [userReaction, setUserReaction] = useState<string | null>(null);
   const [mangaPanels, setMangaPanels] = useState<MangaPanel[]>(storyData);
 
   // Convert initial panel to AudioStateMachine format
@@ -203,10 +202,6 @@ const MangaViewer = ({
     }
   };
 
-  // const handleReaction = (reaction: string) => {
-  //   setUserReaction(userReaction === reaction ? null : reaction);
-  // };
-
   // Touch/swipe functionality
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
@@ -225,13 +220,6 @@ const MangaViewer = ({
     if (distance > minSwipeDistance && !isLastPanel) goToNextPanel();
     if (distance < -minSwipeDistance && !isFirstPanel) goToPreviousPanel();
   };
-
-  // const reactions = [
-  //   { emoji: "❤️", label: "Love", value: "love" },
-  //   { emoji: "😢", label: "Touched", value: "touched" },
-  //   { emoji: "🌸", label: "Beautiful", value: "beautiful" },
-  //   { emoji: "✨", label: "Inspired", value: "inspired" },
-  // ];
 
   return (
     <div
