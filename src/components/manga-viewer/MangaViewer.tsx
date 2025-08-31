@@ -315,6 +315,25 @@ const MangaViewer = ({
                 <AnimatePresence>
                   {isLoadingPanel && <LoadingScreen key="loading" />}
                 </AnimatePresence>
+
+                {/* 🎚️ Mute/Unmute button */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={toggleMute}
+                  className="absolute bottom-4 right-4 bg-black/30 text-white z-30"
+                >
+                  {isAudioMuted ? <VolumeX /> : <Volume2 />}
+                </Button>
+
+                {/* 🟢 Audio state indicator */}
+                <div className="absolute top-4 left-4 bg-black/50 text-white px-2 py-1 rounded text-xs z-30">
+                  {currentState === "loading" && "🔄 Loading..."}
+                  {currentState === "playing" && "▶️ Playing"}
+                  {currentState === "transitioning" && "⏭️ Next..."}
+                  {currentState === "ended" && "✅ Complete"}
+                  {currentState === "idle" && "⏸️ Ready"}
+                </div>
               </div>
             </motion.div>
           </AnimatePresence>
