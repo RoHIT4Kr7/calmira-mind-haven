@@ -2,7 +2,7 @@ npm run dev
 
 
 git add .
-git commit -m "fix the lower section"
+git commit -m "add loading panel"
 git push origin nitesh-branch
 
 git checkout main

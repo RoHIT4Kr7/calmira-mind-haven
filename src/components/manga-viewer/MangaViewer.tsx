@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Socket } from "socket.io-client";
 import { useAudioStateMachine, type PanelAudio } from "../AudioStateMachine";
 import BackgroundVideo from "./BackgroundVideo";
+import LoadingScreen from "./LoadingScreen";
 
 interface MangaPanel {
   id: string;
@@ -35,6 +36,7 @@ const MangaViewer = ({
   onPanelUpdate,
 }: MangaViewerProps) => {
   const [mangaPanels, setMangaPanels] = useState<MangaPanel[]>(storyData);
+  const [isLoadingPanel, setIsLoadingPanel] = useState(false);
 
   // Convert initial panel to AudioStateMachine format
   const initialPanelAudio: PanelAudio | undefined =
@@ -179,7 +181,11 @@ const MangaViewer = ({
       (p) => (p.panelNumber || parseInt(p.id, 10)) === nextPanelNumber
     );
     if (nextPanel && nextPanel.ready) {
-      playPanel(nextPanelNumber);
+      setIsLoadingPanel(true);
+      setTimeout(() => {
+        playPanel(nextPanelNumber);
+        setIsLoadingPanel(false);
+      }, 1000); // 1 second loading screen (adjust as needed)
     }
   };
 
@@ -190,7 +196,11 @@ const MangaViewer = ({
         (p) => (p.panelNumber || parseInt(p.id, 10)) === prevPanelNumber
       );
       if (prevPanel && prevPanel.ready) {
-        playPanel(prevPanelNumber);
+        setIsLoadingPanel(true);
+        setTimeout(() => {
+          playPanel(prevPanelNumber);
+          setIsLoadingPanel(false);
+        }, 1000);
       }
     }
   };
@@ -265,13 +275,13 @@ const MangaViewer = ({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -30, scale: 0.95 }}
               transition={{ duration: 0.6, ease: "easeInOut" }}
-              className="w-full  max-w-6xl mx-auto p-2"
+              className="w-full max-w-6xl mx-auto p-2 relative"
               onTouchStart={onTouchStart}
               onTouchMove={onTouchMove}
               onTouchEnd={onTouchEnd}
             >
               <div className="relative rounded-xl overflow-hidden shadow-2xl bg-gradient-to-br from-gray-900/80 to-gray-800/60 backdrop-blur-lg border border-white/10">
-                {/* Progress Bar on top edge of image */}
+                {/* Progress Bar */}
                 <div className="absolute top-0 left-0 w-full h-2 z-20">
                   <motion.div
                     className="bg-gradient-to-r from-purple-400 to-pink-400 h-2"
@@ -289,39 +299,26 @@ const MangaViewer = ({
 
                 {/* Manga Image */}
                 {currentPanelData && (
-                  
-                  <img
-                    src={currentPanelData.imageUrl}
-                    alt={`Panel ${currentPanel}`}
-                    className="w-full h-auto object-cover"
-                    style={{ maxHeight: "90vh" }}
-                  />
+                  <div
+                    className="w-full flex items-center justify-center bg-black"
+                    style={{ minHeight: "70vh", maxHeight: "90vh" }}
+                  >
+                    <img
+                      src={currentPanelData.imageUrl}
+                      alt={`Panel ${currentPanel}`}
+                      className="w-full h-auto object-contain"
+                    />
+                  </div>
                 )}
 
-                {/* Audio button */}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={toggleMute}
-                  className="absolute bottom-4 right-4 bg-black/30 text-white z-20"
-                >
-                  {isAudioMuted ? <VolumeX /> : <Volume2 />}
-                </Button>
-
-                {/* Audio state indicator */}
-                <div className="absolute top-4 left-4 bg-black/50 text-white px-2 py-1 rounded text-xs z-20">
-                  {currentState === "loading" && "🔄 Loading..."}
-                  {currentState === "playing" && "▶️ Playing"}
-                  {currentState === "transitioning" && "⏭️ Next..."}
-                  {currentState === "ended" && "✅ Complete"}
-                  {currentState === "idle" && "⏸️ Ready"}
-                </div>
+                {/* 🔥 Loading Overlay */}
+                <AnimatePresence>
+                  {isLoadingPanel && <LoadingScreen key="loading" />}
+                </AnimatePresence>
               </div>
             </motion.div>
           </AnimatePresence>
         </div>
-
-        
 
         {/* Mobile Navigation */}
         <div className="md:hidden flex justify-center mt-6 space-x-4">
