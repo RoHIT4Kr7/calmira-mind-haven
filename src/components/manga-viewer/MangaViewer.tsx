@@ -223,7 +223,7 @@ const MangaViewer = ({
 
   return (
     <div
-      className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col"
+      className="min-h-screen flex flex-col relative"
       data-current-panel={currentPanel}
       data-audio-state={currentState}
     >
@@ -232,7 +232,6 @@ const MangaViewer = ({
         videoUrl="https://www.dropbox.com/scl/fi/3byxqbbsk0bkrev2go1mo/background.mp4?rlkey=7u3ka7doa68whlv2of61ndocd&st=9pyexi3u&raw=1"
         fallbackImage="/images/background-fallback.jpg"
       />
-
       {/* Main content */}
       <div className="flex-1 flex flex-col items-center justify-center p-4 relative">
         <div className="relative max-w-4xl w-full">
