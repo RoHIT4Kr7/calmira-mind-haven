@@ -8,6 +8,7 @@ import { io, Socket } from "socket.io-client";
 import OnboardingScreen from "./components/OnboardingScreen";
 import LoadingScreen from "./components/LoadingScreen";
 import MangaViewer from "./components/manga-viewer/MangaViewer";
+import BeforeOnboarding from "./pages/beforeOnboarding/BeforeOnboarding";
 
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -383,6 +384,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/before-onboarding" element={<BeforeOnboarding />} />
           <Route path="/mental-wellness" element={<MentalWellnessApp />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
