@@ -2,7 +2,7 @@ npm run dev
 
 
 git add .
-git commit -m "add beforeOnboarding panel"
+git commit -m "add voice agent panel"
 git push origin nitesh-branch
 
 git checkout main
