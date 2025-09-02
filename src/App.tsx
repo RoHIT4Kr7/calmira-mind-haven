@@ -9,6 +9,7 @@ import OnboardingScreen from "./components/OnboardingScreen";
 import LoadingScreen from "./components/LoadingScreen";
 import MangaViewer from "./components/manga-viewer/MangaViewer";
 import BeforeOnboarding from "./pages/beforeOnboarding/BeforeOnboarding";
+import VoiceChat from "./pages/voiceChat/VoiceChat";
 
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -386,6 +387,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/before-onboarding" element={<BeforeOnboarding />} />
           <Route path="/mental-wellness" element={<MentalWellnessApp />} />
+          <Route path="/voice" element={<VoiceChat />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
