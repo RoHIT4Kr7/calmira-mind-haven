@@ -39,7 +39,7 @@ const AutoScrollingMood: React.FC = () => {
             duration: 0.6,
             ease: [0.25, 0.1, 0.25, 1]
           }}
-          className="text-2xl md:text-3xl kalam-light text-muted-foreground"
+          className="text-2xl md:text-3xl inter-light text-muted-foreground"
         >
           {moods[currentMoodIndex]}
         </motion.div>

@@ -117,19 +117,19 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full max-h-screen bg-background">
+    <div className="flex flex-col h-full max-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
       {/* Chat Header */}
-      <div className="flex items-center justify-between p-4 bg-card border-b border-border">
+      <div className="flex items-center justify-between p-4 bg-white/95 backdrop-blur-lg border-b border-border shadow-sm">
         <div className="flex items-center space-x-3">
           <Avatar className="h-10 w-10">
             <AvatarImage src={contactAvatar} alt={contactName} />
-            <AvatarFallback className="bg-primary text-primary-foreground">
+            <AvatarFallback className="bg-gradient-to-br from-primary to-primary-dark text-white">
               {contactName.charAt(0)}
             </AvatarFallback>
           </Avatar>
           <div>
-            <h3 className="font-semibold text-foreground">{contactName}</h3>
-            <p className="text-sm text-muted-foreground">{contactStatus}</p>
+            <h3 className="poppins-semibold text-foreground">{contactName}</h3>
+            <p className="text-sm inter-regular text-muted-foreground">{contactStatus}</p>
           </div>
         </div>
         
@@ -154,7 +154,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-slate-50/50 to-slate-100/50">
         <AnimatePresence>
           {messages.map((message) => (
             <motion.div
@@ -167,15 +167,15 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             >
               <div className={`max-w-[70%] ${message.sender === 'user' ? 'order-2' : 'order-1'}`}>
                 <div
-                  className={`rounded-2xl px-4 py-3 ${
+                  className={`rounded-2xl px-4 py-3 shadow-sm ${
                     message.sender === 'user'
-                      ? 'bg-primary text-primary-foreground ml-2'
-                      : 'bg-card border border-border text-foreground mr-2'
+                      ? 'bg-blue-500 text-white ml-2 rounded-br-sm'
+                      : 'bg-white border border-gray-200 text-gray-800 mr-2 rounded-bl-sm'
                   }`}
                 >
-                  <p className="text-sm leading-relaxed">{message.content}</p>
+                  <p className="text-sm inter-regular leading-relaxed">{message.content}</p>
                 </div>
-                <div className={`text-xs text-muted-foreground mt-1 ${
+                <div className={`text-xs text-gray-500 mt-1 ${
                   message.sender === 'user' ? 'text-right mr-2' : 'text-left ml-2'
                 }`}>
                   {formatTime(message.timestamp)}
@@ -185,7 +185,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
               {message.sender === 'ai' && (
                 <Avatar className="h-8 w-8 order-1">
                   <AvatarImage src={contactAvatar} alt={contactName} />
-                  <AvatarFallback className="bg-primary/20 text-primary text-xs">
+                  <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/30 text-primary text-xs">
                     {contactName.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
@@ -206,15 +206,15 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
               <div className="flex items-center space-x-2">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={contactAvatar} alt={contactName} />
-                  <AvatarFallback className="bg-primary/20 text-primary text-xs">
+                  <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/30 text-primary text-xs">
                     {contactName.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
-                <div className="bg-card border border-border rounded-2xl px-4 py-3 mr-2">
+                <div className="bg-white border border-gray-200 rounded-2xl rounded-bl-sm px-4 py-3 mr-2 shadow-sm">
                   <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse"></div>
-                    <div className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse delay-100"></div>
-                    <div className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse delay-200"></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse delay-100"></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse delay-200"></div>
                   </div>
                 </div>
               </div>
@@ -226,14 +226,14 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       </div>
 
       {/* Input Area */}
-      <div className="p-4 bg-card border-t border-border">
+      <div className="p-4 bg-white/95 backdrop-blur-lg border-t border-border shadow-sm">
         <div className="flex items-center space-x-2">
           <Button
             variant="ghost"
             size="sm"
-            className="p-2 hover:bg-primary/10 rounded-xl flex-shrink-0"
+            className="p-2 hover:bg-gray-100 rounded-xl flex-shrink-0"
           >
-            <Paperclip className="h-5 w-5 text-muted-foreground" />
+            <Paperclip className="h-5 w-5 text-gray-500" />
           </Button>
           
           <div className="flex-1 relative">
@@ -243,23 +243,23 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Type a message..."
-              className="rounded-2xl border-border bg-background pr-12"
+              className="rounded-2xl border-gray-200 bg-white pr-12 inter-regular placeholder:text-gray-400 focus:border-blue-400 focus:ring-blue-400"
             />
             <Button
               variant="ghost"
               size="sm"
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 hover:bg-primary/10 rounded-xl"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 rounded-xl"
             >
-              <Smile className="h-4 w-4 text-muted-foreground" />
+              <Smile className="h-4 w-4 text-gray-500" />
             </Button>
           </div>
 
           <Button
             onClick={newMessage.trim() ? handleSendMessage : onVoiceMessage}
-            className={`p-3 rounded-2xl flex-shrink-0 ${
+            className={`p-3 rounded-2xl flex-shrink-0 transition-all duration-200 ${
               newMessage.trim() 
-                ? 'bg-primary hover:bg-primary-medium text-primary-foreground' 
-                : 'bg-primary/20 hover:bg-primary/30 text-primary'
+                ? 'bg-blue-500 hover:bg-blue-600 text-white shadow-md hover:shadow-lg' 
+                : 'bg-blue-100 hover:bg-blue-200 text-blue-600'
             }`}
           >
             {newMessage.trim() ? (

@@ -25,20 +25,20 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
       whileTap={{ scale: 0.98 }}
       className="h-full"
     >
-      <Card className={`service-card h-full cursor-pointer bg-gradient-to-br ${gradient} backdrop-blur-xl border border-white/10 hover:border-primary/50 shadow-2xl hover:shadow-primary/20 transition-all duration-300`}>
+      <Card className={`service-card h-full cursor-pointer bg-gradient-card backdrop-blur-sm border border-border hover:border-primary/30 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1`}>
         <CardContent className="p-8 h-full flex flex-col">
           <div className="flex items-center space-x-4 mb-6">
-            <div className="text-6xl drop-shadow-lg">{icon}</div>
-            <h3 className="text-3xl kalam-bold text-white drop-shadow-lg">{title}</h3>
+            <div className="text-6xl">{icon}</div>
+            <h3 className="text-3xl poppins-semibold text-foreground">{title}</h3>
           </div>
           
-          <p className="text-white/80 mb-8 flex-grow text-lg kalam-light leading-relaxed">
+          <p className="text-muted-foreground mb-8 flex-grow text-lg inter-regular leading-relaxed">
             {description}
           </p>
           
           <Button
             onClick={onClick}
-            className="w-full bg-gradient-to-r from-white/20 to-white/10 hover:from-white/30 hover:to-white/20 text-white border border-white/30 hover:border-white/50 kalam-regular font-semibold py-4 text-lg rounded-2xl transition-all duration-300 backdrop-blur-sm shadow-lg hover:shadow-xl"
+            className="w-full bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white inter-medium font-medium py-4 text-lg rounded-xl transition-all duration-300 shadow-md hover:shadow-lg"
           >
             Start {title}
           </Button>
