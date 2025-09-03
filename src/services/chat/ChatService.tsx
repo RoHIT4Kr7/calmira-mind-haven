@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import ServiceNavigation from '@/components/navigation/ServiceNavigation';
+import LightServiceNavigation from '@/components/navigation/LightServiceNavigation';
 import ChatInterface from './ChatInterface';
 
 interface ChatAgent {
@@ -111,23 +111,23 @@ const ChatService: React.FC = () => {
     if (!agent) return null;
     
     return (
-      <div className="min-h-screen bg-background font-kalam">
-        <ServiceNavigation />
+      <div className="min-h-screen bg-gradient-to-br from-background via-background-soft to-background flex">
+        <LightServiceNavigation currentPage="Chat" />
         
-        <div className="lg:ml-64 pt-16 lg:pt-0 h-screen">
+        <div className="flex-1 ml-0 lg:ml-64">
           <motion.div
             initial={{ opacity: 0, x: 100 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -100 }}
             transition={{ duration: 0.4 }}
-            className="h-full flex flex-col"
+            className="h-screen flex flex-col"
           >
             {/* Back Button */}
-            <div className="p-4 border-b border-border">
+            <div className="p-6 bg-white/95 backdrop-blur-lg border-b border-border">
               <Button
                 variant="ghost"
                 onClick={handleBackToAgents}
-                className="text-foreground hover:text-primary hover:bg-primary/10 rounded-xl kalam-regular"
+                className="text-foreground hover:text-primary hover:bg-primary/10 rounded-xl inter-medium"
               >
                 ← Back to Agents
               </Button>
@@ -161,11 +161,11 @@ const ChatService: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background font-kalam">
-      <ServiceNavigation />
+    <div className="min-h-screen bg-gradient-to-br from-background via-background-soft to-background flex">
+      <LightServiceNavigation currentPage="Chat" />
       
-      <main className="lg:ml-64 min-h-screen pt-20 lg:pt-0 px-4 pb-8">
-        <div className="max-w-6xl mx-auto py-8 lg:py-16">
+      <main className="flex-1 ml-0 lg:ml-64 px-4 py-8">
+        <div className="max-w-6xl mx-auto py-8">
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -173,10 +173,10 @@ const ChatService: React.FC = () => {
             transition={{ duration: 0.6 }}
             className="text-center mb-12"
           >
-            <h1 className="text-5xl md:text-6xl lg:text-7xl kalam-bold text-foreground mb-6 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+            <h1 className="text-5xl md:text-6xl lg:text-7xl poppins-bold text-foreground mb-6 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
               Chat Service
             </h1>
-            <p className="text-muted-foreground text-xl md:text-2xl max-w-4xl mx-auto kalam-light leading-relaxed">
+            <p className="text-muted-foreground text-xl md:text-2xl max-w-4xl mx-auto inter-regular leading-relaxed">
               Choose your ideal AI companion. Each agent has unique specialties and personalities to support different aspects of your wellness journey.
             </p>
           </motion.div>
@@ -192,29 +192,29 @@ const ChatService: React.FC = () => {
                 whileHover={{ y: -8 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <Card className={`service-card cursor-pointer bg-gradient-to-br ${agent.gradient} backdrop-blur-sm border-border/50 hover:border-primary/50 h-full`}>
+                <Card className="service-card cursor-pointer bg-white/95 backdrop-blur-sm border border-border/50 hover:border-primary/50 hover:shadow-lg h-full transition-all duration-300">
                   <CardContent className="p-8 h-full flex flex-col">
                     <div className="flex items-center space-x-4 mb-6">
                       <div className="text-6xl">{agent.icon}</div>
                       <div>
-                        <h3 className="text-2xl kalam-bold text-foreground">{agent.name}</h3>
-                        <p className="text-lg kalam-regular text-primary">{agent.title}</p>
+                        <h3 className="text-2xl poppins-semibold text-foreground">{agent.name}</h3>
+                        <p className="text-lg inter-medium text-primary">{agent.title}</p>
                       </div>
                     </div>
                     
-                    <p className="text-muted-foreground mb-6 flex-grow text-lg kalam-light leading-relaxed">
+                    <p className="text-muted-foreground mb-6 flex-grow text-lg inter-regular leading-relaxed">
                       {agent.description}
                     </p>
                     
                     <div className="mb-6 p-4 bg-background/50 rounded-xl border border-border/30">
-                      <p className="text-base text-muted-foreground kalam-light mb-3">
-                        <strong className="text-foreground kalam-regular">Personality:</strong> {agent.personality}
+                      <p className="text-base text-muted-foreground inter-regular mb-3">
+                        <strong className="text-foreground inter-medium">Personality:</strong> {agent.personality}
                       </p>
                       <div className="flex flex-wrap gap-2">
                         {agent.specialties.map((specialty, idx) => (
                           <span
                             key={idx}
-                            className="px-3 py-1 bg-primary/20 text-primary text-sm kalam-light rounded-full"
+                            className="px-3 py-1 bg-primary/20 text-primary text-sm inter-regular rounded-full"
                           >
                             {specialty}
                           </span>
@@ -224,9 +224,9 @@ const ChatService: React.FC = () => {
                     
                     <Button
                       onClick={() => handleSelectAgent(agent.id)}
-                      className="w-full bg-gradient-to-r from-primary to-primary-medium hover:from-primary-medium hover:to-primary text-primary-foreground kalam-regular font-semibold py-4 text-lg rounded-2xl transition-all duration-300"
+                      className="w-full bg-gradient-to-r from-primary to-primary-medium hover:from-primary-medium hover:to-primary text-primary-foreground inter-medium font-semibold py-4 text-lg rounded-2xl transition-all duration-300 shadow-md hover:shadow-lg"
                     >
-                      Start Conversation
+                      Start Chat
                     </Button>
                   </CardContent>
                 </Card>
@@ -239,27 +239,27 @@ const ChatService: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="p-8 bg-card/50 rounded-2xl border border-border/30 backdrop-blur-sm"
+            className="p-8 bg-white/95 rounded-2xl border border-border/30 backdrop-blur-sm shadow-lg"
           >
-            <h3 className="text-2xl md:text-3xl kalam-bold text-foreground mb-8 text-center">
+            <h3 className="text-2xl md:text-3xl poppins-semibold text-foreground mb-8 text-center">
               Chat Features
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
               <div className="space-y-4">
                 <div className="text-4xl">💬</div>
-                <p className="text-base kalam-light text-muted-foreground">Real-time messaging</p>
+                <p className="text-base inter-regular text-muted-foreground">Real-time messaging</p>
               </div>
               <div className="space-y-4">
                 <div className="text-4xl">🎭</div>
-                <p className="text-base kalam-light text-muted-foreground">Multiple personalities</p>
+                <p className="text-base inter-regular text-muted-foreground">Multiple personalities</p>
               </div>
               <div className="space-y-4">
                 <div className="text-4xl">🧠</div>
-                <p className="text-base kalam-light text-muted-foreground">Specialized expertise</p>
+                <p className="text-base inter-regular text-muted-foreground">Specialized expertise</p>
               </div>
               <div className="space-y-4">
                 <div className="text-4xl">🔒</div>
-                <p className="text-base kalam-light text-muted-foreground">Private & secure</p>
+                <p className="text-base inter-regular text-muted-foreground">Private & secure</p>
               </div>
             </div>
           </motion.div>

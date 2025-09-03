@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { io, Socket } from 'socket.io-client';
-import ServiceNavigation from '@/components/navigation/ServiceNavigation';
+import LightServiceNavigation from '@/components/navigation/LightServiceNavigation';
 import OnboardingScreen from '@/components/OnboardingScreen';
 import LoadingScreen from '@/components/LoadingScreen';
 import MangaViewer from './MangaViewer';
@@ -265,9 +265,9 @@ const MangaService: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background font-kalam">
-      <ServiceNavigation />
-      <div className="pt-16">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background-soft to-background flex">
+      <LightServiceNavigation currentPage="Manga" />
+      <div className="flex-1 ml-0 lg:ml-64">
         {renderCurrentComponent()}
       </div>
     </div>

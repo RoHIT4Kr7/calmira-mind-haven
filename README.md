@@ -10,3 +10,10 @@ git branch -D nitesh-branch
 
 git checkout -b nitesh-branch
 
+
+merge in main
+
+git switch main
+git pull origin main
+git merge nitesh-branch
+git push origin main

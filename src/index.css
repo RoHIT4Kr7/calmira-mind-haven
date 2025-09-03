@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Michroma:wght@400&display=swap');
 
 @tailwind base;
@@ -11,65 +12,65 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Refined Dark Theme matching Landing Page */
-    --background: 240 15% 8%; /* Softer dark background */
-    --foreground: 0 0% 98%;
+    /* Light Theme with Soft Gradients and Pale Tones */
+    --background: 220 20% 98%; /* Very light blue-gray */
+    --foreground: 220 15% 25%; /* Dark gray for text */
 
-    --card: 238 28% 15%; /* Darker card background */
-    --card-foreground: 0 0% 98%;
+    --card: 0 0% 100%; /* Pure white cards */
+    --card-foreground: 220 15% 25%;
 
-    --popover: 238 28% 12%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 15% 25%;
 
-    --primary: 237 30% 40%; /* Brighter primary for better contrast */
+    --primary: 220 70% 60%; /* Soft blue primary */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 238 28% 18%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 220 15% 95%; /* Very light gray */
+    --secondary-foreground: 220 15% 25%;
 
-    --muted: 238 28% 16%;
-    --muted-foreground: 215 20% 70%;
+    --muted: 220 15% 94%; /* Light muted background */
+    --muted-foreground: 220 10% 45%; /* Medium gray text */
 
-    --accent: 237 30% 35%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 200 80% 70%; /* Soft cyan accent */
+    --accent-foreground: 220 15% 25%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 70% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 238 28% 20%;
-    --input: 238 28% 18%;
-    --ring: 237 30% 40%;
+    --border: 220 15% 88%; /* Light border */
+    --input: 220 15% 96%; /* Very light input background */
+    --ring: 220 70% 60%;
 
-    --radius: 1rem; /* 2xl rounded corners */
+    --radius: 0.75rem; /* Rounded corners */
 
-    /* Custom Brand Colors */
-    --primary-dark: 238 28% 22%; /* #3C3E73 */
-    --primary-medium: 237 30% 27%; /* #4A4E8C */
-    --background-deep: 240 60% 2%; /* #04040D */
+    /* Custom Light Theme Colors */
+    --primary-light: 220 70% 85%; /* Light blue */
+    --primary-medium: 220 70% 60%; /* Medium blue */
+    --primary-dark: 220 70% 45%; /* Darker blue */
+    --background-soft: 220 30% 96%; /* Soft background */
     
-    /* Gradients with new palette */
-    --gradient-hero: linear-gradient(135deg, hsl(238 28% 22%), hsl(237 30% 27%), hsl(240 60% 2%));
-    --gradient-text: linear-gradient(90deg, hsl(238 28% 40%), hsl(237 30% 45%), hsl(0 0% 98%));
-    --gradient-button: linear-gradient(135deg, hsl(238 28% 22%), hsl(237 30% 27%));
-    --gradient-background: radial-gradient(ellipse at center, hsl(238 28% 15% / 0.3), transparent);
+    /* Light Theme Gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(220 70% 85%), hsl(200 80% 85%), hsl(240 60% 90%));
+    --gradient-text: linear-gradient(90deg, hsl(220 70% 60%), hsl(200 80% 70%), hsl(220 15% 25%));
+    --gradient-button: linear-gradient(135deg, hsl(220 70% 60%), hsl(200 80% 70%));
+    --gradient-background: linear-gradient(135deg, hsl(220 30% 98%), hsl(200 30% 96%));
+    --gradient-card: linear-gradient(135deg, hsl(0 0% 100%), hsl(220 30% 98%));
 
-    /* Shadows and Effects */
-    --shadow-glow: 0 0 40px hsl(237 30% 27% / 0.4);
-    --shadow-primary: 0 0 30px hsl(238 28% 22% / 0.3);
-    --shadow-accent: 0 0 30px hsl(237 30% 27% / 0.3);
+    /* Soft Shadows */
+    --shadow-sm: 0 1px 3px hsl(220 15% 25% / 0.1);
+    --shadow-md: 0 4px 6px hsl(220 15% 25% / 0.1);
+    --shadow-lg: 0 10px 15px hsl(220 15% 25% / 0.1);
+    --shadow-xl: 0 20px 25px hsl(220 15% 25% / 0.1);
 
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-glow: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
-    --sidebar-background: 240 60% 2%;
-    --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 237 30% 27%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 238 28% 20%;
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 238 28% 25%;
-    --sidebar-ring: 237 30% 27%;
+    /* Chat Colors */
+    --chat-sent: 220 70% 85%; /* Light blue for sent messages */
+    --chat-received: 220 15% 92%; /* Light gray for received messages */
+    --chat-sent-foreground: 220 70% 20%;
+    --chat-received-foreground: 220 15% 25%;
   }
 
   .dark {
@@ -117,7 +118,7 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-inter;
   }
 
   /* Font weight utilities */
@@ -129,34 +130,76 @@ All colors MUST be HSL.
     font-weight: 400;
   }
   
+  .font-medium {
+    font-weight: 500;
+  }
+  
+  .font-semibold {
+    font-weight: 600;
+  }
+  
   .font-bold {
     font-weight: 700;
   }
 }
 
 @layer components {
+  /* Landing page font (preserved) */
   .michroma-regular {
     font-family: "Michroma", sans-serif;
     font-weight: 400;
     font-style: normal;
   }
 
-  .kalam-light {
-    font-family: "Kalam", sans-serif;
+  /* Modern font utilities */
+  .inter-light {
+    font-family: "Inter", sans-serif;
     font-weight: 300;
-    font-style: normal;
   }
 
-  .kalam-regular {
-    font-family: "Kalam", sans-serif;
+  .inter-regular {
+    font-family: "Inter", sans-serif;
     font-weight: 400;
-    font-style: normal;
   }
 
-  .kalam-bold {
-    font-family: "Kalam", sans-serif;
+  .inter-medium {
+    font-family: "Inter", sans-serif;
+    font-weight: 500;
+  }
+
+  .inter-semibold {
+    font-family: "Inter", sans-serif;
+    font-weight: 600;
+  }
+
+  .inter-bold {
+    font-family: "Inter", sans-serif;
     font-weight: 700;
-    font-style: normal;
+  }
+
+  .poppins-light {
+    font-family: "Poppins", sans-serif;
+    font-weight: 300;
+  }
+
+  .poppins-regular {
+    font-family: "Poppins", sans-serif;
+    font-weight: 400;
+  }
+
+  .poppins-medium {
+    font-family: "Poppins", sans-serif;
+    font-weight: 500;
+  }
+
+  .poppins-semibold {
+    font-family: "Poppins", sans-serif;
+    font-weight: 600;
+  }
+
+  .poppins-bold {
+    font-family: "Poppins", sans-serif;
+    font-weight: 700;
   }
 
   .gradient-text {
