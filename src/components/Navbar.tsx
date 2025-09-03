@@ -7,7 +7,7 @@ const Navbar = () => {
         <div className="font-michroma text-xl font-bold text-white">
           Calmira AI
         </div>
-        <Link to="/before-onboarding" className="custom-launch-button font-michroma">
+        <Link to="/dashboard" className="custom-launch-button font-michroma">
           <svg
             height="24"
             width="24"

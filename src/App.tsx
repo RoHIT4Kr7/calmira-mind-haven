@@ -8,11 +8,15 @@ import { io, Socket } from "socket.io-client";
 import OnboardingScreen from "./components/OnboardingScreen";
 import LoadingScreen from "./components/LoadingScreen";
 import MangaViewer from "./components/manga-viewer/MangaViewer";
-import BeforeOnboarding from "./pages/beforeOnboarding/BeforeOnboarding";
 import VoiceChat from "./pages/voiceChat/VoiceChat";
 
 import Index from "./pages/Index";
+import Dashboard from "./pages/Dashboard";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import MangaService from "./services/manga/MangaService";
+import VoiceService from "./services/voice/VoiceService";
+import ChatService from "./services/chat/ChatService";
 
 const queryClient = new QueryClient();
 
@@ -385,9 +389,16 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/before-onboarding" element={<BeforeOnboarding />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/mental-wellness" element={<MentalWellnessApp />} />
-          <Route path="/voice" element={<VoiceChat />} />
+          
+          {/* Service Routes */}
+          <Route path="/services/manga" element={<MangaService />} />
+          <Route path="/services/voice" element={<VoiceService />} />
+          <Route path="/services/chat" element={<ChatService />} />
+          <Route path="/voice" element={<VoiceService />} />
+          
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
