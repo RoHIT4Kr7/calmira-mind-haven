@@ -1,3 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Michroma:wght@400&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,65 +11,65 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Calmira Dark Theme - Inspired by the cosmic light effects */
-    --background: 217 32% 8%;
+    /* Refined Dark Theme matching Landing Page */
+    --background: 240 15% 8%; /* Softer dark background */
     --foreground: 0 0% 98%;
 
-    --card: 217 32% 12%;
+    --card: 238 28% 15%; /* Darker card background */
     --card-foreground: 0 0% 98%;
 
-    --popover: 217 32% 12%;
+    --popover: 238 28% 12%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 267 89% 70%;
+    --primary: 237 30% 40%; /* Brighter primary for better contrast */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 217 32% 15%;
+    --secondary: 238 28% 18%;
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 217 32% 15%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 238 28% 16%;
+    --muted-foreground: 215 20% 70%;
 
-    --accent: 320 100% 75%;
+    --accent: 237 30% 35%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 217 32% 18%;
-    --input: 217 32% 18%;
-    --ring: 267 89% 70%;
+    --border: 238 28% 20%;
+    --input: 238 28% 18%;
+    --ring: 237 30% 40%;
 
-    --radius: 0.75rem;
+    --radius: 1rem; /* 2xl rounded corners */
 
-    /* Calmira Brand Colors */
-    --purple-glow: 267 89% 70%;
-    --pink-glow: 320 100% 75%;
-    --blue-glow: 240 100% 80%;
+    /* Custom Brand Colors */
+    --primary-dark: 238 28% 22%; /* #3C3E73 */
+    --primary-medium: 237 30% 27%; /* #4A4E8C */
+    --background-deep: 240 60% 2%; /* #04040D */
     
-    /* Gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(267 89% 70%), hsl(320 100% 75%), hsl(240 100% 80%));
-    --gradient-text: linear-gradient(90deg, hsl(267 89% 85%), hsl(320 100% 85%), hsl(240 100% 85%));
-    --gradient-button: linear-gradient(135deg, hsl(267 89% 60%), hsl(320 100% 65%));
-    --gradient-background: radial-gradient(ellipse at center, hsl(267 89% 15% / 0.3), transparent);
+    /* Gradients with new palette */
+    --gradient-hero: linear-gradient(135deg, hsl(238 28% 22%), hsl(237 30% 27%), hsl(240 60% 2%));
+    --gradient-text: linear-gradient(90deg, hsl(238 28% 40%), hsl(237 30% 45%), hsl(0 0% 98%));
+    --gradient-button: linear-gradient(135deg, hsl(238 28% 22%), hsl(237 30% 27%));
+    --gradient-background: radial-gradient(ellipse at center, hsl(238 28% 15% / 0.3), transparent);
 
     /* Shadows and Effects */
-    --shadow-glow: 0 0 40px hsl(267 89% 70% / 0.4);
-    --shadow-pink: 0 0 30px hsl(320 100% 75% / 0.3);
-    --shadow-blue: 0 0 30px hsl(240 100% 80% / 0.3);
+    --shadow-glow: 0 0 40px hsl(237 30% 27% / 0.4);
+    --shadow-primary: 0 0 30px hsl(238 28% 22% / 0.3);
+    --shadow-accent: 0 0 30px hsl(237 30% 27% / 0.3);
 
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-glow: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 
-    --sidebar-background: 217 32% 10%;
+    --sidebar-background: 240 60% 2%;
     --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 267 89% 70%;
+    --sidebar-primary: 237 30% 27%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217 32% 15%;
+    --sidebar-accent: 238 28% 20%;
     --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 217 32% 18%;
-    --sidebar-ring: 267 89% 70%;
+    --sidebar-border: 238 28% 25%;
+    --sidebar-ring: 237 30% 27%;
   }
 
   .dark {
@@ -116,12 +119,43 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Font weight utilities */
+  .font-light {
+    font-weight: 300;
+  }
+  
+  .font-normal {
+    font-weight: 400;
+  }
+  
+  .font-bold {
+    font-weight: 700;
+  }
 }
 
 @layer components {
   .michroma-regular {
     font-family: "Michroma", sans-serif;
     font-weight: 400;
+    font-style: normal;
+  }
+
+  .kalam-light {
+    font-family: "Kalam", sans-serif;
+    font-weight: 300;
+    font-style: normal;
+  }
+
+  .kalam-regular {
+    font-family: "Kalam", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+  }
+
+  .kalam-bold {
+    font-family: "Kalam", sans-serif;
+    font-weight: 700;
     font-style: normal;
   }
 
@@ -144,7 +178,53 @@ All colors MUST be HSL.
 
   .hero-button:hover {
     transform: translateY(-2px);
-    box-shadow: var(--shadow-glow), var(--shadow-pink);
+    box-shadow: var(--shadow-glow), var(--shadow-primary);
+  }
+
+  /* New utility classes for consistent styling */
+  .service-card {
+    @apply bg-card border border-border rounded-2xl p-6 transition-all duration-300;
+    box-shadow: var(--shadow-primary);
+  }
+
+  .service-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-glow), var(--shadow-accent);
+  }
+
+  .mood-chip {
+    @apply bg-primary/20 border border-primary/30 rounded-2xl px-4 py-2 text-primary-foreground;
+    backdrop-filter: blur(10px);
+    transition: var(--transition-smooth);
+  }
+
+  .mood-chip:hover {
+    @apply bg-primary/30 border-primary/50;
+    transform: translateY(-2px);
+  }
+
+  .nav-panel {
+    @apply bg-background/95 backdrop-blur-lg border-r border-border;
+  }
+
+  /* Scrollbar utilities */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Custom gradient backgrounds */
+  .gradient-bg {
+    background: var(--gradient-background);
+  }
+
+  /* Focus states for accessibility */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background;
   }
 
   /* Three.js Hero Component Styles */

@@ -1,5 +1,6 @@
 // HeroSection.jsx
 import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import * as THREE from 'three';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -10,6 +11,7 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 gsap.registerPlugin(ScrollTrigger);
 
 export const Component = () => {
+  const navigate = useNavigate();
   const containerRef = useRef(null);
   const canvasRef = useRef(null);
   const titleRef = useRef(null);
@@ -658,6 +660,16 @@ export const Component = () => {
           <p className="subtitle-line">
             {getCurrentSubtitle().line2}
           </p>
+        </div>
+
+        {/* CTA Button */}
+        <div className="hero-cta mt-8 md:mt-12">
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="hero-button px-8 py-4 text-lg font-semibold rounded-2xl bg-gradient-to-r from-primary to-primary-medium hover:from-primary-medium hover:to-primary text-primary-foreground transition-all duration-300 transform hover:scale-105"
+          >
+            Begin Your Journey
+          </button>
         </div>
 
         {/* Scroll progress indicator */}

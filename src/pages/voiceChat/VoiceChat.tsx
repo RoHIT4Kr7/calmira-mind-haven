@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import "./voiceChat.css";
+import "./VoiceChat.css";
 
 const VoiceChat: React.FC = () => {
   const navigate = useNavigate();
