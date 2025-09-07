@@ -6,7 +6,7 @@ const Footer = () => {
           Calmira AI
         </div>
         <p className="text-muted-foreground">
-          © 2024 Calmira AI. Mental wellness for the next generation.
+          © 2025 Calmira AI. Mental wellness for the next generation.
         </p>
       </div>
     </footer>
