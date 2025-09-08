@@ -50,7 +50,7 @@ export const Component = () => {
       
       // Scene setup
       refs.scene = new THREE.Scene();
-      refs.scene.fog = new THREE.FogExp2(0x000000, 0.00025);
+      refs.scene.fog = new THREE.FogExp2(0x2d1b69, 0.00015); // Purple fog to match mountains
 
       // Camera
       refs.camera = new THREE.PerspectiveCamera(
@@ -119,15 +119,17 @@ export const Component = () => {
           positions[j * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
           positions[j * 3 + 2] = radius * Math.cos(phi);
 
-          // Color variation
+          // Color variation - warm sunset colors
           const color = new THREE.Color();
           const colorChoice = Math.random();
-          if (colorChoice < 0.7) {
-            color.setHSL(0, 0, 0.8 + Math.random() * 0.2);
-          } else if (colorChoice < 0.9) {
-            color.setHSL(0.08, 0.5, 0.8);
+          if (colorChoice < 0.6) {
+            color.setHSL(0, 0, 0.9 + Math.random() * 0.1); // Bright white stars
+          } else if (colorChoice < 0.8) {
+            color.setHSL(0.08, 0.6, 0.8); // Warm orange stars
+          } else if (colorChoice < 0.95) {
+            color.setHSL(0.9, 0.4, 0.8); // Pink stars
           } else {
-            color.setHSL(0.6, 0.5, 0.8);
+            color.setHSL(0.6, 0.3, 0.9); // Light purple stars
           }
           
           colors[j * 3] = color.r;
@@ -196,9 +198,10 @@ export const Component = () => {
       const material = new THREE.ShaderMaterial({
         uniforms: {
           time: { value: 0 },
-          color1: { value: new THREE.Color(0x0033ff) },
-          color2: { value: new THREE.Color(0xff0066) },
-          opacity: { value: 0.3 }
+          color1: { value: new THREE.Color(0x87ceeb) }, // Light blue (sky blue)
+          color2: { value: new THREE.Color(0xff6b35) }, // Warm orange
+          color3: { value: new THREE.Color(0xff69b4) }, // Hot pink
+          opacity: { value: 0.5 }
         },
         vertexShader: `
           varying vec2 vUv;
@@ -219,16 +222,35 @@ export const Component = () => {
         fragmentShader: `
           uniform vec3 color1;
           uniform vec3 color2;
+          uniform vec3 color3;
           uniform float opacity;
           uniform float time;
           varying vec2 vUv;
           varying float vElevation;
           
           void main() {
-            float mixFactor = sin(vUv.x * 10.0 + time) * cos(vUv.y * 10.0 + time);
-            vec3 color = mix(color1, color2, mixFactor * 0.5 + 0.5);
+            // Create vertical gradient: blue at top, pink in middle, orange at bottom
+            float verticalGradient = 1.0 - vUv.y; // 1.0 at top, 0.0 at bottom
             
-            float alpha = opacity * (1.0 - length(vUv - 0.5) * 2.0);
+            vec3 color;
+            if (verticalGradient > 0.6) {
+              // Top: Light blue
+              color = color1;
+            } else if (verticalGradient > 0.3) {
+              // Middle: Blue to pink transition
+              float t = (verticalGradient - 0.3) / 0.3;
+              color = mix(color3, color1, t);
+            } else {
+              // Bottom: Pink to orange transition
+              float t = verticalGradient / 0.3;
+              color = mix(color2, color3, t);
+            }
+            
+            // Add subtle wave animation
+            float wave = sin(vUv.x * 8.0 + time * 0.5) * cos(vUv.y * 6.0 + time * 0.3) * 0.1;
+            color += wave;
+            
+            float alpha = opacity * (1.0 - length(vUv - 0.5) * 1.5);
             alpha *= 1.0 + vElevation * 0.01;
             
             gl_FragColor = vec4(color, alpha);
@@ -251,10 +273,10 @@ export const Component = () => {
       const { current: refs } = threeRefs;
       
       const layers = [
-        { distance: -50, height: 60, color: 0x1a1a2e, opacity: 1 },
-        { distance: -100, height: 80, color: 0x16213e, opacity: 0.8 },
-        { distance: -150, height: 100, color: 0x0f3460, opacity: 0.6 },
-        { distance: -200, height: 120, color: 0x0a4668, opacity: 0.4 }
+        { distance: -50, height: 60, color: 0x2d1b69, opacity: 1 }, // Dark purple foreground
+        { distance: -100, height: 80, color: 0x4a148c, opacity: 0.8 }, // Deep purple mid-ground
+        { distance: -150, height: 100, color: 0x6a1b9a, opacity: 0.6 }, // Medium purple
+        { distance: -200, height: 120, color: 0x8e24aa, opacity: 0.4 } // Lighter purple background
       ];
 
       layers.forEach((layer, index) => {
@@ -315,12 +337,13 @@ export const Component = () => {
           
           void main() {
             float intensity = pow(0.7 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.0);
-            vec3 atmosphere = vec3(0.3, 0.6, 1.0) * intensity;
+            // Warm sunset atmosphere colors
+            vec3 atmosphere = vec3(1.0, 0.4, 0.2) * intensity; // Orange glow
             
             float pulse = sin(time * 2.0) * 0.1 + 0.9;
             atmosphere *= pulse;
             
-            gl_FragColor = vec4(atmosphere, intensity * 0.25);
+            gl_FragColor = vec4(atmosphere, intensity * 0.3);
           }
         `,
         side: THREE.BackSide,
@@ -653,7 +676,7 @@ export const Component = () => {
           {splitTitle(getCurrentTitle())}
         </h1>
         
-        <div ref={subtitleRef} className="hero-subtitle cosmos-subtitle font-michroma">
+        <div ref={subtitleRef} className="hero-subtitle cosmos-subtitle font-michroma text-white" style={{ textShadow: '2px 2px 5px rgba(0, 0, 0, 0.7)' }}>
           <p className="subtitle-line">
             {getCurrentSubtitle().line1}
           </p>
