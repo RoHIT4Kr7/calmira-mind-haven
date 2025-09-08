@@ -4,18 +4,15 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Feather, Mountain, Music, Zap, Sword, Star } from "lucide-react";
 
 interface OnboardingScreenProps {
   onCreateStory: (data: {
     mood: string;
-    animeGenre: string;
-    archetype: string;
-    supportSystem: string;
     coreValue: string;
+    supportSystem: string;
     pastResilience: string;
     innerDemon: string;
-    mangaTitle: string;
+    desiredOutcome: string;
     nickname: string;
     secretWeapon: string;
     age: string;
@@ -27,20 +24,18 @@ const OnboardingScreen = ({ onCreateStory }: OnboardingScreenProps) => {
   const [step, setStep] = useState(1);
   const [storyInputs, setStoryInputs] = useState({
     mood: '',
-    animeGenre: '',
-    archetype: '',
-    supportSystem: '',
     coreValue: '',
+    supportSystem: '',
     pastResilience: '',
     innerDemon: '',
-    mangaTitle: '',
+    desiredOutcome: '',
     nickname: '',
     secretWeapon: '',
     age: '',
     gender: ''
   });
 
-  const totalSteps = 9;
+  const totalSteps = 4;
 
   const updateStoryInputs = (key: string, value: string) => {
     setStoryInputs(prev => ({ ...prev, [key]: value }));
@@ -63,206 +58,62 @@ const OnboardingScreen = ({ onCreateStory }: OnboardingScreenProps) => {
     onCreateStory(storyInputs);
   };
 
-  const isStep8Valid = storyInputs.nickname.trim() &&
+  const isStep4Valid = storyInputs.nickname.trim() &&
                       storyInputs.secretWeapon.trim() &&
-                      storyInputs.mangaTitle.trim();
+                      storyInputs.age &&
+                      storyInputs.gender;
 
-  // Step 1: Mood Check-in
-  const renderMoodStep = () => (
+  // Step 1: Your Inner Compass
+  const renderInnerCompassStep = () => (
     <div className="space-y-6">
-      <div className="text-center space-y-4">
-        <h1 className="text-2xl font-semibold text-foreground">
-          How are you feeling right now?
+      <div className="text-center space-y-2">
+        <h1 className="text-xl font-semibold text-foreground">
+          Your Inner Compass 🧭
         </h1>
-        <p className="text-muted-foreground">
-          Choose the emotion that resonates with you most
+        <p className="text-sm text-muted-foreground">
+          Let's ground you in your present emotional state and core values
         </p>
       </div>
       
-      <div className="grid grid-cols-5 gap-3">
-        {[
-          { emoji: '😊', label: 'Happy', value: 'happy' },
-          { emoji: '😟', label: 'Stressed', value: 'stressed' },
-          { emoji: '😐', label: 'Neutral', value: 'neutral' },
-          { emoji: '😤', label: 'Frustrated', value: 'frustrated' },
-          { emoji: '😢', label: 'Sad', value: 'sad' }
-        ].map((mood) => (
-          <button
-            key={mood.value}
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              updateStoryInputs('mood', mood.value);
-            }}
-            className={`p-4 rounded-lg border-2 transition-all duration-200 hover:scale-105 ${
-              storyInputs.mood === mood.value
-                ? 'border-primary bg-primary/10 shadow-lg'
-                : 'border-border bg-card hover:border-primary/50'
-            }`}
-          >
-            <div className="text-3xl mb-2">{mood.emoji}</div>
-            <div className="text-sm font-medium text-foreground">{mood.label}</div>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-
-  // Step 2: Anime Genre Selection
-  const renderAnimeGenreStep = () => (
-    <div className="space-y-6">
-      <div className="text-center space-y-4">
-        <h1 className="text-2xl font-semibold text-foreground">
-          What anime genre calls to you?
-        </h1>
-        <p className="text-muted-foreground">
-          Choose the style that resonates with your story
-        </p>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        {[
-          { icon: Feather, label: 'Slice of Life', value: 'slice-of-life', description: 'Everyday moments, personal growth' },
-          { icon: Sword, label: 'Shōnen', value: 'shonen', description: 'Action, friendship, determination' },
-          { icon: Mountain, label: 'Isekai', value: 'isekai', description: 'New worlds, adventure, discovery' },
-          { icon: Star, label: 'Fantasy', value: 'fantasy', description: 'Magic, wonder, epic journeys' }
-        ].map((genre) => (
-          <button
-            key={genre.value}
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              updateStoryInputs('animeGenre', genre.value);
-            }}
-            className={`p-6 rounded-lg border-2 transition-all duration-200 hover:scale-105 ${
-              storyInputs.animeGenre === genre.value
-                ? 'border-primary bg-primary/10 shadow-lg'
-                : 'border-border bg-card hover:border-primary/50'
-            }`}
-          >
-            <genre.icon className="w-8 h-8 mx-auto mb-3 text-foreground" />
-            <div className="text-sm font-medium text-foreground mb-1">{genre.label}</div>
-            <div className="text-xs text-muted-foreground">{genre.description}</div>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-
-  // Step 3: Archetype Selection
-  const renderArchetypeStep = () => (
-    <div className="space-y-6">
-      <div className="text-center space-y-4">
-        <h1 className="text-2xl font-semibold text-foreground">
-          Every story needs a hero...
-        </h1>
-        <p className="text-muted-foreground">
-          Let's discover who you are in this journey
-        </p>
-      </div>
-
-      <div className="space-y-4">
-        <h2 className="text-lg font-medium text-foreground text-center">
-          Who do you connect with more?
+      {/* Mood Section */}
+      <div className="space-y-3">
+        <h2 className="text-base font-medium text-foreground text-center">
+          How are you feeling right now?
         </h2>
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-5 gap-2">
           {[
-            { emoji: '🧙', label: 'Mentor', value: 'mentor', description: 'Wise guide' },
-            { emoji: '🦸', label: 'Hero', value: 'hero', description: 'Brave leader' },
-            { emoji: '🐉', label: 'Companion', value: 'companion', description: 'Loyal friend' },
-            { emoji: '🎭', label: 'Comedian', value: 'comedian', description: 'Brings joy' }
-          ].map((archetype) => (
+            { emoji: '😊', label: 'Happy', value: 'happy' },
+            { emoji: '😟', label: 'Stressed', value: 'stressed' },
+            { emoji: '😐', label: 'Neutral', value: 'neutral' },
+            { emoji: '😤', label: 'Frustrated', value: 'frustrated' },
+            { emoji: '😢', label: 'Sad', value: 'sad' }
+          ].map((mood) => (
             <button
-              key={archetype.value}
+              key={mood.value}
               type="button"
               onClick={(e) => {
                 e.preventDefault();
-                updateStoryInputs('archetype', archetype.value);
+                updateStoryInputs('mood', mood.value);
               }}
-              className={`p-4 rounded-lg border-2 transition-all duration-200 hover:scale-105 ${
-                storyInputs.archetype === archetype.value
+              className={`p-3 rounded-lg border-2 transition-all duration-200 hover:scale-105 ${
+                storyInputs.mood === mood.value
                   ? 'border-primary bg-primary/10 shadow-lg'
                   : 'border-border bg-card hover:border-primary/50'
               }`}
             >
-              <div className="text-2xl mb-2">{archetype.emoji}</div>
-              <div className="text-xs font-medium text-foreground mb-1">{archetype.label}</div>
-              <div className="text-xs text-muted-foreground">{archetype.description}</div>
+              <div className="text-2xl mb-1">{mood.emoji}</div>
+              <div className="text-xs font-medium text-foreground">{mood.label}</div>
             </button>
           ))}
         </div>
       </div>
-    </div>
-  );
 
-  // Step 4: Support System (Your Nakama)
-  const renderSupportSystemStep = () => (
-    <div className="space-y-6">
-      <div className="text-center space-y-4">
-        <h1 className="text-2xl font-semibold text-foreground">
-          Your Nakama 🏘️
-        </h1>
-        <p className="text-muted-foreground">
-          Every hero needs allies on their journey
-        </p>
-      </div>
-
-      <div className="space-y-4">
-        <h2 className="text-lg font-medium text-foreground text-center">
-          Who stands by your side?
-        </h2>
-        <div className="grid grid-cols-1 gap-3">
-          {[
-            { emoji: '👨‍🏫', label: 'A Wise Mentor', value: 'mentor', description: 'Someone who guides and teaches you' },
-            { emoji: '👯‍♂️', label: 'A Loyal Friend', value: 'friend', description: 'Your ride-or-die companion' },
-            { emoji: '🏆', label: 'A Friendly Rival', value: 'rival', description: 'Someone who pushes you to be better' },
-            { emoji: '👨‍👩‍👧‍👦', label: 'My Inner Circle', value: 'inner-circle', description: 'A group of trusted people' },
-            { emoji: '📖', label: 'My Journal/Self', value: 'self-reflection', description: 'Your own wisdom and reflection' }
-          ].map((support) => (
-            <button
-              key={support.value}
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                updateStoryInputs('supportSystem', support.value);
-              }}
-              className={`p-4 rounded-lg border-2 transition-all duration-200 hover:scale-105 ${
-                storyInputs.supportSystem === support.value
-                  ? 'border-primary bg-primary/10 shadow-lg'
-                  : 'border-border bg-card hover:border-primary/50'
-              }`}
-            >
-              <div className="flex items-center space-x-3">
-                <div className="text-2xl">{support.emoji}</div>
-                <div className="text-left">
-                  <div className="text-sm font-medium text-foreground">{support.label}</div>
-                  <div className="text-xs text-muted-foreground">{support.description}</div>
-                </div>
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-
-  // Step 5: Core Values (Your Ninja Way)
-  const renderCoreValuesStep = () => (
-    <div className="space-y-6">
-      <div className="text-center space-y-4">
-        <h1 className="text-2xl font-semibold text-foreground">
-          Your Ninja Way 🥷
-        </h1>
-        <p className="text-muted-foreground">
+      {/* Core Value Section */}
+      <div className="space-y-3">
+        <h2 className="text-base font-medium text-foreground text-center">
           What principle guides your path?
-        </p>
-      </div>
-
-      <div className="space-y-4">
-        <h2 className="text-lg font-medium text-foreground text-center">
-          Choose your guiding principle
         </h2>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2">
           {[
             { emoji: '💝', label: 'Kindness', value: 'kindness', description: 'Compassion for others' },
             { emoji: '🕊️', label: 'Freedom', value: 'freedom', description: 'Personal liberty' },
@@ -280,14 +131,14 @@ const OnboardingScreen = ({ onCreateStory }: OnboardingScreenProps) => {
                 e.preventDefault();
                 updateStoryInputs('coreValue', value.value);
               }}
-              className={`p-4 rounded-lg border-2 transition-all duration-200 hover:scale-105 ${
+              className={`p-3 rounded-lg border-2 transition-all duration-200 hover:scale-105 ${
                 storyInputs.coreValue === value.value
                   ? 'border-primary bg-primary/10 shadow-lg'
                   : 'border-border bg-card hover:border-primary/50'
               }`}
             >
-              <div className="text-2xl mb-2">{value.emoji}</div>
-              <div className="text-sm font-medium text-foreground mb-1">{value.label}</div>
+              <div className="text-xl mb-1">{value.emoji}</div>
+              <div className="text-xs font-medium text-foreground mb-1">{value.label}</div>
               <div className="text-xs text-muted-foreground">{value.description}</div>
             </button>
           ))}
@@ -296,83 +147,169 @@ const OnboardingScreen = ({ onCreateStory }: OnboardingScreenProps) => {
     </div>
   );
 
-  // Step 6: Past Resilience (Your Origin Story)
-  const renderPastResilienceStep = () => (
+  // Step 2: Your Source of Strength
+  const renderSourceOfStrengthStep = () => (
     <div className="space-y-6">
-      <div className="text-center space-y-4">
-        <h1 className="text-2xl font-semibold text-foreground">
-          Your Origin Story 📖
+      <div className="text-center space-y-2">
+        <h1 className="text-xl font-semibold text-foreground">
+          Your Source of Strength 💪
         </h1>
-        <p className="text-muted-foreground">
-          Every hero has overcome challenges before
+        <p className="text-sm text-muted-foreground">
+          Let's recognize your resilience and support systems
         </p>
       </div>
 
-      <div className="space-y-4">
-        <h2 className="text-lg font-medium text-foreground text-center">
+      {/* Support System Section */}
+      <div className="space-y-3">
+        <h2 className="text-base font-medium text-foreground text-center">
+          Who stands by your side?
+        </h2>
+        <div className="grid grid-cols-1 gap-2">
+          {[
+            { emoji: '👨‍🏫', label: 'A Wise Mentor', value: 'mentor', description: 'Someone who guides and teaches you' },
+            { emoji: '👯‍♂️', label: 'A Loyal Friend', value: 'friend', description: 'Your ride-or-die companion' },
+            { emoji: '🏆', label: 'A Friendly Rival', value: 'rival', description: 'Someone who pushes you to be better' },
+            { emoji: '👨‍👩‍👧‍👦', label: 'My Inner Circle', value: 'inner-circle', description: 'A group of trusted people' },
+            { emoji: '📖', label: 'My Journal/Self', value: 'self-reflection', description: 'Your own wisdom and reflection' }
+          ].map((support) => (
+            <button
+              key={support.value}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                updateStoryInputs('supportSystem', support.value);
+              }}
+              className={`p-3 rounded-lg border-2 transition-all duration-200 hover:scale-105 ${
+                storyInputs.supportSystem === support.value
+                  ? 'border-primary bg-primary/10 shadow-lg'
+                  : 'border-border bg-card hover:border-primary/50'
+              }`}
+            >
+              <div className="flex items-center space-x-3">
+                <div className="text-xl">{support.emoji}</div>
+                <div className="text-left">
+                  <div className="text-sm font-medium text-foreground">{support.label}</div>
+                  <div className="text-xs text-muted-foreground">{support.description}</div>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Past Resilience Section */}
+      <div className="space-y-3">
+        <h2 className="text-base font-medium text-foreground text-center">
           What's a challenge you've already conquered?
         </h2>
         <Textarea
           value={storyInputs.pastResilience}
           onChange={(e) => updateStoryInputs('pastResilience', e.target.value)}
           placeholder="e.g., I overcame my fear of public speaking by joining a debate club..."
-          className="bg-card border-border text-foreground placeholder:text-muted-foreground min-h-[120px] resize-none"
+          className="bg-card border-border text-foreground placeholder:text-muted-foreground min-h-[80px] resize-none"
         />
-        <p className="text-sm text-muted-foreground text-center">
+        <p className="text-xs text-muted-foreground text-center">
           This shows your inner strength and gives hope for future victories
         </p>
       </div>
     </div>
   );
 
-  // Step 7: Inner Demon (Your Curse)
-  const renderInnerDemonStep = () => (
+  // Step 3: The Challenge Ahead
+  const renderChallengeAheadStep = () => (
     <div className="space-y-6">
-      <div className="text-center space-y-4">
-        <h1 className="text-2xl font-semibold text-foreground">
-          Your Inner Demon 👹
+      <div className="text-center space-y-2">
+        <h1 className="text-xl font-semibold text-foreground">
+          The Challenge Ahead ⚔️
         </h1>
-        <p className="text-muted-foreground">
-          What curse do you battle with daily?
+        <p className="text-sm text-muted-foreground">
+          Let's identify your primary struggle and desired outcome
         </p>
       </div>
 
-      <div className="space-y-4">
-        <h2 className="text-lg font-medium text-foreground text-center">
-          Name your primary internal struggle
+      {/* Inner Demon Section */}
+      <div className="space-y-3">
+        <h2 className="text-base font-medium text-foreground text-center">
+          What is the main internal struggle you're facing?
         </h2>
         <Textarea
           value={storyInputs.innerDemon}
           onChange={(e) => updateStoryInputs('innerDemon', e.target.value)}
           placeholder="e.g., Self-doubt that whispers 'you're not good enough'..."
-          className="bg-card border-border text-foreground placeholder:text-muted-foreground min-h-[120px] resize-none"
+          className="bg-card border-border text-foreground placeholder:text-muted-foreground min-h-[80px] resize-none"
         />
-        <p className="text-sm text-muted-foreground text-center">
+        <p className="text-xs text-muted-foreground text-center">
           This becomes the villain in your story - the obstacle you must overcome
+        </p>
+      </div>
+
+      {/* Desired Outcome Section */}
+      <div className="space-y-3">
+        <h2 className="text-base font-medium text-foreground text-center">
+          What would overcoming this struggle look like for you?
+        </h2>
+        <Textarea
+          value={storyInputs.desiredOutcome}
+          onChange={(e) => updateStoryInputs('desiredOutcome', e.target.value)}
+          placeholder="e.g., Feeling confident in my abilities and pursuing my dreams without fear..."
+          className="bg-card border-border text-foreground placeholder:text-muted-foreground min-h-[80px] resize-none"
+        />
+        <p className="text-xs text-muted-foreground text-center">
+          This is your hero's ultimate goal - the victory you're working towards
         </p>
       </div>
     </div>
   );
 
-  // Step 8: Age & Gender
-  const renderAgeGenderStep = () => (
+  // Step 4: Your Hero's Identity
+  const renderHeroIdentityStep = () => (
     <div className="space-y-6">
-      <div className="text-center space-y-4">
-        <h1 className="text-2xl font-semibold text-foreground">
-          Final Details 📝
+      <div className="text-center space-y-2">
+        <h1 className="text-xl font-semibold text-foreground">
+          Your Hero's Identity 🦸
         </h1>
-        <p className="text-muted-foreground">
-          A few more details to personalize your hero's journey
+        <p className="text-sm text-muted-foreground">
+          Let's personalize your character and frame their inner strength as a superpower
         </p>
       </div>
-      
-      <div className="space-y-6">
+
+      {/* Hero Name and Superpower */}
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="nickname" className="text-sm text-foreground">
+            What is your hero's name?
+          </Label>
+          <Input
+            id="nickname"
+            value={storyInputs.nickname}
+            onChange={(e) => updateStoryInputs('nickname', e.target.value)}
+            placeholder="Enter your hero's name"
+            className="bg-card border-border text-foreground placeholder:text-muted-foreground"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="secretWeapon" className="text-sm text-foreground">
+            What is your secret superpower?
+          </Label>
+          <Input
+            id="secretWeapon"
+            value={storyInputs.secretWeapon}
+            onChange={(e) => updateStoryInputs('secretWeapon', e.target.value)}
+            placeholder="e.g., your kindness, your creativity, your perseverance"
+            className="bg-card border-border text-foreground placeholder:text-muted-foreground"
+          />
+        </div>
+      </div>
+
+      {/* Demographics */}
+      <div className="space-y-4">
         {/* Age Selection */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-medium text-foreground text-center">
+        <div className="space-y-3">
+          <h2 className="text-base font-medium text-foreground text-center">
             What's your age range?
           </h2>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-2">
             {[
               { label: '13-17', value: 'teen' },
               { label: '18-25', value: 'young-adult' },
@@ -388,24 +325,24 @@ const OnboardingScreen = ({ onCreateStory }: OnboardingScreenProps) => {
                   e.preventDefault();
                   updateStoryInputs('age', age.value);
                 }}
-                className={`p-4 rounded-lg border-2 transition-all duration-200 hover:scale-105 ${
+                className={`p-3 rounded-lg border-2 transition-all duration-200 hover:scale-105 ${
                   storyInputs.age === age.value
                     ? 'border-primary bg-primary/10 shadow-lg'
                     : 'border-border bg-card hover:border-primary/50'
                 }`}
               >
-                <div className="text-sm font-medium text-foreground">{age.label}</div>
+                <div className="text-xs font-medium text-foreground">{age.label}</div>
               </button>
             ))}
           </div>
         </div>
 
         {/* Gender Selection */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-medium text-foreground text-center">
+        <div className="space-y-3">
+          <h2 className="text-base font-medium text-foreground text-center">
             How do you identify?
           </h2>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             {[
               { label: 'Female', value: 'female' },
               { label: 'Male', value: 'male' },
@@ -419,13 +356,13 @@ const OnboardingScreen = ({ onCreateStory }: OnboardingScreenProps) => {
                   e.preventDefault();
                   updateStoryInputs('gender', gender.value);
                 }}
-                className={`p-4 rounded-lg border-2 transition-all duration-200 hover:scale-105 ${
+                className={`p-3 rounded-lg border-2 transition-all duration-200 hover:scale-105 ${
                   storyInputs.gender === gender.value
                     ? 'border-primary bg-primary/10 shadow-lg'
                     : 'border-border bg-card hover:border-primary/50'
                 }`}
               >
-                <div className="text-sm font-medium text-foreground">{gender.label}</div>
+                <div className="text-xs font-medium text-foreground">{gender.label}</div>
               </button>
             ))}
           </div>
@@ -434,92 +371,28 @@ const OnboardingScreen = ({ onCreateStory }: OnboardingScreenProps) => {
     </div>
   );
 
-  // Step 5: Final Details
-  const renderFinalStep = () => (
-    <div className="space-y-6">
-      <div className="text-center space-y-4">
-        <h1 className="text-2xl font-semibold text-foreground">
-          The Final Chapter ✨
-        </h1>
-        <p className="text-muted-foreground">
-          Name your hero and title your manga story
-        </p>
-      </div>
-      
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="nickname" className="text-foreground">
-            What should we call your character?
-          </Label>
-          <Input
-            id="nickname"
-            value={storyInputs.nickname}
-            onChange={(e) => updateStoryInputs('nickname', e.target.value)}
-            placeholder="Enter character name"
-            className="bg-card border-border text-foreground placeholder:text-muted-foreground"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="secretWeapon" className="text-foreground">
-            What is their secret weapon or source of strength?
-          </Label>
-          <Input
-            id="secretWeapon"
-            value={storyInputs.secretWeapon}
-            onChange={(e) => updateStoryInputs('secretWeapon', e.target.value)}
-            placeholder="e.g., Their creativity, kindness, or perseverance"
-            className="bg-card border-border text-foreground placeholder:text-muted-foreground"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="mangaTitle" className="text-foreground">
-            If this chapter of your life were a manga, what would the title be?
-          </Label>
-          <Input
-            id="mangaTitle"
-            value={storyInputs.mangaTitle}
-            onChange={(e) => updateStoryInputs('mangaTitle', e.target.value)}
-            placeholder="e.g., The Journey Within"
-            className="bg-card border-border text-foreground placeholder:text-muted-foreground"
-          />
-        </div>
-      </div>
-    </div>
-  );
 
   const renderCurrentStep = () => {
     switch (step) {
       case 1:
-        return renderMoodStep();
+        return renderInnerCompassStep();
       case 2:
-        return renderAnimeGenreStep();
+        return renderSourceOfStrengthStep();
       case 3:
-        return renderArchetypeStep();
+        return renderChallengeAheadStep();
       case 4:
-        return renderSupportSystemStep();
-      case 5:
-        return renderCoreValuesStep();
-      case 6:
-        return renderPastResilienceStep();
-      case 7:
-        return renderInnerDemonStep();
-      case 8:
-        return renderAgeGenderStep();
-      case 9:
-        return renderFinalStep();
+        return renderHeroIdentityStep();
       default:
-        return renderMoodStep();
+        return renderInnerCompassStep();
     }
   };
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-2xl">
-        <CardHeader className="text-center pb-6">
+        <CardHeader className="text-center pb-4">
           {/* Progress Bar */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">Step {step} of {totalSteps}</span>
               <span className="text-sm text-muted-foreground">
@@ -536,11 +409,11 @@ const OnboardingScreen = ({ onCreateStory }: OnboardingScreenProps) => {
         </CardHeader>
         
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {renderCurrentStep()}
             
             {/* Navigation Buttons */}
-            <div className="flex justify-between pt-6">
+            <div className="flex justify-between pt-4">
               <Button
                 type="button"
                 variant="outline"
@@ -554,7 +427,7 @@ const OnboardingScreen = ({ onCreateStory }: OnboardingScreenProps) => {
               {step === totalSteps ? (
                 <Button
                   type="submit"
-                  disabled={!isStep8Valid}
+                  disabled={!isStep4Valid}
                   className="bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Create My Story
@@ -564,14 +437,9 @@ const OnboardingScreen = ({ onCreateStory }: OnboardingScreenProps) => {
                   type="button"
                   onClick={nextStep}
                   disabled={
-                    (step === 1 && !storyInputs.mood) ||
-                    (step === 2 && !storyInputs.animeGenre) ||
-                    (step === 3 && !storyInputs.archetype) ||
-                    (step === 4 && !storyInputs.supportSystem) ||
-                    (step === 5 && !storyInputs.coreValue) ||
-                    (step === 6 && !storyInputs.pastResilience.trim()) ||
-                    (step === 7 && !storyInputs.innerDemon.trim()) ||
-                    (step === 8 && (!storyInputs.age || !storyInputs.gender))
+                    (step === 1 && (!storyInputs.mood || !storyInputs.coreValue)) ||
+                    (step === 2 && (!storyInputs.supportSystem || !storyInputs.pastResilience.trim())) ||
+                    (step === 3 && (!storyInputs.innerDemon.trim() || !storyInputs.desiredOutcome.trim()))
                   }
                   className="bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
