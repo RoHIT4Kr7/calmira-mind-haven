@@ -1,20 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const AutoScrollingMood: React.FC = () => {
   const moods = [
-    'Happy',
-    'Depressed',
-    'Feeling not well',
-    'Anxious',
-    'Excited',
-    'Overwhelmed',
-    'Peaceful',
-    'Confused',
-    'Hopeful',
-    'Tired',
-    'Grateful',
-    'Frustrated'
+    "It's okay to take a deep breath and slow down.",
+    "Your feelings are valid, no matter how small they seem.",
+    "Healing takes time—be gentle with yourself.",
+    "Every step forward counts, even the tiny ones.",
+    "You are stronger than you think you are.",
+    "Asking for help is a sign of courage, not weakness.",
+    "Peace of mind begins with self-kindness.",
+    "It's okay to not be okay—you're not alone.",
+    "Hope is the quiet voice that says 'try again tomorrow.'",
+    "Gratitude can turn little things into enough.",
+    "Rest is not a waste of time, it’s part of recovery.",
+    "You deserve love, care, and happiness."
   ];
 
   const [currentMoodIndex, setCurrentMoodIndex] = useState(0);
@@ -22,24 +22,24 @@ const AutoScrollingMood: React.FC = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentMoodIndex((prevIndex) => (prevIndex + 1) % moods.length);
-    }, 2000); // Change every 2 seconds
+    }, 3000); // Change every 3 seconds for better readability
 
     return () => clearInterval(interval);
   }, [moods.length]);
 
   return (
-    <div className="h-12 flex items-center justify-center overflow-hidden">
+    <div className="h-14 flex overflow-hidden items-center">
       <AnimatePresence mode="wait">
         <motion.div
           key={currentMoodIndex}
-          initial={{ y: 30, opacity: 0 }}
+          initial={{ y: 40, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          exit={{ y: -30, opacity: 0 }}
-          transition={{ 
-            duration: 0.6,
+          exit={{ y: -40, opacity: 0 }}
+          transition={{
+            duration: 0.7,
             ease: [0.25, 0.1, 0.25, 1]
           }}
-          className="text-2xl md:text-3xl inter-light text-muted-foreground"
+          className="text-xl md:text-2xl font-bold italic text-indigo-700"
         >
           {moods[currentMoodIndex]}
         </motion.div>
