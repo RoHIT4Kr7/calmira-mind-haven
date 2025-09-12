@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import LightServiceNavigation from "@/components/navigation/LightServiceNavigation";
@@ -17,18 +16,8 @@ interface VoiceOption {
 
 const VoiceService: React.FC = () => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const navigate = useNavigate();
 
   const voiceOptions: VoiceOption[] = [
-    {
-      id: "friend",
-      title: "Talk to Friend",
-      description:
-        "Chat with a supportive AI friend who listens and understands",
-      icon: "👥",
-      personality: "Friendly, casual, supportive, and understanding",
-      gradient: "from-blue-500/20 to-cyan-500/20",
-    },
     {
       id: "therapist",
       title: "Talk to Therapist",
@@ -38,15 +27,6 @@ const VoiceService: React.FC = () => {
       personality:
         "Professional, empathetic, trained in therapeutic techniques",
       gradient: "from-green-500/20 to-teal-500/20",
-    },
-    {
-      id: "teacher",
-      title: "Talk to Teacher",
-      description:
-        "Educational AI that helps you learn and grow intellectually",
-      icon: "🎓",
-      personality: "Knowledgeable, patient, encouraging, and educational",
-      gradient: "from-purple-500/20 to-indigo-500/20",
     },
   ];
 
@@ -59,42 +39,19 @@ const VoiceService: React.FC = () => {
   };
 
   const getContactInfo = (optionId: string) => {
-    const option = voiceOptions.find((opt) => opt.id === optionId);
-    switch (optionId) {
-      case "friend":
-        return {
-          name: "Alex - Your AI Friend",
-          avatar: "/images/friend-avatar.png",
-          status: "Ready to chat and listen",
-        };
-      case "therapist":
-        return {
-          name: "Dr. Sarah - AI Therapist",
-          avatar: "/images/therapist-avatar.png",
-          status: "Professional support available",
-        };
-      case "teacher":
-        return {
-          name: "Prof. Morgan - AI Educator",
-          avatar: "/images/teacher-avatar.png",
-          status: "Ready to help you learn",
-        };
-      default:
-        return {
-          name: "AI Assistant",
-          avatar: "/images/default-avatar.png",
-          status: "Online",
-        };
-    }
+    return {
+      name: "Dr. Sarah - AI Therapist",
+      avatar: "/images/therapist-avatar.png",
+      status: "Professional support available",
+    };
   };
 
   if (selectedOption) {
     const contactInfo = getContactInfo(selectedOption);
-    const option = voiceOptions.find((opt) => opt.id === selectedOption);
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background-soft to-background flex">
-        <LightServiceNavigation currentPage="Voice" />
+        <LightServiceNavigation />
 
         <div className="flex-1 ml-0 lg:ml-64">
           <motion.div
@@ -139,7 +96,7 @@ const VoiceService: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background-soft to-background flex">
-      <LightServiceNavigation currentPage="Voice" />
+      <LightServiceNavigation />
 
       <main className="flex-1 ml-0 lg:ml-64 px-4 py-8">
         <div className="max-w-6xl mx-auto py-8">
@@ -150,7 +107,7 @@ const VoiceService: React.FC = () => {
             transition={{ duration: 0.6 }}
             className="text-center mb-12"
           >
-            <h1 className="text-5xl md:text-6xl lg:text-7xl poppins-bold text-foreground mb-6 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+            <h1 className="text-5xl md:text-6xl lg:text-7xl poppins-bold mb-6 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
               Voice Chat Service
             </h1>
             <p className="text-muted-foreground text-xl md:text-2xl max-w-4xl mx-auto inter-regular leading-relaxed">
