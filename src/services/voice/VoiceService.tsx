@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import LightServiceNavigation from '@/components/navigation/LightServiceNavigation';
-import VoiceInterface from '@/components/voice/VoiceInterface';
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import LightServiceNavigation from "@/components/navigation/LightServiceNavigation";
+import VoiceInterface from "@/components/voice/VoiceInterface";
 
 interface VoiceOption {
   id: string;
@@ -21,29 +21,33 @@ const VoiceService: React.FC = () => {
 
   const voiceOptions: VoiceOption[] = [
     {
-      id: 'friend',
-      title: 'Talk to Friend',
-      description: 'Chat with a supportive AI friend who listens and understands',
-      icon: '👥',
-      personality: 'Friendly, casual, supportive, and understanding',
-      gradient: 'from-blue-500/20 to-cyan-500/20'
+      id: "friend",
+      title: "Talk to Friend",
+      description:
+        "Chat with a supportive AI friend who listens and understands",
+      icon: "👥",
+      personality: "Friendly, casual, supportive, and understanding",
+      gradient: "from-blue-500/20 to-cyan-500/20",
     },
     {
-      id: 'therapist',
-      title: 'Talk to Therapist',
-      description: 'Professional AI therapist for mental health support and guidance',
-      icon: '🧠',
-      personality: 'Professional, empathetic, trained in therapeutic techniques',
-      gradient: 'from-green-500/20 to-teal-500/20'
+      id: "therapist",
+      title: "Talk to Therapist",
+      description:
+        "Professional AI therapist for mental health support and guidance",
+      icon: "🧠",
+      personality:
+        "Professional, empathetic, trained in therapeutic techniques",
+      gradient: "from-green-500/20 to-teal-500/20",
     },
     {
-      id: 'teacher',
-      title: 'Talk to Teacher',
-      description: 'Educational AI that helps you learn and grow intellectually',
-      icon: '🎓',
-      personality: 'Knowledgeable, patient, encouraging, and educational',
-      gradient: 'from-purple-500/20 to-indigo-500/20'
-    }
+      id: "teacher",
+      title: "Talk to Teacher",
+      description:
+        "Educational AI that helps you learn and grow intellectually",
+      icon: "🎓",
+      personality: "Knowledgeable, patient, encouraging, and educational",
+      gradient: "from-purple-500/20 to-indigo-500/20",
+    },
   ];
 
   const handleSelectOption = (optionId: string) => {
@@ -55,43 +59,43 @@ const VoiceService: React.FC = () => {
   };
 
   const getContactInfo = (optionId: string) => {
-    const option = voiceOptions.find(opt => opt.id === optionId);
+    const option = voiceOptions.find((opt) => opt.id === optionId);
     switch (optionId) {
-      case 'friend':
+      case "friend":
         return {
-          name: 'Alex - Your AI Friend',
-          avatar: '/images/friend-avatar.png',
-          status: 'Ready to chat and listen'
+          name: "Alex - Your AI Friend",
+          avatar: "/images/friend-avatar.png",
+          status: "Ready to chat and listen",
         };
-      case 'therapist':
+      case "therapist":
         return {
-          name: 'Dr. Sarah - AI Therapist',
-          avatar: '/images/therapist-avatar.png',
-          status: 'Professional support available'
+          name: "Dr. Sarah - AI Therapist",
+          avatar: "/images/therapist-avatar.png",
+          status: "Professional support available",
         };
-      case 'teacher':
+      case "teacher":
         return {
-          name: 'Prof. Morgan - AI Educator',
-          avatar: '/images/teacher-avatar.png',
-          status: 'Ready to help you learn'
+          name: "Prof. Morgan - AI Educator",
+          avatar: "/images/teacher-avatar.png",
+          status: "Ready to help you learn",
         };
       default:
         return {
-          name: 'AI Assistant',
-          avatar: '/images/default-avatar.png',
-          status: 'Online'
+          name: "AI Assistant",
+          avatar: "/images/default-avatar.png",
+          status: "Online",
         };
     }
   };
 
   if (selectedOption) {
     const contactInfo = getContactInfo(selectedOption);
-    const option = voiceOptions.find(opt => opt.id === selectedOption);
-    
+    const option = voiceOptions.find((opt) => opt.id === selectedOption);
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background-soft to-background flex">
         <LightServiceNavigation currentPage="Voice" />
-        
+
         <div className="flex-1 ml-0 lg:ml-64">
           <motion.div
             initial={{ opacity: 0, x: 100 }}
@@ -114,7 +118,7 @@ const VoiceService: React.FC = () => {
             {/* Voice Interface */}
             <div className="flex-1">
               <VoiceInterface
-                contactName={contactInfo.name.split(' - ')[0]}
+                contactName={contactInfo.name.split(" - ")[0]}
                 contactDescription={contactInfo.status}
                 onVoiceStart={() => {
                   console.log(`Voice session started with ${selectedOption}`);
@@ -136,7 +140,7 @@ const VoiceService: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background-soft to-background flex">
       <LightServiceNavigation currentPage="Voice" />
-      
+
       <main className="flex-1 ml-0 lg:ml-64 px-4 py-8">
         <div className="max-w-6xl mx-auto py-8">
           {/* Header */}
@@ -150,7 +154,8 @@ const VoiceService: React.FC = () => {
               Voice Chat Service
             </h1>
             <p className="text-muted-foreground text-xl md:text-2xl max-w-4xl mx-auto inter-regular leading-relaxed">
-              Choose who you'd like to talk with. Each AI companion has been trained with different personalities and expertise to support you.
+              Choose who you'd like to talk with. Each AI companion has been
+              trained with different personalities and expertise to support you.
             </p>
           </motion.div>
 
@@ -169,19 +174,24 @@ const VoiceService: React.FC = () => {
                   <CardContent className="p-8 h-full flex flex-col">
                     <div className="flex items-center space-x-4 mb-6">
                       <div className="text-6xl">{option.icon}</div>
-                      <h3 className="text-2xl poppins-semibold text-foreground">{option.title}</h3>
+                      <h3 className="text-2xl poppins-semibold text-foreground">
+                        {option.title}
+                      </h3>
                     </div>
-                    
+
                     <p className="text-muted-foreground mb-6 flex-grow text-lg inter-regular leading-relaxed">
                       {option.description}
                     </p>
-                    
+
                     <div className="mb-8 p-4 bg-background/50 rounded-xl border border-border/30">
                       <p className="text-base text-muted-foreground inter-regular">
-                        <strong className="text-foreground inter-medium">Personality:</strong> {option.personality}
+                        <strong className="text-foreground inter-medium">
+                          Personality:
+                        </strong>{" "}
+                        {option.personality}
                       </p>
                     </div>
-                    
+
                     <Button
                       onClick={() => handleSelectOption(option.id)}
                       className="w-full bg-gradient-to-r from-primary to-primary-medium hover:from-primary-medium hover:to-primary text-primary-foreground inter-medium font-semibold py-4 text-lg rounded-2xl transition-all duration-300 shadow-md hover:shadow-lg"
@@ -207,15 +217,21 @@ const VoiceService: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
               <div className="space-y-4">
                 <div className="text-4xl">🎙️</div>
-                <p className="text-base inter-regular text-muted-foreground">Real-time voice conversations</p>
+                <p className="text-base inter-regular text-muted-foreground">
+                  Real-time voice conversations
+                </p>
               </div>
               <div className="space-y-4">
                 <div className="text-4xl">🧠</div>
-                <p className="text-base inter-regular text-muted-foreground">AI trained for emotional support</p>
+                <p className="text-base inter-regular text-muted-foreground">
+                  AI trained for emotional support
+                </p>
               </div>
               <div className="space-y-4">
                 <div className="text-4xl">🔒</div>
-                <p className="text-base inter-regular text-muted-foreground">Private and secure conversations</p>
+                <p className="text-base inter-regular text-muted-foreground">
+                  Private and secure conversations
+                </p>
               </div>
             </div>
           </motion.div>

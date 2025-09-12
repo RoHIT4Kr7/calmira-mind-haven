@@ -1,13 +1,98 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { io, Socket } from 'socket.io-client';
-import LightServiceNavigation from '@/components/navigation/LightServiceNavigation';
-import OnboardingScreen from '@/components/OnboardingScreen';
-import LoadingScreen from '@/components/LoadingScreen';
-import MangaViewer from './MangaViewer';
+/**
+ * MangaService.tsx - Enhanced Manga Generation Service
+ *
+ * Features:
+ * - Multiple AI pipeline support (Nano-Banana, Gemini, Unified, Optimized, Streaming)
+ * - Real-time progress tracking with Socket.IO
+ * - Development pipeline selector for testing
+ * - Automatic pipeline-specific handling (streaming vs direct response)
+ *
+ * Default Pipeline: Nano-Banana Workflow (~1 min generation)
+ * Available Pipelines:
+ * - nano-banana: LangGraph + Gemini 2.5 Flash + Chirp 3 HD (fastest)
+ * - gemini: Pure Gemini 2.5 Flash Image Preview
+ * - unified: Hybrid Google AI Studio + Vertex AI (production)
+ * - optimized: Enhanced Imagen 4.0 with consistency
+ * - streaming: Original real-time pipeline
+ */
+import React, { useState, useEffect, useRef } from "react";
+import { io, Socket } from "socket.io-client";
+import LightServiceNavigation from "@/components/navigation/LightServiceNavigation";
+import OnboardingScreen from "@/components/OnboardingScreen";
+import LoadingScreen from "@/components/LoadingScreen";
+import MangaViewer from "@/components/manga-viewer/MangaViewer";
 
 // Backend API configuration
 const API_BASE_URL = "http://localhost:8000/api/v1";
+
+// Pipeline options for manga generation
+interface PipelineOption {
+  id: string;
+  name: string;
+  endpoint: string;
+  description: string;
+  features: string[];
+  estimatedTime: string;
+}
+
+const PIPELINE_OPTIONS: PipelineOption[] = [
+  {
+    id: "nano-banana",
+    name: "Nano-Banana Workflow",
+    endpoint: "/generate-manga-nano-banana",
+    description: "LangGraph workflow with Gemini 2.5 Flash + Chirp 3 HD",
+    features: [
+      "Reference image bootstrapping",
+      "Parallel generation",
+      "500 RPM rate limit",
+    ],
+    estimatedTime: "~1 minute",
+  },
+  {
+    id: "gemini",
+    name: "Gemini Pipeline",
+    endpoint: "/generate-manga-gemini",
+    description: "Pure Gemini 2.5 Flash Image Preview pipeline",
+    features: ["Character consistency", "Fast generation", "High rate limits"],
+    estimatedTime: "~1 minute",
+  },
+  {
+    id: "unified",
+    name: "Unified Hybrid",
+    endpoint: "/generate-manga-unified",
+    description: "Best of both platforms - Google AI Studio + Vertex AI",
+    features: [
+      "Production ready",
+      "Hybrid authentication",
+      "Optimized performance",
+    ],
+    estimatedTime: "~1 minute",
+  },
+  {
+    id: "optimized",
+    name: "Optimized Imagen 4.0",
+    endpoint: "/generate-manga-optimized",
+    description: "Enhanced Imagen 4.0 with reference consistency",
+    features: [
+      "Reference prompts",
+      "Parallel processing",
+      "Character coherence",
+    ],
+    estimatedTime: "~2 minutes",
+  },
+  {
+    id: "streaming",
+    name: "Original Streaming",
+    endpoint: "/generate-manga-streaming",
+    description: "Original pipeline with real-time progress updates",
+    features: [
+      "Real-time updates",
+      "Socket.IO streaming",
+      "Progressive loading",
+    ],
+    estimatedTime: "~3 minutes",
+  },
+];
 
 // Story data interface
 interface StoryPanel {
@@ -25,99 +110,205 @@ interface StoryData {
 }
 
 const MangaService: React.FC = () => {
-  const [appState, setAppState] = useState<'onboarding' | 'loading' | 'viewing'>('onboarding');
+  const [appState, setAppState] = useState<
+    "onboarding" | "loading" | "viewing"
+  >("onboarding");
   const [story, setStory] = useState<StoryPanel[] | null>(null);
   const [storyId, setStoryId] = useState<string | null>(null);
   const [loadingProgress, setLoadingProgress] = useState<string>("");
+  const [selectedPipeline, setSelectedPipeline] = useState<PipelineOption>(
+    PIPELINE_OPTIONS[0]
+  ); // Default to nano-banana
   const socketRef = useRef<Socket | null>(null);
 
   // Initialize Socket.IO connection
   useEffect(() => {
     if (!socketRef.current) {
-      console.log('🔌 Initializing Socket.IO connection...');
-      socketRef.current = io('http://localhost:8000', {
-        transports: ['polling', 'websocket'],
+      console.log("🔌 Initializing Socket.IO connection...");
+      socketRef.current = io("http://localhost:8000", {
+        transports: ["polling", "websocket"],
         reconnectionAttempts: 10,
         reconnectionDelay: 500,
       });
 
-      socketRef.current.on('connect', () => {
-        console.log('✅ Connected to backend Socket.IO');
+      socketRef.current.on("connect", () => {
+        console.log("✅ Connected to backend Socket.IO");
       });
 
       socketRef.current.onAny((eventName, ...args) => {
         console.log(`🔔 Socket event received: ${eventName}`, args);
       });
 
-      socketRef.current.on('joined_generation', (data: any) => {
-        console.log('✅ Successfully joined story generation room:', data);
+      socketRef.current.on("joined_generation", (data: any) => {
+        console.log("✅ Successfully joined story generation room:", data);
       });
 
-      socketRef.current.on('disconnect', () => {
-        console.log('Disconnected from backend Socket.IO');
+      socketRef.current.on("disconnect", () => {
+        console.log("Disconnected from backend Socket.IO");
       });
 
-      // Listen for story generation progress
-      socketRef.current.on('generation_progress', (data: any) => {
-        console.log('🚨 Generation progress received:', data);
+      // Listen for story generation progress with enhanced panel handling
+      socketRef.current.on("generation_progress", (data: any) => {
+        console.log("🚨 Generation progress received:", data);
 
         if (data?.data?.story_id && socketRef.current && !storyId) {
           console.log(`🔗 Auto-joining story room: ${data.data.story_id}`);
-          socketRef.current.emit('join_story_generation', { story_id: data.data.story_id });
+          socketRef.current.emit("join_story_generation", {
+            story_id: data.data.story_id,
+          });
           setStoryId(data.data.story_id);
         }
 
-        if (data.event_type === 'story_generation_complete') {
+        if (data.event_type === "story_generation_complete") {
+          console.log("🎬 Story generation complete received:", data);
           if (data.data && data.data.story) {
             const storyData = data.data.story;
             setStoryId(storyData.story_id);
 
-            const panels: StoryPanel[] = storyData.panels.map((panel: any) => ({
-              id: panel.id || panel.panel_number?.toString() || (Math.random() * 1000).toString(),
-              imageUrl: panel.imageUrl || panel.image_url || '',
-              narrationUrl: panel.narrationUrl || panel.tts_url || '',
-              backgroundMusicUrl: panel.backgroundMusicUrl || panel.music_url || '/src/assets/audio/background-music.mp3'
-            }));
+            const panels: StoryPanel[] = storyData.panels.map(
+              (panel: any, index: number) => ({
+                id: panel.id || (index + 1).toString(),
+                imageUrl: panel.imageUrl || panel.image_url || "",
+                narrationUrl:
+                  panel.narrationUrl ||
+                  panel.narration_url ||
+                  panel.tts_url ||
+                  "",
+                backgroundMusicUrl:
+                  panel.backgroundMusicUrl ||
+                  panel.music_url ||
+                  panel.background_music_url ||
+                  "/src/assets/audio/background-music.mp3",
+              })
+            );
 
+            console.log("🎬 Processed panels for viewing:", panels);
             setStory(panels);
-            setAppState('viewing');
+            setAppState("viewing");
           }
-        } else if (data.event_type === 'story_generation_error') {
-          console.error('Story generation failed:', data.data?.error);
+        } else if (data.event_type === "story_generation_error") {
+          console.error("Story generation failed:", data.data?.error);
           setLoadingProgress("Story generation failed. Please try again.");
-        } else if (data.event_type === 'panel_processing_complete') {
-          console.log('🎯 PANEL COMPLETED:', data);
-          const panelNumber = data.data?.panel_number || 'X';
-          setLoadingProgress(`Panel ${panelNumber} completed! Assets generated.`);
-          
+        } else if (data.event_type === "panel_processing_complete") {
+          console.log("🎯 PANEL COMPLETED:", data);
+          const panelNumber = data.data?.panel_number || "X";
+          setLoadingProgress(
+            `Panel ${panelNumber} completed! Assets generated.`
+          );
+
+          // Handle first panel - start slideshow immediately
           if (panelNumber === 1 && data.data?.panel_data) {
             const firstPanel = data.data.panel_data;
-            
+
+            // Validate required assets before starting slideshow
             if (!firstPanel.image_url || !firstPanel.tts_url) {
-              console.warn('Panel 1 missing required assets:', firstPanel);
+              console.warn("Panel 1 missing required assets:", firstPanel);
               return;
             }
-            
+
             const initialPanel: StoryPanel = {
-              id: '1',
+              id: "1",
               imageUrl: firstPanel.image_url,
               narrationUrl: firstPanel.tts_url,
-              backgroundMusicUrl: firstPanel.music_url || '/src/assets/audio/background-music.mp3'
+              backgroundMusicUrl:
+                firstPanel.music_url ||
+                "/src/assets/audio/background-music.mp3",
             };
-            
+
+            console.log(
+              "🎬 Starting slideshow with first panel!",
+              initialPanel
+            );
             setStory([initialPanel]);
             setStoryId(data.story_id || data.data.story_id);
-            setAppState('viewing');
+            setAppState("viewing");
+          }
+
+          // Handle subsequent panels - update existing story dynamically
+          else if (panelNumber > 1 && data.data?.panel_data) {
+            const newPanelData = data.data.panel_data;
+
+            if (newPanelData.image_url && newPanelData.tts_url) {
+              const newPanel: StoryPanel = {
+                id: panelNumber.toString(),
+                imageUrl: newPanelData.image_url,
+                narrationUrl: newPanelData.tts_url,
+                backgroundMusicUrl:
+                  newPanelData.music_url ||
+                  "/src/assets/audio/background-music.mp3",
+              };
+
+              console.log(`📱 Adding panel ${panelNumber} to existing story`);
+              setStory((prevStory) => {
+                if (!prevStory) return [newPanel];
+
+                // Add new panel if it doesn't exist, or update if it does
+                const existingIndex = prevStory.findIndex(
+                  (p) => p.id === panelNumber.toString()
+                );
+                if (existingIndex >= 0) {
+                  const updatedStory = [...prevStory];
+                  updatedStory[existingIndex] = newPanel;
+                  return updatedStory.sort(
+                    (a, b) => parseInt(a.id) - parseInt(b.id)
+                  );
+                } else {
+                  return [...prevStory, newPanel].sort(
+                    (a, b) => parseInt(a.id) - parseInt(b.id)
+                  );
+                }
+              });
+            }
           }
         } else {
           setLoadingProgress(getProgressMessage(data.event_type, data.data));
         }
       });
 
-      // Listen for panel updates
-      socketRef.current.on('panel_processing_complete', (data: any) => {
-        console.log('Panel completed:', data);
-        const panelNumber = data.data?.panel_number || 'X';
+      // Listen for panel updates and dynamic story building
+      socketRef.current.on("panel_update", (data: any) => {
+        console.log("🔄 Panel update received:", data);
+
+        if (data.data?.panel_data && data.data?.panel_number) {
+          const panelData = data.data.panel_data;
+          const panelNum = data.data.panel_number;
+
+          if (panelData.image_url && panelData.tts_url) {
+            const updatedPanel: StoryPanel = {
+              id: panelNum.toString(),
+              imageUrl: panelData.image_url,
+              narrationUrl: panelData.tts_url,
+              backgroundMusicUrl:
+                panelData.music_url || "/src/assets/audio/background-music.mp3",
+            };
+
+            console.log(`🔄 Updating panel ${panelNum} in story`);
+            setStory((prevStory) => {
+              if (!prevStory) return [updatedPanel];
+
+              const existingIndex = prevStory.findIndex(
+                (p) => p.id === panelNum.toString()
+              );
+              if (existingIndex >= 0) {
+                const updatedStory = [...prevStory];
+                updatedStory[existingIndex] = updatedPanel;
+                return updatedStory.sort(
+                  (a, b) => parseInt(a.id) - parseInt(b.id)
+                );
+              } else {
+                return [...prevStory, updatedPanel].sort(
+                  (a, b) => parseInt(a.id) - parseInt(b.id)
+                );
+              }
+            });
+          }
+        }
+      });
+
+      // Also listen for individual panel completion events
+      socketRef.current.on("panel_processing_complete", (data: any) => {
+        console.log("Panel processing complete:", data);
+        const panelNumber = data.data?.panel_number || "X";
         setLoadingProgress(`Panel ${panelNumber} completed! Assets generated.`);
       });
     }
@@ -128,40 +319,54 @@ const MangaService: React.FC = () => {
         socketRef.current = null;
       }
     };
-  }, [storyId]);
+  }, []); // Only run once on mount
 
   const getProgressMessage = (eventType: string, data: any): string => {
+    const pipelineName = selectedPipeline.name;
+
     switch (eventType) {
-      case 'story_creation_started':
-        return "🎭 Creating your personalized story...";
-      case 'panels_generation_started':
-        return "🎨 Generating story panels...";
-      case 'image_generation_started':
-        return `🖼️ Creating image for panel ${data?.panel_number || ''}...`;
-      case 'image_generation_complete':
-        return `✅ Panel ${data?.panel_number || ''} image ready!`;
-      case 'tts_generation_started':
-        return `🎙️ Adding narration to panel ${data?.panel_number || ''}...`;
-      case 'tts_generation_complete':
-        return `🔊 Panel ${data?.panel_number || ''} narration ready!`;
-      case 'music_generation_started':
-        return `🎵 Composing background music for panel ${data?.panel_number || ''}...`;
-      case 'music_generation_complete':
-        return `🎶 Panel ${data?.panel_number || ''} music ready!`;
+      case "story_creation_started":
+        return `🎭 ${pipelineName} is creating your personalized story...`;
+      case "panels_generation_started":
+        return `🎨 ${pipelineName} is generating story panels...`;
+      case "reference_generation_started":
+        return `🎯 ${pipelineName} is creating reference images for character consistency...`;
+      case "reference_generation_complete":
+        return `✅ Reference images ready! Starting panel generation...`;
+      case "image_generation_started":
+        return `🖼️ ${pipelineName} is creating image for panel ${
+          data?.panel_number || ""
+        }...`;
+      case "image_generation_complete":
+        return `✅ Panel ${
+          data?.panel_number || ""
+        } image ready with ${pipelineName}!`;
+      case "tts_generation_started":
+        return `🎙️ Adding narration to panel ${data?.panel_number || ""}...`;
+      case "tts_generation_complete":
+        return `🔊 Panel ${data?.panel_number || ""} narration ready!`;
+      case "music_generation_started":
+        return `🎵 Composing background music for panel ${
+          data?.panel_number || ""
+        }...`;
+      case "music_generation_complete":
+        return `🎶 Panel ${data?.panel_number || ""} music ready!`;
+      case "parallel_generation_started":
+        return `⚡ ${pipelineName} is generating all 6 panels in parallel...`;
+      case "parallel_generation_complete":
+        return `🚀 All panels generated with ${pipelineName}! Finalizing...`;
       default:
-        return `Processing: ${eventType}`;
+        return `${pipelineName} processing: ${eventType}`;
     }
   };
 
   const handleCreateStory = async (userData: {
     mood: string;
-    animeGenre: string;
-    archetype: string;
-    supportSystem: string;
     coreValue: string;
+    supportSystem: string;
     pastResilience: string;
     innerDemon: string;
-    mangaTitle: string;
+    desiredOutcome: string;
     nickname: string;
     secretWeapon: string;
     age: string;
@@ -169,107 +374,270 @@ const MangaService: React.FC = () => {
   }) => {
     try {
       console.log("Creating story with user data:", userData);
-      setAppState('loading');
-      setLoadingProgress("Connecting to AI services...");
 
-      const ageValue = userData.age === 'teen' ? 16 :
-                      userData.age === 'young-adult' ? 22 :
-                      userData.age === 'adult' ? 30 :
-                      userData.age === 'mature' ? 45 :
-                      userData.age === 'senior' ? 65 : 16;
+      console.log(
+        `🚀 Using pipeline: ${selectedPipeline.name} (${selectedPipeline.endpoint})`
+      );
 
+      setAppState("loading");
+      setLoadingProgress(`Connecting to ${selectedPipeline.name}...`);
+
+      const ageValue =
+        userData.age === "teen"
+          ? 16
+          : userData.age === "young-adult"
+          ? 22
+          : userData.age === "adult"
+          ? 30
+          : userData.age === "mature"
+          ? 45
+          : userData.age === "senior"
+          ? 65
+          : 16;
+
+      // Map the userData to the expected backend format
       const requestData = {
         inputs: {
           mood: userData.mood,
-          vibe: userData.animeGenre,
-          archetype: userData.archetype,
+          vibe: userData.desiredOutcome || "motivational", // Use desiredOutcome as vibe fallback
+          archetype: "hero", // Default archetype
           dream: userData.pastResilience,
-          mangaTitle: userData.mangaTitle,
+          mangaTitle: `${userData.nickname}'s Journey`, // Generate title from nickname
           nickname: userData.nickname,
           hobby: userData.secretWeapon,
           age: ageValue,
           gender: userData.gender,
           supportSystem: userData.supportSystem,
           coreValue: userData.coreValue,
-          innerDemon: userData.innerDemon
-        }
+          innerDemon: userData.innerDemon,
+        },
       };
 
-      setLoadingProgress("AI is crafting your personalized story...");
+      setLoadingProgress(
+        `${selectedPipeline.name} is crafting your personalized story...`
+      );
 
-      const response = await fetch(`${API_BASE_URL}/generate-manga-streaming`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestData)
-      });
+      const response = await fetch(
+        `${API_BASE_URL}${selectedPipeline.endpoint}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestData),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
 
       let result: any = null;
       try {
         result = await response.json();
-      } catch (_) {
-        console.warn('Non-JSON response from backend, proceeding with socket events only.');
-      }
-      
-      console.log('Story generation initiated:', result);
+      } catch (parseError) {
+        console.warn("Non-JSON response from backend:", parseError);
 
-      if (result?.story_id) {
-        setStoryId(result.story_id);
-        setLoadingProgress("AI is creating your panels, images, and music...");
-        
-        if (socketRef.current) {
-          console.log(`🔗 Joining story room: ${result.story_id}`);
-          
-          if (socketRef.current.connected) {
-            socketRef.current.emit('join_story_generation', {
-              story_id: result.story_id
-            });
-          } else {
-            socketRef.current.on('connect', () => {
-              socketRef.current?.emit('join_story_generation', {
-                story_id: result.story_id
-              });
-            });
-          }
+        // For streaming endpoint, proceed with socket events only
+        if (selectedPipeline.id === "streaming") {
+          console.log("Using socket-only mode for streaming pipeline");
+          return;
+        } else {
+          throw new Error("Invalid response format from server");
         }
       }
 
+      console.log("Story generation result:", result);
+
+      // Handle different response formats based on pipeline
+      if (selectedPipeline.id === "streaming") {
+        // Original streaming logic
+        if (result?.story_id) {
+          setStoryId(result.story_id);
+          setLoadingProgress(
+            "AI is creating your panels, images, and music..."
+          );
+
+          if (socketRef.current) {
+            console.log(`🔗 Joining story room: ${result.story_id}`);
+
+            if (socketRef.current.connected) {
+              socketRef.current.emit("join_story_generation", {
+                story_id: result.story_id,
+              });
+            } else {
+              socketRef.current.on("connect", () => {
+                socketRef.current?.emit("join_story_generation", {
+                  story_id: result.story_id,
+                });
+              });
+            }
+          }
+        }
+      } else {
+        // Non-streaming pipelines - direct response handling
+        if (result?.status === "completed" && result?.story) {
+          const storyData = result.story;
+          setStoryId(storyData.story_id);
+
+          const panels: StoryPanel[] = storyData.panels.map((panel: any) => ({
+            id:
+              panel.id ||
+              panel.panel_number?.toString() ||
+              (Math.random() * 1000).toString(),
+            imageUrl: panel.imageUrl || panel.image_url || "",
+            narrationUrl:
+              panel.narrationUrl || panel.tts_url || panel.narration_url || "",
+            backgroundMusicUrl:
+              panel.backgroundMusicUrl ||
+              panel.music_url ||
+              panel.background_music_url ||
+              "/src/assets/audio/background-music.mp3",
+          }));
+
+          setStory(panels);
+          setAppState("viewing");
+          console.log(
+            `✅ Story generated successfully with ${selectedPipeline.name}:`,
+            panels.length,
+            "panels"
+          );
+        } else {
+          throw new Error(
+            `Generation failed or incomplete. Status: ${result?.status}`
+          );
+        }
+      }
     } catch (error) {
-      console.error('Error creating story:', error);
-      setLoadingProgress("Failed to create story. Please try again.");
+      console.error("Error creating story:", error);
+      setLoadingProgress(
+        `Failed to create story with ${selectedPipeline.name}. Please try again.`
+      );
       setTimeout(() => {
-        setAppState('onboarding');
+        setAppState("onboarding");
       }, 3000);
     }
   };
 
   const renderCurrentComponent = () => {
-    switch (appState) {
-      case 'onboarding':
-        return <OnboardingScreen onCreateStory={handleCreateStory} />;
-      case 'loading':
-        return <LoadingScreen progressMessage={loadingProgress} />;
-      case 'viewing':
-        return story ? (
-          <MangaViewer
-            storyData={story}
-            storyId={storyId}
-            socket={socketRef.current}
-            onPanelUpdate={(updatedPanels) => setStory(updatedPanels)}
-          />
-        ) : <LoadingScreen />;
-      default:
-        return <OnboardingScreen onCreateStory={handleCreateStory} />;
+    console.log(
+      "🎬 Rendering component - AppState:",
+      appState,
+      "Story:",
+      story
+    );
+
+    try {
+      switch (appState) {
+        case "onboarding":
+          return (
+            <OnboardingScreen
+              onCreateStory={(userData) => handleCreateStory(userData)}
+            />
+          );
+        case "loading":
+          return <LoadingScreen progressMessage={loadingProgress} />;
+        case "viewing":
+          if (story && story.length > 0) {
+            console.log("🎬 Rendering MangaViewer with story:", story);
+            return (
+              <div className="min-h-screen bg-red-500 text-white p-8">
+                <h1>DEBUG: Story Data Received</h1>
+                <pre className="bg-black p-4 rounded mt-4 text-sm overflow-auto">
+                  {JSON.stringify(story, null, 2)}
+                </pre>
+                <div className="mt-4">
+                  <MangaViewer
+                    storyData={story}
+                    storyId={storyId}
+                    socket={socketRef.current}
+                    onPanelUpdate={(updatedPanels) => setStory(updatedPanels)}
+                  />
+                </div>
+              </div>
+            );
+          } else {
+            console.log("🎬 No story data, showing loading screen");
+            return (
+              <LoadingScreen
+                progressMessage={loadingProgress || "Loading story..."}
+              />
+            );
+          }
+        default:
+          return (
+            <OnboardingScreen
+              onCreateStory={(userData) => handleCreateStory(userData)}
+            />
+          );
+      }
+    } catch (error) {
+      console.error("🎬 Error rendering component:", error);
+      return (
+        <div className="min-h-screen bg-red-900 flex items-center justify-center text-white">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold mb-4">Something went wrong</h2>
+            <p>Please refresh the page and try again.</p>
+            <pre className="mt-4 text-sm bg-black/20 p-4 rounded">
+              {error?.toString()}
+            </pre>
+          </div>
+        </div>
+      );
     }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background-soft to-background flex">
-      <LightServiceNavigation currentPage="Manga" />
-      <div className="flex-1 ml-0 lg:ml-64">
-        {renderCurrentComponent()}
-      </div>
+      <LightServiceNavigation />
+
+      {/* Pipeline Selection Debug Panel - Development Only */}
+      {process.env.NODE_ENV === "development" && appState === "onboarding" && (
+        <div className="fixed top-4 right-4 z-50 bg-black/80 text-white p-4 rounded-lg text-sm max-w-sm">
+          <h4 className="font-bold mb-2">🚀 Generation Pipeline</h4>
+          <p className="text-xs mb-2">
+            Active:{" "}
+            <span className="text-green-400">{selectedPipeline.name}</span>
+          </p>
+          <p className="text-xs text-gray-300 mb-3">
+            {selectedPipeline.description}
+          </p>
+          <p className="text-xs text-yellow-400 mb-3">
+            Est. Time: {selectedPipeline.estimatedTime}
+          </p>
+
+          <div className="space-y-2">
+            {PIPELINE_OPTIONS.map((pipeline) => (
+              <button
+                key={pipeline.id}
+                onClick={() => setSelectedPipeline(pipeline)}
+                className={`w-full text-left px-2 py-1 text-xs rounded transition-colors ${
+                  selectedPipeline.id === pipeline.id
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                }`}
+                title={pipeline.description}
+              >
+                {pipeline.name}
+                <div className="text-xs opacity-75">
+                  {pipeline.estimatedTime}
+                </div>
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-3 pt-2 border-t border-gray-600">
+            <p className="text-xs text-gray-400">Features:</p>
+            {selectedPipeline.features.map((feature, idx) => (
+              <p key={idx} className="text-xs text-gray-300">
+                • {feature}
+              </p>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="flex-1 ml-0 lg:ml-64">{renderCurrentComponent()}</div>
     </div>
   );
 };
