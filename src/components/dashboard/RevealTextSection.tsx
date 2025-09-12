@@ -4,10 +4,10 @@ import { RevealText } from "@/components/ui/reveal-text";
 
 export default function RevealTextSection() {
   return (
-    <div className="w-full flex items-center justify-center bg-gray-900 bg-opacity-80 py-12 px-4 md:px-8">
+    <div className="w-full flex items-center justify-center pt-20 px-4 md:px-8">
       <RevealText
         text="Welcome to Calmira"
-        textColor="text-white"
+        textColor="text-[#ee4444]"
         overlayColor="text-purple-400"
         fontSize="text-[40px] sm:text-[60px] md:text-[90px] lg:text-[120px]"
         letterDelay={0.06}
