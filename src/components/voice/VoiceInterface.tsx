@@ -13,6 +13,15 @@ interface VoiceInterfaceProps {
   onVoiceMessage?: (message: string) => void;
 }
 
+interface WebSocketMessage {
+  type: 'session_status' | 'transcription' | 'ai_response' | 'session_ended' | 'error';
+  session_id?: string;
+  text?: string;
+  message?: string;
+  status?: string;
+  timestamp: string;
+}
+
 const VoiceInterface: React.FC<VoiceInterfaceProps> = ({
   contactName,
   contactAvatar,
@@ -26,10 +35,15 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({
   const [transcript, setTranscript] = useState<string[]>([]);
   const [audioLevel, setAudioLevel] = useState(0);
   const [sessionTime, setSessionTime] = useState(0);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [connectionStatus, setConnectionStatus] = useState<'disconnected' | 'connecting' | 'connected' | 'error'>('disconnected');
+  const [wsError, setWsError] = useState<string | null>(null);
   
   const sessionIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const wsRef = useRef<WebSocket | null>(null);
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Simulate audio level animation when recording
+  // Audio level animation when recording
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
     if (isRecording) {
@@ -43,6 +57,172 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({
       if (interval) clearInterval(interval);
     };
   }, [isRecording]);
+
+  // Initialize voice session and WebSocket connection
+  useEffect(() => {
+    // Don't auto-start the session, wait for user to click record
+    // initializeVoiceSession();
+    return () => {
+      cleanup();
+    };
+  }, []);
+
+  const initializeVoiceSession = async () => {
+    try {
+      console.log('Initializing voice session...');
+      setConnectionStatus('connecting');
+      
+      // Start voice session on backend
+      const response = await fetch('http://localhost:8000/api/v1/voice/start-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          context: 'therapist_chat'
+        })
+      });
+      
+      console.log('Backend response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Backend error:', errorText);
+        throw new Error(`Failed to start session: ${response.statusText}`);
+      }
+      
+      const sessionData = await response.json();
+      console.log('Session started:', sessionData);
+      const newSessionId = sessionData.session_id;
+      setSessionId(newSessionId);
+      
+      // Connect to WebSocket
+      connectWebSocket(newSessionId);
+      
+    } catch (error) {
+      console.error('Failed to initialize voice session:', error);
+      setConnectionStatus('error');
+      setWsError(error instanceof Error ? error.message : 'Unknown error');
+      throw error; // Re-throw to handle in caller
+    }
+  };
+
+  const connectWebSocket = (sessionId: string) => {
+    try {
+      const wsUrl = `ws://localhost:8000/api/v1/voice/ws/${sessionId}`;
+      const ws = new WebSocket(wsUrl);
+      wsRef.current = ws;
+      
+      ws.onopen = () => {
+        console.log('🔌 WebSocket connected to voice session:', sessionId);
+        setConnectionStatus('connected');
+        setWsError(null);
+      };
+      
+      ws.onmessage = (event) => {
+        try {
+          const message: WebSocketMessage = JSON.parse(event.data);
+          handleWebSocketMessage(message);
+        } catch (error) {
+          console.error('Failed to parse WebSocket message:', error);
+        }
+      };
+      
+      ws.onclose = (event) => {
+        console.log('🔌 WebSocket disconnected:', event.code, event.reason);
+        setConnectionStatus('disconnected');
+        
+        // Attempt to reconnect after a delay
+        if (event.code !== 1000) { // Not a normal closure
+          reconnectTimeoutRef.current = setTimeout(() => {
+            if (sessionId) {
+              connectWebSocket(sessionId);
+            }
+          }, 3000);
+        }
+      };
+      
+      ws.onerror = (error) => {
+        console.error('🔌 WebSocket error:', error);
+        setConnectionStatus('error');
+        setWsError('WebSocket connection failed');
+      };
+      
+    } catch (error) {
+      console.error('Failed to create WebSocket connection:', error);
+      setConnectionStatus('error');
+      setWsError(error instanceof Error ? error.message : 'Unknown error');
+    }
+  };
+
+  const handleWebSocketMessage = (message: WebSocketMessage) => {
+    console.log('📨 Received WebSocket message:', message);
+    
+    switch (message.type) {
+      case 'session_status':
+        console.log('Session status:', message.status);
+        break;
+        
+      case 'transcription':
+        if (message.text) {
+          setTranscript(prev => [...prev, `You: ${message.text}`]);
+        }
+        break;
+        
+      case 'ai_response':
+        if (message.text) {
+          setTranscript(prev => [...prev, `${contactName}: ${message.text}`]);
+          // Only set playing if we're still recording
+          if (isRecording) {
+            setIsPlaying(true);
+            // Don't auto-stop playing, let the audio completion handle it
+            // setTimeout(() => setIsPlaying(false), 3000);
+          }
+        }
+        break;
+        
+      case 'session_ended':
+        console.log('Voice session ended');
+        setIsRecording(false);
+        setIsPlaying(false);
+        setConnectionStatus('disconnected');
+        setSessionId(null);
+        break;
+        
+      case 'error':
+        console.error('Voice session error:', message.message);
+        setWsError(message.message || 'Unknown error');
+        break;
+    }
+  };
+
+  const cleanup = async () => {
+    // Clear timers
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+    }
+    
+    // Stop any ongoing audio/recording
+    setIsRecording(false);
+    setIsPlaying(false);
+    
+    // Close WebSocket
+    if (wsRef.current) {
+      wsRef.current.close(1000, 'Component unmounting');
+      wsRef.current = null;
+    }
+    
+    // Stop voice session on backend
+    if (sessionId) {
+      try {
+        await fetch(`http://localhost:8000/api/v1/voice/stop-session?session_id=${sessionId}`, {
+          method: 'POST'
+        });
+      } catch (error) {
+        console.error('Failed to stop voice session:', error);
+      }
+    }
+  };
 
   // Session timer
   useEffect(() => {
@@ -63,37 +243,94 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({
     };
   }, [isRecording, isPlaying]);
 
-  const handleToggleRecording = () => {
+  const handleToggleRecording = async () => {
+    console.log('Toggle recording clicked. Current state:', { isRecording, connectionStatus, sessionId });
+    
     if (isRecording) {
+      // STOP RECORDING - session should exist
+      console.log('Stopping recording...');
       setIsRecording(false);
+      setIsPlaying(false); // Stop any playing audio
       onVoiceStop?.();
-      // Simulate adding a transcript
-      const messages = [
-        "I've been feeling a bit overwhelmed lately...",
-        "Thank you for listening, I appreciate your support.",
-        "Can you help me with some breathing exercises?",
-        "I feel much better after talking with you."
-      ];
-      const randomMessage = messages[Math.floor(Math.random() * messages.length)];
-      setTranscript(prev => [...prev, `You: ${randomMessage}`]);
       
-      // Simulate AI response
-      setTimeout(() => {
-        const aiResponses = [
-          `${contactName}: I understand how you're feeling. Let's work through this together.`,
-          `${contactName}: That's completely normal. Would you like to try a mindfulness exercise?`,
-          `${contactName}: I'm here for you. Let's focus on some positive affirmations.`,
-          `${contactName}: You're doing great by reaching out. How can I support you today?`
-        ];
-        const randomResponse = aiResponses[Math.floor(Math.random() * aiResponses.length)];
-        setTranscript(prev => [...prev, randomResponse]);
-        setIsPlaying(true);
-        setTimeout(() => setIsPlaying(false), 3000);
-      }, 1500);
+      // Clear transcript to show session ended
+      setTranscript(prev => [...prev, '--- Session Stopped ---']);
+      
+      // Stop the backend session immediately if it exists
+      if (sessionId) {
+        try {
+          const response = await fetch(`http://localhost:8000/api/v1/voice/stop-session?session_id=${sessionId}`, {
+            method: 'POST'
+          });
+          
+          if (!response.ok) {
+            console.error('Failed to stop backend session');
+          }
+        } catch (error) {
+          console.error('Error stopping backend session:', error);
+        }
+      }
+      
+      // Close WebSocket connection to force stop
+      if (wsRef.current) {
+        wsRef.current.close(1000, 'User stopped recording');
+        wsRef.current = null;
+      }
+      
+      // Reset connection status
+      setConnectionStatus('disconnected');
+      setSessionId(null);
+      setWsError(null);
       
     } else {
-      setIsRecording(true);
-      onVoiceStart?.();
+      // START RECORDING - initialize new session
+      console.log('Starting new voice session...');
+      
+      // Clear any previous errors
+      setWsError(null);
+      
+      // Initialize the voice session first, then set recording state
+      try {
+        await initializeVoiceSession();
+        // Only set recording after successful initialization
+        setIsRecording(true);
+        onVoiceStart?.();
+      } catch (error) {
+        console.error('Failed to initialize voice session:', error);
+        setConnectionStatus('disconnected');
+        setWsError('Failed to start voice session. Please try again.');
+      }
+    }
+  };
+  
+  const sendTextMessage = async (message: string) => {
+    if (!sessionId || connectionStatus !== 'connected') {
+      console.warn('Cannot send message: session not ready');
+      return;
+    }
+    
+    try {
+      const response = await fetch('http://localhost:8000/api/v1/voice/send-message', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          session_id: sessionId,
+          message: message
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to send message: ${response.statusText}`);
+      }
+      
+      // Add user message to transcript immediately
+      setTranscript(prev => [...prev, `You: ${message}`]);
+      
+    } catch (error) {
+      console.error('Failed to send text message:', error);
+      setWsError(error instanceof Error ? error.message : 'Failed to send message');
     }
   };
 
@@ -180,31 +417,51 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({
         {/* Status Text */}
         <div className="text-center mb-8">
           <h2 className="poppins-medium text-2xl text-foreground mb-2">
-            {isRecording ? 'Listening...' : isPlaying ? 'Speaking...' : 'Ready to chat'}
+            {connectionStatus === 'connecting' ? 'Connecting...' :
+             connectionStatus === 'error' ? 'Connection Error' :
+             connectionStatus === 'disconnected' && !isRecording ? 'Ready to Start' :
+             isRecording ? 'Listening...' : isPlaying ? 'Speaking...' : 'Ready to chat'}
           </h2>
           <p className="inter-regular text-muted-foreground">
-            {isRecording 
-              ? 'Speak naturally, I\'m here to listen' 
-              : isPlaying 
-                ? 'AI is responding...'
-                : 'Tap the microphone to start talking'
+            {connectionStatus === 'connecting' ? 'Establishing connection to voice agent...' :
+             connectionStatus === 'error' ? (wsError || 'Failed to connect to voice agent') :
+             connectionStatus === 'disconnected' && !isRecording ? 'Tap the microphone to start a session' :
+             isRecording 
+               ? 'Speak naturally, I\'m here to listen' 
+               : isPlaying 
+                 ? 'AI is responding...'
+                 : 'Tap the microphone to start talking'
             }
           </p>
+          {wsError && (
+            <p className="inter-regular text-sm text-destructive mt-2">
+              {wsError}
+            </p>
+          )}
+          {sessionId && (
+            <p className="inter-regular text-xs text-muted-foreground mt-2">
+              Session: {sessionId}
+            </p>
+          )}
         </div>
 
         {/* Controls */}
         <div className="flex items-center space-x-6">
-          <Button
-            onClick={handleToggleRecording}
+          <button
+            onClick={() => {
+              console.log('Button clicked directly!');
+              handleToggleRecording();
+            }}
             className={`w-20 h-20 rounded-full ${
               isRecording 
                 ? 'bg-destructive hover:bg-destructive/90' 
                 : 'bg-primary hover:bg-primary-dark'
-            } text-white shadow-lg hover:shadow-xl transition-all duration-300`}
-            disabled={isPlaying}
+            } text-white shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center`}
+            disabled={connectionStatus === 'connecting'}
+            type="button"
           >
             {isRecording ? <Square className="h-8 w-8" /> : <Mic className="h-8 w-8" />}
-          </Button>
+          </button>
           
           {transcript.length > 0 && (
             <Button
