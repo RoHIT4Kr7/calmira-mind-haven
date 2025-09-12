@@ -6,12 +6,11 @@ import {
   RotateCcw,
   Volume2,
   VolumeX,
+  Play,
+  Pause,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Socket } from "socket.io-client";
-import { useAudioStateMachine, type PanelAudio } from "../AudioStateMachine";
-import BackgroundVideo from "./BackgroundVideo";
-import LoadingScreen from "./LoadingScreen";
 
 interface MangaPanel {
   id: string;
@@ -35,350 +34,354 @@ const MangaViewer = ({
   socket,
   onPanelUpdate,
 }: MangaViewerProps) => {
-  const [mangaPanels, setMangaPanels] = useState<MangaPanel[]>(storyData);
-  const [isLoadingPanel, setIsLoadingPanel] = useState(false);
+  console.log("🎬 MangaViewer rendering with storyData:", storyData);
 
-  // Convert initial panel to AudioStateMachine format
-  const initialPanelAudio: PanelAudio | undefined =
-    storyData.length > 0
-      ? {
-          panelId: storyData[0].id,
-          panelNumber:
-            storyData[0].panelNumber || parseInt(storyData[0].id, 10),
-          narrationUrl: storyData[0].narrationUrl,
-          backgroundMusicUrl: storyData[0].backgroundMusicUrl,
-          ready: Boolean(storyData[0].imageUrl && storyData[0].narrationUrl),
-        }
-      : undefined;
-
-  // Use Audio State Machine for proper audio orchestration
-  const {
-    currentState,
-    currentPanel,
-    audioQueue,
-    playPanel,
-    pauseAudio,
-    resumeAudio,
-    stopAudio,
-    isAudioMuted,
-    toggleMute,
-  } = useAudioStateMachine({
-    storyId,
-    socket,
-    onPanelChange: (panelNumber) => {
-      console.log(`🎬 Panel changed to ${panelNumber}`);
-    },
-    onStateChange: (state) => {
-      console.log(`🎵 Audio state changed to ${state}`);
-      if (state === "ended") {
-        setIsStoryFinished(true);
-      }
-    },
-    initialPanel: initialPanelAudio,
-  });
-
-  // Calculate current panel index from audio state machine
-  const currentPanelIndex = mangaPanels.findIndex(
-    (panel) => (panel.panelNumber || parseInt(panel.id, 10)) === currentPanel
-  );
-  const validCurrentPanelIndex = currentPanelIndex >= 0 ? currentPanelIndex : 0;
+  const [mangaPanels, setMangaPanels] = useState<MangaPanel[]>(storyData || []);
+  const [currentPanelIndex, setCurrentPanelIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isAudioMuted, setIsAudioMuted] = useState(false);
   const [isStoryFinished, setIsStoryFinished] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   // Update panels when storyData changes
   useEffect(() => {
-    // Normalize incoming story data to include panelNumber and readiness
-    const normalized = storyData.map((p) => ({
-      ...p,
-      panelNumber: p.panelNumber ?? parseInt(p.id, 10),
-      ready: Boolean(p.imageUrl && p.narrationUrl),
-    }));
-    setMangaPanels(normalized);
+    console.log("🎬 StoryData changed:", storyData);
+    if (storyData && storyData.length > 0) {
+      const normalized = storyData.map((p, index) => ({
+        ...p,
+        panelNumber: p.panelNumber ?? index + 1,
+        ready: Boolean(p.imageUrl && p.narrationUrl),
+      }));
+      setMangaPanels(normalized);
+      console.log("🎬 Normalized panels:", normalized);
+    }
   }, [storyData]);
 
-  // Listen for panel updates via socket (for UI updates)
+  // Listen for panel updates via socket
   useEffect(() => {
     if (socket && storyId) {
       const handlePanelUpdate = (data: any) => {
-        console.log("MangaViewer received panel update:", data);
+        console.log("🔄 Panel update received:", data);
 
-        if (data.data?.panel_data && data.story_id === storyId) {
-          const panelNum: number = Number(data.data.panel_number);
-          const imageUrl: string = data.data.panel_data.image_url || "";
-          const ttsUrl: string = data.data.panel_data.tts_url || "";
+        if (data.data?.panel_data && data.data?.panel_number) {
+          const panelData = data.data.panel_data;
+          const panelNum = data.data.panel_number;
 
-          // Only consider a panel "ready" when both image and narration are available
-          const isReady = Boolean(imageUrl && ttsUrl);
-          if (!isReady) {
-            // Do not add half-baked panels; wait until complete to avoid skipping
-            return;
-          }
+          if (panelData.image_url && panelData.tts_url) {
+            const updatedPanel: MangaPanel = {
+              id: panelNum.toString(),
+              imageUrl: panelData.image_url,
+              narrationUrl: panelData.tts_url,
+              backgroundMusicUrl:
+                panelData.music_url || "/src/assets/audio/background-music.mp3",
+              panelNumber: panelNum,
+              ready: true,
+            };
 
-          const newPanel: MangaPanel = {
-            id: panelNum.toString(),
-            panelNumber: panelNum,
-            imageUrl,
-            narrationUrl: ttsUrl,
-            backgroundMusicUrl:
-              data.data.panel_data.music_url ||
-              "/src/assets/audio/background-music.mp3",
-            ready: true,
-          };
-
-          setMangaPanels((prevPanels) => {
-            const updatedPanels = [...prevPanels];
-            const existingIndex = updatedPanels.findIndex(
-              (p) => p.id === newPanel.id
-            );
-
-            if (existingIndex >= 0) {
-              updatedPanels[existingIndex] = newPanel;
-            } else {
-              updatedPanels.push(newPanel);
-              console.log(
-                `🎬 New panel ${newPanel.id} added to story! Total panels: ${updatedPanels.length}`
+            setMangaPanels((prevPanels) => {
+              const updatedPanels = [...prevPanels];
+              const existingIndex = updatedPanels.findIndex(
+                (p) => p.id === panelNum.toString()
               );
-            }
 
-            // Sort panels by panelNumber to maintain intended order
-            const sortedPanels = updatedPanels.sort(
-              (a, b) =>
-                (a.panelNumber ?? parseInt(a.id)) -
-                (b.panelNumber ?? parseInt(b.id))
-            );
+              if (existingIndex >= 0) {
+                updatedPanels[existingIndex] = updatedPanel;
+              } else {
+                updatedPanels.push(updatedPanel);
+              }
 
-            // Notify parent component
-            if (onPanelUpdate) {
-              onPanelUpdate(sortedPanels);
-            }
+              const sortedPanels = updatedPanels.sort(
+                (a, b) => (a.panelNumber || 0) - (b.panelNumber || 0)
+              );
 
-            return sortedPanels;
-          });
+              if (onPanelUpdate) {
+                onPanelUpdate(sortedPanels);
+              }
+
+              return sortedPanels;
+            });
+          }
         }
       };
 
       socket.on("panel_update", handlePanelUpdate);
+      socket.on("panel_complete", handlePanelUpdate);
 
       return () => {
         socket.off("panel_update", handlePanelUpdate);
+        socket.off("panel_complete", handlePanelUpdate);
       };
     }
   }, [socket, storyId, onPanelUpdate]);
 
-  const currentPanelData = mangaPanels[validCurrentPanelIndex];
-  const isFirstPanel = validCurrentPanelIndex === 0;
-  const isLastPanel = validCurrentPanelIndex === mangaPanels.length - 1;
+  const currentPanelData = mangaPanels[currentPanelIndex];
+  const isFirstPanel = currentPanelIndex === 0;
+  const isLastPanel = currentPanelIndex >= mangaPanels.length - 1;
 
-  // Set story finished when audio state machine ends
-  useEffect(() => {
-    if (currentState === "ended") {
-      setIsStoryFinished(true);
-    }
-  }, [currentState]);
-
-  const goToNextPanel = () => {
-    const nextPanelNumber = currentPanel + 1;
-    const nextPanel = mangaPanels.find(
-      (p) => (p.panelNumber || parseInt(p.id, 10)) === nextPanelNumber
-    );
-    if (nextPanel && nextPanel.ready) {
-      setIsLoadingPanel(true);
+  // Audio event handlers
+  const handleAudioEnded = () => {
+    setIsPlaying(false);
+    if (currentPanelIndex < mangaPanels.length - 1) {
+      // Auto-advance to next panel
       setTimeout(() => {
-        playPanel(nextPanelNumber);
-        setIsLoadingPanel(false);
-      }, 1000); // 1 second loading screen (adjust as needed)
+        goToNextPanel();
+      }, 1000);
+    } else {
+      setIsStoryFinished(true);
     }
   };
 
-  const goToPreviousPanel = () => {
-    const prevPanelNumber = currentPanel - 1;
-    if (prevPanelNumber >= 1) {
-      const prevPanel = mangaPanels.find(
-        (p) => (p.panelNumber || parseInt(p.id, 10)) === prevPanelNumber
-      );
-      if (prevPanel && prevPanel.ready) {
-        setIsLoadingPanel(true);
-        setTimeout(() => {
-          playPanel(prevPanelNumber);
-          setIsLoadingPanel(false);
-        }, 1000);
+  const handlePlayPause = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+      } else {
+        audioRef.current.play();
+        setIsPlaying(true);
       }
     }
   };
 
-  const restartStory = () => {
-    setIsStoryFinished(false);
-    if (mangaPanels.length > 0) {
-      playPanel(1);
+  const goToNextPanel = () => {
+    if (currentPanelIndex < mangaPanels.length - 1) {
+      const nextIndex = currentPanelIndex + 1;
+      setCurrentPanelIndex(nextIndex);
+      setIsPlaying(false);
+
+      // Start audio for next panel
+      setTimeout(() => {
+        if (audioRef.current) {
+          audioRef.current.currentTime = 0;
+          audioRef.current.play();
+          setIsPlaying(true);
+        }
+      }, 500);
     }
   };
 
-  // Touch/swipe functionality
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
-  const minSwipeDistance = 50;
+  const goToPreviousPanel = () => {
+    if (currentPanelIndex > 0) {
+      const prevIndex = currentPanelIndex - 1;
+      setCurrentPanelIndex(prevIndex);
+      setIsPlaying(false);
 
-  const onTouchStart = (e: React.TouchEvent) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
+      // Start audio for previous panel
+      setTimeout(() => {
+        if (audioRef.current) {
+          audioRef.current.currentTime = 0;
+          audioRef.current.play();
+          setIsPlaying(true);
+        }
+      }, 500);
+    }
   };
-  const onTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
+
+  const restartStory = () => {
+    setCurrentPanelIndex(0);
+    setIsStoryFinished(false);
+    setIsPlaying(false);
   };
-  const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-    const distance = touchStart - touchEnd;
-    if (distance > minSwipeDistance && !isLastPanel) goToNextPanel();
-    if (distance < -minSwipeDistance && !isFirstPanel) goToPreviousPanel();
+
+  const toggleMute = () => {
+    setIsAudioMuted(!isAudioMuted);
+    if (audioRef.current) {
+      audioRef.current.muted = !isAudioMuted;
+    }
   };
+
+  // Auto-start first panel
+  useEffect(() => {
+    if (mangaPanels.length > 0 && currentPanelIndex === 0 && !isPlaying) {
+      setTimeout(() => {
+        if (audioRef.current) {
+          audioRef.current.play().catch(() => {
+            console.log("Auto-play prevented by browser");
+          });
+        }
+      }, 1000);
+    }
+  }, [mangaPanels.length]);
+
+  // Show loading if no panels available
+  if (!currentPanelData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+        <div className="text-center text-white">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
+          <h2 className="text-2xl font-bold mb-2">Loading your story...</h2>
+          <p className="text-lg opacity-80">
+            {mangaPanels.length > 0
+              ? `Panel ${currentPanelIndex + 1} of ${mangaPanels.length}`
+              : "Waiting for panels to load..."}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div
-      className="min-h-screen flex flex-col relative"
-      data-current-panel={currentPanel}
-      data-audio-state={currentState}
-    >
-      {/* Background Video */}
-      <BackgroundVideo
-        videoUrl="https://www.dropbox.com/scl/fi/3byxqbbsk0bkrev2go1mo/background.mp4?rlkey=7u3ka7doa68whlv2of61ndocd&st=9pyexi3u&raw=1"
-        fallbackImage="/images/background-fallback.jpg"
-      />
-      {/* Main content */}
-      <div className="flex-1 flex flex-col items-center justify-center p-4 relative">
-        <div className="relative max-w-4xl w-full">
-          {/* Arrows Desktop */}
-          <div className="hidden md:flex absolute top-1/2 -translate-y-1/2 w-full justify-between z-20 px-4 pointer-events-none">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={goToPreviousPanel}
-              disabled={isFirstPanel}
-              className="pointer-events-auto bg-black/30 text-white -ml-24"
-            >
-              <ChevronLeft className="h-10 w-10" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={goToNextPanel}
-              disabled={isLastPanel}
-              className="pointer-events-auto bg-black/30 text-white -mr-24"
-            >
-              <ChevronRight className="h-10 w-10" />
-            </Button>
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex flex-col">
+      {/* Header with panel indicators */}
+      <div className="bg-black/20 backdrop-blur-sm border-b border-white/10 p-4">
+        <div className="max-w-4xl mx-auto flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-white">Your Manga Story</h1>
+
+          {/* Panel indicators */}
+          <div className="flex items-center space-x-2">
+            {mangaPanels.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentPanelIndex(index)}
+                className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                  index === currentPanelIndex
+                    ? "bg-white scale-125"
+                    : index < currentPanelIndex
+                    ? "bg-green-400"
+                    : "bg-white/30"
+                }`}
+                title={`Panel ${index + 1}`}
+              />
+            ))}
           </div>
 
-          {/* Manga Panel */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentPanel}
-              initial={{ opacity: 0, y: 30, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -30, scale: 0.95 }}
-              transition={{ duration: 0.6, ease: "easeInOut" }}
-              className="w-full max-w-6xl mx-auto p-2 relative"
-              onTouchStart={onTouchStart}
-              onTouchMove={onTouchMove}
-              onTouchEnd={onTouchEnd}
-            >
-              <div className="relative rounded-xl overflow-hidden shadow-2xl bg-gradient-to-br from-gray-900/80 to-gray-800/60 backdrop-blur-lg border border-white/10">
-                {/* Progress Bar */}
-                <div className="absolute top-0 left-0 w-full h-2 z-20">
-                  <motion.div
-                    className="bg-gradient-to-r from-purple-400 to-pink-400 h-2"
-                    initial={{ width: 0 }}
-                    animate={{
-                      width: `${
-                        mangaPanels.length > 0
-                          ? (currentPanel / mangaPanels.length) * 100
-                          : 0
-                      }%`,
-                    }}
-                    transition={{ duration: 0.5 }}
-                  />
+          {/* Panel counter */}
+          <div className="text-white text-sm">
+            Panel {currentPanelIndex + 1} of {mangaPanels.length}
+          </div>
+        </div>
+      </div>
+
+      {/* Main content area */}
+      <div className="flex-1 flex items-center justify-center p-4">
+        <div className="max-w-4xl w-full">
+          {/* Panel image */}
+          <div className="relative bg-black/20 backdrop-blur-sm rounded-2xl overflow-hidden shadow-2xl border border-white/10">
+            <AnimatePresence mode="wait">
+              <motion.img
+                key={currentPanelIndex}
+                src={currentPanelData.imageUrl}
+                alt={`Manga Panel ${currentPanelIndex + 1}`}
+                className="w-full h-auto max-h-[70vh] object-contain"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.05 }}
+                transition={{ duration: 0.5 }}
+                onLoad={() =>
+                  console.log(
+                    `🖼️ Image loaded for panel ${currentPanelIndex + 1}`
+                  )
+                }
+                onError={(e) =>
+                  console.error(
+                    `❌ Image error for panel ${currentPanelIndex + 1}:`,
+                    e
+                  )
+                }
+              />
+            </AnimatePresence>
+
+            {/* Audio controls overlay */}
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
+              {/* Audio controls */}
+              <div className="flex items-center justify-between text-white">
+                <div className="flex items-center space-x-4">
+                  <Button
+                    onClick={goToPreviousPanel}
+                    disabled={isFirstPanel}
+                    variant="ghost"
+                    size="icon"
+                    className="p-2 rounded-full bg-white/20 backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/30 transition-colors"
+                    title="Previous Panel"
+                  >
+                    <ChevronLeft className="w-6 h-6" />
+                  </Button>
+
+                  <Button
+                    onClick={handlePlayPause}
+                    variant="ghost"
+                    size="icon"
+                    className="p-3 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-colors"
+                    title={isPlaying ? "Pause" : "Play"}
+                  >
+                    {isPlaying ? (
+                      <Pause className="w-8 h-8" />
+                    ) : (
+                      <Play className="w-8 h-8" />
+                    )}
+                  </Button>
+
+                  <Button
+                    onClick={goToNextPanel}
+                    disabled={isLastPanel}
+                    variant="ghost"
+                    size="icon"
+                    className="p-2 rounded-full bg-white/20 backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/30 transition-colors"
+                    title="Next Panel"
+                  >
+                    <ChevronRight className="w-6 h-6" />
+                  </Button>
                 </div>
 
-                {/* Manga Image */}
-                {currentPanelData && (
-                  <div
-                    className="w-full flex items-center justify-center bg-black"
-                    style={{ minHeight: "70vh", maxHeight: "90vh" }}
-                  >
-                    <img
-                      src={currentPanelData.imageUrl}
-                      alt={`Panel ${currentPanel}`}
-                      className="w-full h-auto object-contain"
-                    />
-                  </div>
-                )}
-
-                {/* 🔥 Loading Overlay */}
-                <AnimatePresence>
-                  {isLoadingPanel && <LoadingScreen key="loading" />}
-                </AnimatePresence>
-
-                {/* 🎚️ Mute/Unmute button */}
+                {/* Mute button */}
                 <Button
+                  onClick={toggleMute}
                   variant="ghost"
                   size="icon"
-                  onClick={toggleMute}
-                  className="absolute bottom-4 right-4 bg-black/30 text-white z-30"
+                  className="p-2 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-colors"
+                  title={isAudioMuted ? "Unmute" : "Mute"}
                 >
-                  {isAudioMuted ? <VolumeX /> : <Volume2 />}
+                  {isAudioMuted ? (
+                    <VolumeX className="w-6 h-6" />
+                  ) : (
+                    <Volume2 className="w-6 h-6" />
+                  )}
                 </Button>
-
-                {/* 🟢 Audio state indicator */}
-                <div className="absolute top-4 left-4 bg-black/50 text-white px-2 py-1 rounded text-xs z-30">
-                  {currentState === "loading" && "🔄 Loading..."}
-                  {currentState === "playing" && "▶️ Playing"}
-                  {currentState === "transitioning" && "⏭️ Next..."}
-                  {currentState === "ended" && "✅ Complete"}
-                  {currentState === "idle" && "⏸️ Ready"}
-                </div>
               </div>
-            </motion.div>
-          </AnimatePresence>
+            </div>
+          </div>
         </div>
-
-        {/* Mobile Navigation */}
-        <div className="md:hidden flex justify-center mt-6 space-x-4">
-          <Button
-            variant="outline"
-            onClick={goToPreviousPanel}
-            disabled={isFirstPanel}
-            className="bg-black/20 backdrop-blur-sm text-white border-white/20 hover:bg-black/40"
-          >
-            <ChevronLeft className="h-4 w-4 mr-2" />
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            onClick={goToNextPanel}
-            disabled={isLastPanel}
-            className="bg-black/20 backdrop-blur-sm text-white border-white/20 hover:bg-black/40"
-          >
-            Next
-            <ChevronRight className="h-4 w-4 ml-2" />
-          </Button>
-        </div>
-
-        {/* Read Again */}
-        {isStoryFinished && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="mt-6"
-          >
-            <Button
-              variant="outline"
-              onClick={restartStory}
-              className="bg-white/10 backdrop-blur-sm text-white border-white/20 hover:bg-white/20"
-            >
-              <RotateCcw className="mr-2" /> Read Again
-            </Button>
-          </motion.div>
-        )}
       </div>
+
+      {/* Read Again Button */}
+      {isStoryFinished && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="flex justify-center pb-8"
+        >
+          <Button
+            onClick={restartStory}
+            variant="outline"
+            className="bg-white/10 backdrop-blur-sm text-white border-white/20 hover:bg-white/20"
+          >
+            <RotateCcw className="mr-2 w-4 h-4" />
+            Read Again
+          </Button>
+        </motion.div>
+      )}
+
+      {/* Audio element (hidden) */}
+      {currentPanelData && (
+        <audio
+          ref={audioRef}
+          key={`panel-${currentPanelIndex}-audio`}
+          src={currentPanelData.narrationUrl}
+          preload="metadata"
+          muted={isAudioMuted}
+          onPlay={() => setIsPlaying(true)}
+          onPause={() => setIsPlaying(false)}
+          onEnded={handleAudioEnded}
+          onError={(e) =>
+            console.error(
+              `❌ Audio error for panel ${currentPanelIndex + 1}:`,
+              e
+            )
+          }
+          className="hidden"
+        />
+      )}
     </div>
   );
 };
