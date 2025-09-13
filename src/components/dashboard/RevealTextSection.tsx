@@ -7,7 +7,7 @@ export default function RevealTextSection() {
     <div className="w-full flex items-center justify-center pt-20 px-4 md:px-8">
       <RevealText
         text="Welcome to Calmira"
-        textColor="text-[#ee4444]"
+        textColor="text-white"
         overlayColor="text-purple-400"
         fontSize="text-[40px] sm:text-[60px] md:text-[90px] lg:text-[120px]"
         letterDelay={0.06}

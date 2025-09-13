@@ -1,0 +1,21 @@
+@keyframes pulse-glow {
+  0% {
+    text-shadow: 0 0 6px rgba(255, 255, 255, 0.4),
+                 0 0 12px rgba(48, 43, 99, 0.6),
+                 0 0 20px rgba(238, 68, 68, 0.3);
+  }
+  50% {
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8),
+                 0 0 20px rgba(48, 43, 99, 0.8),
+                 0 0 30px rgba(238, 68, 68, 0.5);
+  }
+  100% {
+    text-shadow: 0 0 6px rgba(255, 255, 255, 0.4),
+                 0 0 12px rgba(48, 43, 99, 0.6),
+                 0 0 20px rgba(238, 68, 68, 0.3);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}

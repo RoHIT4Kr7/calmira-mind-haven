@@ -22,13 +22,13 @@ const AutoScrollingMood: React.FC = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentMoodIndex((prevIndex) => (prevIndex + 1) % moods.length);
-    }, 3000); // Change every 3 seconds for better readability
+    }, 3000); // Change every 3 seconds
 
     return () => clearInterval(interval);
   }, [moods.length]);
 
   return (
-    <div className="h-14 flex overflow-hidden items-center">
+    <div className="h-14 flex overflow-hidden items-center justify-center">
       <AnimatePresence mode="wait">
         <motion.div
           key={currentMoodIndex}
@@ -39,7 +39,7 @@ const AutoScrollingMood: React.FC = () => {
             duration: 0.7,
             ease: [0.25, 0.1, 0.25, 1]
           }}
-          className="text-xl md:text-2xl font-bold italic text-indigo-700"
+          className="text-xl md:text-2xl font-semibold italic text-[#575454] drop-shadow-[0_0_1px_rgba(255,255,255,0.3)]"
         >
           {moods[currentMoodIndex]}
         </motion.div>

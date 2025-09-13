@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, BarChart3 } from "lucide-react";
@@ -6,25 +6,45 @@ import { Menu, X, BarChart3 } from "lucide-react";
 const NAV_LINKS = [
   { name: "Home", path: "/" },
   { name: "Profile", path: "/profile" },
-  { name: "Services", path: "#services" }, // anchor scroll
+  { name: "Services", path: "#services" },
 ];
 
 const Navbar: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [spotlight, setSpotlight] = useState({ x: 0, y: 0 });
+  const navRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!navRef.current) return;
+    const rect = navRef.current.getBoundingClientRect();
+    setSpotlight({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+  };
 
   return (
     <>
-      {/* Sticky frosted navbar */}
       <header className="fixed top-0 left-0 right-0 z-50">
         <div
-          className="
-            w-full bg-transparent backdrop-blur-md
-            border-b border-white/30 shadow-sm
-          "
+          ref={navRef}
+          onMouseMove={handleMouseMove}
+          className="relative w-full bg-transparent backdrop-blur-md border-b border-white/30 shadow-sm overflow-hidden"
         >
-          <div className="max-w-[1300px] mx-auto px-4 sm:px-6 lg:px-8">
+          {/* spotlight layer */}
+          <div
+            className="absolute inset-0 pointer-events-none transition-all duration-200"
+            style={{
+              background: `radial-gradient(400px circle at ${spotlight.x}px ${spotlight.y}px,
+                rgba(255,255,255,0.15), 
+                transparent 60%)`,
+            }}
+          />
+
+          {/* navbar content */}
+          <div className="max-w-[1300px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="flex items-center justify-between h-16">
-              {/* LEFT: Logo */}
+              {/* Logo */}
               <Link
                 to="/"
                 className="flex items-center gap-2 font-bold text-xl text-white drop-shadow-md"
@@ -39,7 +59,7 @@ const Navbar: React.FC = () => {
                 <span className="hidden sm:inline">Calmira AI</span>
               </Link>
 
-              {/* CENTER: Navigation links (desktop) */}
+              {/* Desktop links */}
               <nav className="hidden lg:flex items-center gap-8">
                 {NAV_LINKS.map((link) => (
                   <a
@@ -48,15 +68,13 @@ const Navbar: React.FC = () => {
                     className="relative group text-white drop-shadow-md font-medium transition-colors hover:text-[#ffcc00]"
                   >
                     {link.name}
-                    {/* Animated underline */}
                     <span className="absolute left-0 -bottom-1 h-[2px] w-0 bg-[#ffcc00] transition-all duration-300 group-hover:w-full"></span>
                   </a>
                 ))}
               </nav>
 
-              {/* RIGHT: Buttons */}
+              {/* Right side buttons */}
               <div className="flex items-center gap-3">
-                {/* Analytics */}
                 <motion.button
                   whileHover={{ y: -2 }}
                   whileTap={{ scale: 0.97 }}
@@ -68,7 +86,6 @@ const Navbar: React.FC = () => {
                   Analytics
                 </motion.button>
 
-                {/* Sign Up */}
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -79,7 +96,6 @@ const Navbar: React.FC = () => {
                   Sign Up
                 </motion.button>
 
-                {/* Hamburger (mobile only) */}
                 <button
                   onClick={() => setMobileOpen((s) => !s)}
                   className="lg:hidden p-2 rounded-md text-white hover:text-[#ffcc00] transition"
@@ -92,7 +108,7 @@ const Navbar: React.FC = () => {
         </div>
       </header>
 
-      {/* MOBILE DROPDOWN */}
+      {/* Mobile dropdown */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
