@@ -1,8 +1,16 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { X, Menu, Home, User, BookOpen, Mic, MessageCircle } from 'lucide-react';
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import {
+  X,
+  Menu,
+  Home,
+  User,
+  BookOpen,
+  Mic,
+  MessageCircle,
+} from "lucide-react";
 
 const ServiceNavigation: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -10,11 +18,21 @@ const ServiceNavigation: React.FC = () => {
   const location = useLocation();
 
   const navItems = [
-    { id: 'home', label: 'Home', icon: Home, path: '/dashboard' },
-    { id: 'profile', label: 'Profile', icon: User, path: '/profile' },
-    { id: 'manga', label: 'Manga Creation', icon: BookOpen, path: '/mental-wellness' },
-    { id: 'voice', label: 'Voice Chat', icon: Mic, path: '/voice' },
-    { id: 'chat', label: 'Chat', icon: MessageCircle, path: '/services/chat' }
+    { id: "home", label: "Home", icon: Home, path: "/dashboard" },
+    { id: "profile", label: "Profile", icon: User, path: "/profile" },
+    {
+      id: "manga",
+      label: "Manga Creation",
+      icon: BookOpen,
+      path: "/mental-wellness",
+    },
+    { id: "voice", label: "Voice Chat", icon: Mic, path: "/voice" },
+    {
+      id: "chat",
+      label: "Dhyaan AI",
+      icon: MessageCircle,
+      path: "/services/chat",
+    },
   ];
 
   const handleNavigation = (path: string) => {
@@ -55,7 +73,9 @@ const ServiceNavigation: React.FC = () => {
             </div>
             <div>
               <h2 className="kalam-bold text-white">Mental Wellness</h2>
-              <p className="text-white/70 text-sm kalam-light">Your companion</p>
+              <p className="text-white/70 text-sm kalam-light">
+                Your companion
+              </p>
             </div>
           </div>
         </div>
@@ -68,8 +88,8 @@ const ServiceNavigation: React.FC = () => {
               onClick={() => handleNavigation(item.path)}
               className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 kalam-regular ${
                 location.pathname === item.path
-                  ? 'bg-white/20 text-white border border-white/30 shadow-lg'
-                  : 'text-white/70 hover:text-white hover:bg-white/10'
+                  ? "bg-white/20 text-white border border-white/30 shadow-lg"
+                  : "text-white/70 hover:text-white hover:bg-white/10"
               }`}
             >
               <item.icon className="h-5 w-5" />
@@ -101,10 +121,10 @@ const ServiceNavigation: React.FC = () => {
 
             {/* Sliding Navigation Panel */}
             <motion.div
-              initial={{ x: '-100%' }}
+              initial={{ x: "-100%" }}
               animate={{ x: 0 }}
-              exit={{ x: '-100%' }}
-              transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", damping: 20, stiffness: 300 }}
               className="lg:hidden fixed top-0 left-0 h-full w-80 max-w-[80vw] bg-gradient-to-b from-primary-dark/40 via-background-deep/60 to-primary-dark/40 backdrop-blur-xl border-r border-white/10 z-50 overflow-y-auto shadow-2xl"
             >
               <div className="p-6">
@@ -112,11 +132,15 @@ const ServiceNavigation: React.FC = () => {
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-medium rounded-xl flex items-center justify-center shadow-lg">
-                      <span className="text-white font-bold kalam-bold">MW</span>
+                      <span className="text-white font-bold kalam-bold">
+                        MW
+                      </span>
                     </div>
                     <div>
                       <h2 className="kalam-bold text-white">Mental Wellness</h2>
-                      <p className="text-white/70 text-sm kalam-light">Your companion</p>
+                      <p className="text-white/70 text-sm kalam-light">
+                        Your companion
+                      </p>
                     </div>
                   </div>
                   <Button
@@ -139,8 +163,8 @@ const ServiceNavigation: React.FC = () => {
                       onClick={() => handleNavigation(item.path)}
                       className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 kalam-regular ${
                         location.pathname === item.path
-                          ? 'bg-white/20 text-white border border-white/30 shadow-lg'
-                          : 'text-white/70 hover:text-white hover:bg-white/10'
+                          ? "bg-white/20 text-white border border-white/30 shadow-lg"
+                          : "text-white/70 hover:text-white hover:bg-white/10"
                       }`}
                     >
                       <item.icon className="h-5 w-5" />

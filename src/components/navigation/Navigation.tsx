@@ -1,30 +1,48 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { X, Menu, Home, User, BookOpen, Mic, MessageCircle } from 'lucide-react';
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import {
+  X,
+  Menu,
+  Home,
+  User,
+  BookOpen,
+  Mic,
+  MessageCircle,
+} from "lucide-react";
 
 interface NavigationProps {
   transparent?: boolean;
   showHamburger?: boolean;
 }
 
-const Navigation: React.FC<NavigationProps> = ({ 
-  transparent = false, 
-  showHamburger = false 
+const Navigation: React.FC<NavigationProps> = ({
+  transparent = false,
+  showHamburger = false,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isService = location.pathname.startsWith('/services/');
+  const isService = location.pathname.startsWith("/services/");
 
   const navItems = [
-    { id: 'home', label: 'Home', icon: Home, path: '/dashboard' },
-    { id: 'profile', label: 'Profile', icon: User, path: '/profile' },
-    { id: 'manga', label: 'Manga Creation', icon: BookOpen, path: '/services/manga' },
-    { id: 'voice', label: 'Voice Chat', icon: Mic, path: '/services/voice' },
-    { id: 'chat', label: 'Chat', icon: MessageCircle, path: '/services/chat' }
+    { id: "home", label: "Home", icon: Home, path: "/dashboard" },
+    { id: "profile", label: "Profile", icon: User, path: "/profile" },
+    {
+      id: "manga",
+      label: "Manga Creation",
+      icon: BookOpen,
+      path: "/services/manga",
+    },
+    { id: "voice", label: "Voice Chat", icon: Mic, path: "/services/voice" },
+    {
+      id: "chat",
+      label: "Dhyaan AI",
+      icon: MessageCircle,
+      path: "/services/chat",
+    },
   ];
 
   const handleNavigation = (path: string) => {
@@ -44,11 +62,13 @@ const Navigation: React.FC<NavigationProps> = ({
   return (
     <>
       {/* Top Navigation Bar */}
-      <nav className={`fixed top-0 left-0 right-0 z-40 ${
-        shouldBeTransparent 
-          ? 'bg-transparent backdrop-blur-sm border-b border-border/20' 
-          : 'bg-background/95 backdrop-blur-lg border-b border-border/50'
-      }`}>
+      <nav
+        className={`fixed top-0 left-0 right-0 z-40 ${
+          shouldBeTransparent
+            ? "bg-transparent backdrop-blur-sm border-b border-border/20"
+            : "bg-background/95 backdrop-blur-lg border-b border-border/50"
+        }`}
+      >
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             {/* Logo/Brand */}
@@ -86,7 +106,9 @@ const Navigation: React.FC<NavigationProps> = ({
                     variant="ghost"
                     onClick={() => handleNavigation(item.path)}
                     className={`text-foreground hover:text-primary hover:bg-primary/10 rounded-xl ${
-                      location.pathname === item.path ? 'text-primary bg-primary/10' : ''
+                      location.pathname === item.path
+                        ? "text-primary bg-primary/10"
+                        : ""
                     }`}
                   >
                     <item.icon className="h-4 w-4 mr-2" />
@@ -114,10 +136,10 @@ const Navigation: React.FC<NavigationProps> = ({
 
             {/* Navigation Panel */}
             <motion.div
-              initial={{ x: '-100%' }}
+              initial={{ x: "-100%" }}
               animate={{ x: 0 }}
-              exit={{ x: '-100%' }}
-              transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", damping: 20, stiffness: 300 }}
               className="fixed top-0 left-0 h-full w-80 max-w-[80vw] nav-panel z-50 overflow-y-auto"
             >
               <div className="p-6">
@@ -128,8 +150,12 @@ const Navigation: React.FC<NavigationProps> = ({
                       <span className="text-white font-bold">MW</span>
                     </div>
                     <div>
-                      <h2 className="font-bold text-foreground">Mental Wellness</h2>
-                      <p className="text-muted-foreground text-sm">Your companion</p>
+                      <h2 className="font-bold text-foreground">
+                        Mental Wellness
+                      </h2>
+                      <p className="text-muted-foreground text-sm">
+                        Your companion
+                      </p>
                     </div>
                   </div>
                   <Button
@@ -152,8 +178,8 @@ const Navigation: React.FC<NavigationProps> = ({
                       onClick={() => handleNavigation(item.path)}
                       className={`w-full flex items-center space-x-3 p-4 rounded-xl text-left transition-all duration-200 ${
                         location.pathname === item.path
-                          ? 'bg-primary/20 text-primary border border-primary/30'
-                          : 'text-foreground hover:bg-primary/10 hover:text-primary'
+                          ? "bg-primary/20 text-primary border border-primary/30"
+                          : "text-foreground hover:bg-primary/10 hover:text-primary"
                       }`}
                     >
                       <item.icon className="h-5 w-5" />

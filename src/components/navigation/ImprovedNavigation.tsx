@@ -1,26 +1,44 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { X, Menu, Home, User, BookOpen, Mic, MessageCircle } from 'lucide-react';
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import {
+  X,
+  Menu,
+  Home,
+  User,
+  BookOpen,
+  Mic,
+  MessageCircle,
+} from "lucide-react";
 
 interface ImprovedNavigationProps {
   transparent?: boolean;
 }
 
-const ImprovedNavigation: React.FC<ImprovedNavigationProps> = ({ 
-  transparent = false 
+const ImprovedNavigation: React.FC<ImprovedNavigationProps> = ({
+  transparent = false,
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
   const navItems = [
-    { id: 'home', label: 'Home', icon: Home, path: '/dashboard' },
-    { id: 'profile', label: 'Profile', icon: User, path: '/profile' },
-    { id: 'manga', label: 'Manga Creation', icon: BookOpen, path: '/mental-wellness' },
-    { id: 'voice', label: 'Voice Chat', icon: Mic, path: '/voice' },
-    { id: 'chat', label: 'Chat', icon: MessageCircle, path: '/services/chat' }
+    { id: "home", label: "Home", icon: Home, path: "/dashboard" },
+    { id: "profile", label: "Profile", icon: User, path: "/profile" },
+    {
+      id: "manga",
+      label: "Manga Creation",
+      icon: BookOpen,
+      path: "/mental-wellness",
+    },
+    { id: "voice", label: "Voice Chat", icon: Mic, path: "/voice" },
+    {
+      id: "chat",
+      label: "Dhyaan AI",
+      icon: MessageCircle,
+      path: "/services/chat",
+    },
   ];
 
   const handleNavigation = (path: string) => {
@@ -46,8 +64,12 @@ const ImprovedNavigation: React.FC<ImprovedNavigationProps> = ({
                 <span className="text-white font-bold text-lg">MW</span>
               </div>
               <div>
-                <h2 className="font-bold text-foreground text-xl kalam-bold">Mental Wellness</h2>
-                <p className="text-muted-foreground text-sm kalam-light">Your companion</p>
+                <h2 className="font-bold text-foreground text-xl kalam-bold">
+                  Mental Wellness
+                </h2>
+                <p className="text-muted-foreground text-sm kalam-light">
+                  Your companion
+                </p>
               </div>
             </div>
           </div>
@@ -62,8 +84,8 @@ const ImprovedNavigation: React.FC<ImprovedNavigationProps> = ({
                 onClick={() => handleNavigation(item.path)}
                 className={`w-full flex items-center space-x-3 px-4 py-4 rounded-xl text-left transition-all duration-300 kalam-regular ${
                   isCurrentPath(item.path)
-                    ? 'bg-primary/20 text-primary border border-primary/30 shadow-lg'
-                    : 'text-foreground hover:bg-primary/10 hover:text-primary hover:shadow-md'
+                    ? "bg-primary/20 text-primary border border-primary/30 shadow-lg"
+                    : "text-foreground hover:bg-primary/10 hover:text-primary hover:shadow-md"
                 }`}
               >
                 <item.icon className="h-6 w-6" />
@@ -83,11 +105,13 @@ const ImprovedNavigation: React.FC<ImprovedNavigationProps> = ({
 
       {/* Mobile Top Bar */}
       <div className="lg:hidden">
-        <div className={`fixed top-0 left-0 right-0 z-40 ${
-          transparent 
-            ? 'bg-transparent backdrop-blur-sm border-b border-border/20' 
-            : 'bg-background/95 backdrop-blur-lg border-b border-border/50'
-        }`}>
+        <div
+          className={`fixed top-0 left-0 right-0 z-40 ${
+            transparent
+              ? "bg-transparent backdrop-blur-sm border-b border-border/20"
+              : "bg-background/95 backdrop-blur-lg border-b border-border/50"
+          }`}
+        >
           <div className="flex items-center justify-between px-4 py-4">
             {/* Mobile Menu Button */}
             <Button
@@ -104,7 +128,9 @@ const ImprovedNavigation: React.FC<ImprovedNavigationProps> = ({
               <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary-medium rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">MW</span>
               </div>
-              <span className="font-bold text-foreground kalam-bold">Wellness</span>
+              <span className="font-bold text-foreground kalam-bold">
+                Wellness
+              </span>
             </div>
 
             {/* Spacer for balance */}
@@ -128,10 +154,10 @@ const ImprovedNavigation: React.FC<ImprovedNavigationProps> = ({
 
             {/* Mobile Navigation Panel */}
             <motion.div
-              initial={{ x: '-100%' }}
+              initial={{ x: "-100%" }}
               animate={{ x: 0 }}
-              exit={{ x: '-100%' }}
-              transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", damping: 20, stiffness: 300 }}
               className="fixed top-0 left-0 h-full w-80 max-w-[85vw] bg-background/98 backdrop-blur-xl border-r border-border z-50 overflow-y-auto lg:hidden"
             >
               <div className="p-6">
@@ -142,8 +168,12 @@ const ImprovedNavigation: React.FC<ImprovedNavigationProps> = ({
                       <span className="text-white font-bold">MW</span>
                     </div>
                     <div>
-                      <h2 className="font-bold text-foreground kalam-bold">Mental Wellness</h2>
-                      <p className="text-muted-foreground text-sm kalam-light">Your companion</p>
+                      <h2 className="font-bold text-foreground kalam-bold">
+                        Mental Wellness
+                      </h2>
+                      <p className="text-muted-foreground text-sm kalam-light">
+                        Your companion
+                      </p>
                     </div>
                   </div>
                   <Button
@@ -166,8 +196,8 @@ const ImprovedNavigation: React.FC<ImprovedNavigationProps> = ({
                       onClick={() => handleNavigation(item.path)}
                       className={`w-full flex items-center space-x-3 p-4 rounded-xl text-left transition-all duration-200 kalam-regular ${
                         isCurrentPath(item.path)
-                          ? 'bg-primary/20 text-primary border border-primary/30'
-                          : 'text-foreground hover:bg-primary/10 hover:text-primary'
+                          ? "bg-primary/20 text-primary border border-primary/30"
+                          : "text-foreground hover:bg-primary/10 hover:text-primary"
                       }`}
                     >
                       <item.icon className="h-6 w-6" />
