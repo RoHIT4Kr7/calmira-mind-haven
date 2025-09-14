@@ -6,7 +6,8 @@ const services = [
   {
     id: "manga",
     title: "Manga Creation",
-    description: "Create personalized manga stories based on your mood and preferences",
+    description:
+      "Create personalized manga stories based on your mood and preferences",
     icon: "📚",
     path: "/mental-wellness",
     gradient: "from-primary-dark/20 to-primary-medium/20",
@@ -14,16 +15,17 @@ const services = [
   {
     id: "voice",
     title: "Voice Chat",
-    description: "Have voice conversations with AI friends, therapists, or teachers",
+    description:
+      "Have voice conversations with AI friends, therapists, or teachers",
     icon: "🎙️",
     path: "/voice",
     gradient: "from-primary-medium/20 to-primary-dark/20",
   },
   {
     id: "chat",
-    title: "Chat",
-    description: "Text-based conversations with AI companions",
-    icon: "💬",
+    title: "Dhyaan AI",
+    description: "Personalized meditation experiences powered by AI",
+    icon: "🧘‍♀️",
     path: "/services/chat",
     gradient: "from-accent/20 to-primary/20",
   },

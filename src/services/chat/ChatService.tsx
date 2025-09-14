@@ -1,171 +1,43 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import LightServiceNavigation from '@/components/navigation/LightServiceNavigation';
-import ChatInterface from './ChatInterface';
-
-interface ChatAgent {
-  id: string;
-  name: string;
-  title: string;
-  description: string;
-  icon: string;
-  personality: string;
-  avatar: string;
-  status: string;
-  gradient: string;
-  specialties: string[];
-}
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import LightServiceNavigation from "@/components/navigation/LightServiceNavigation";
+import DhyaanAI from "./DhyaanAI";
 
 const ChatService: React.FC = () => {
-  const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
+  const [showDhyaanAI, setShowDhyaanAI] = useState(false);
   const navigate = useNavigate();
 
-  const chatAgents: ChatAgent[] = [
-    {
-      id: 'wellness-coach',
-      name: 'Maya',
-      title: 'Wellness Coach',
-      description: 'Specialized in mental health, mindfulness, and emotional support',
-      icon: '🧘‍♀️',
-      personality: 'Empathetic, calm, and supportive with expertise in mindfulness techniques',
-      avatar: '/images/wellness-coach-avatar.png',
-      status: 'Ready to support your wellness journey',
-      gradient: 'from-green-500/20 to-emerald-500/20',
-      specialties: ['Mindfulness', 'Stress Management', 'Emotional Support']
-    },
-    {
-      id: 'life-coach',
-      name: 'Alex',
-      title: 'Life Coach',
-      description: 'Helps with goal setting, productivity, and personal development',
-      icon: '🎯',
-      personality: 'Motivational, organized, and goal-oriented with practical advice',
-      avatar: '/images/life-coach-avatar.png',
-      status: 'Ready to help you achieve your goals',
-      gradient: 'from-blue-500/20 to-cyan-500/20',
-      specialties: ['Goal Setting', 'Productivity', 'Personal Growth']
-    },
-    {
-      id: 'therapist',
-      name: 'Dr. Sarah',
-      title: 'AI Therapist',
-      description: 'Professional therapeutic support for mental health concerns',
-      icon: '🧠',
-      personality: 'Professional, empathetic, trained in therapeutic techniques',
-      avatar: '/images/therapist-avatar.png',
-      status: 'Professional support available',
-      gradient: 'from-purple-500/20 to-indigo-500/20',
-      specialties: ['Cognitive Therapy', 'Anxiety Support', 'Depression Help']
-    },
-    {
-      id: 'companion',
-      name: 'Riley',
-      title: 'AI Companion',
-      description: 'Friendly companion for casual conversations and daily support',
-      icon: '🤝',
-      personality: 'Friendly, casual, understanding, and always ready to listen',
-      avatar: '/images/companion-avatar.png',
-      status: 'Always here to chat',
-      gradient: 'from-orange-500/20 to-pink-500/20',
-      specialties: ['Daily Support', 'Casual Chat', 'Companionship']
-    }
-  ];
+  // Scroll to top when component mounts or when showDhyaanAI changes
+  useEffect(() => {
+    // Use setTimeout to ensure scroll happens after any route transitions
+    const scrollTimer = setTimeout(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+    }, 100);
 
-  const handleSelectAgent = (agentId: string) => {
-    setSelectedAgent(agentId);
+    return () => clearTimeout(scrollTimer);
+  }, [showDhyaanAI]);
+
+  const handleStartDhyaanAI = () => {
+    setShowDhyaanAI(true);
   };
 
-  const handleBackToAgents = () => {
-    setSelectedAgent(null);
+  const handleBackFromDhyaanAI = () => {
+    setShowDhyaanAI(false);
   };
 
-  const getSelectedAgentInfo = (agentId: string) => {
-    return chatAgents.find(agent => agent.id === agentId);
-  };
-
-  const handleSendMessage = (message: string) => {
-    console.log(`Message sent to ${selectedAgent}:`, message);
-    // Here you would typically send the message to your backend API
-  };
-
-  const handleVoiceMessage = () => {
-    console.log(`Voice message requested for ${selectedAgent}`);
-    // Implement voice recording functionality
-  };
-
-  const handleVoiceCall = () => {
-    console.log(`Voice call requested with ${selectedAgent}`);
-    // Implement voice call functionality
-  };
-
-  const handleVideoCall = () => {
-    console.log(`Video call requested with ${selectedAgent}`);
-    // Implement video call functionality
-  };
-
-  if (selectedAgent) {
-    const agent = getSelectedAgentInfo(selectedAgent);
-    if (!agent) return null;
-    
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background-soft to-background flex">
-        <LightServiceNavigation currentPage="Chat" />
-        
-        <div className="flex-1 ml-0 lg:ml-64">
-          <motion.div
-            initial={{ opacity: 0, x: 100 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -100 }}
-            transition={{ duration: 0.4 }}
-            className="h-screen flex flex-col"
-          >
-            {/* Back Button */}
-            <div className="p-6 bg-white/95 backdrop-blur-lg border-b border-border">
-              <Button
-                variant="ghost"
-                onClick={handleBackToAgents}
-                className="text-foreground hover:text-primary hover:bg-primary/10 rounded-xl inter-medium"
-              >
-                ← Back to Agents
-              </Button>
-            </div>
-
-            {/* Chat Interface */}
-            <div className="flex-1">
-              <ChatInterface
-                contactName={agent.name}
-                contactAvatar={agent.avatar}
-                contactStatus={agent.status}
-                initialMessages={[
-                  {
-                    id: 'welcome',
-                    content: `Hello! I'm ${agent.name}, your ${agent.title}. ${agent.description}. How can I help you today?`,
-                    sender: 'ai',
-                    timestamp: new Date(),
-                    type: 'text'
-                  }
-                ]}
-                onSendMessage={handleSendMessage}
-                onVoiceMessage={handleVoiceMessage}
-                onVoiceCall={handleVoiceCall}
-                onVideoCall={handleVideoCall}
-              />
-            </div>
-          </motion.div>
-        </div>
-      </div>
-    );
+  if (showDhyaanAI) {
+    return <DhyaanAI onBack={handleBackFromDhyaanAI} />;
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background-soft to-background flex">
-      <LightServiceNavigation currentPage="Chat" />
-      
+      <LightServiceNavigation currentPage="Dhyaan AI" />
+
       <main className="flex-1 ml-0 lg:ml-64 px-4 py-8">
-        <div className="max-w-6xl mx-auto py-8">
+        <div className="max-w-4xl mx-auto py-8">
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -174,92 +46,159 @@ const ChatService: React.FC = () => {
             className="text-center mb-12"
           >
             <h1 className="text-5xl md:text-6xl lg:text-7xl poppins-bold text-foreground mb-6 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-              Chat Service
+              Dhyaan AI
             </h1>
             <p className="text-muted-foreground text-xl md:text-2xl max-w-4xl mx-auto inter-regular leading-relaxed">
-              Choose your ideal AI companion. Each agent has unique specialties and personalities to support different aspects of your wellness journey.
+              Generate personalized meditation experiences with the power of AI.
+              Step-by-step guidance tailored to your current state and goals.
             </p>
           </motion.div>
 
-          {/* Chat Agents */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-            {chatAgents.map((agent, index) => (
-              <motion.div
-                key={agent.id}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                whileHover={{ y: -8 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <Card className="service-card cursor-pointer bg-white/95 backdrop-blur-sm border border-border/50 hover:border-primary/50 hover:shadow-lg h-full transition-all duration-300">
-                  <CardContent className="p-8 h-full flex flex-col">
-                    <div className="flex items-center space-x-4 mb-6">
-                      <div className="text-6xl">{agent.icon}</div>
-                      <div>
-                        <h3 className="text-2xl poppins-semibold text-foreground">{agent.name}</h3>
-                        <p className="text-lg inter-medium text-primary">{agent.title}</p>
-                      </div>
-                    </div>
-                    
-                    <p className="text-muted-foreground mb-6 flex-grow text-lg inter-regular leading-relaxed">
-                      {agent.description}
-                    </p>
-                    
-                    <div className="mb-6 p-4 bg-background/50 rounded-xl border border-border/30">
-                      <p className="text-base text-muted-foreground inter-regular mb-3">
-                        <strong className="text-foreground inter-medium">Personality:</strong> {agent.personality}
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {agent.specialties.map((specialty, idx) => (
-                          <span
-                            key={idx}
-                            className="px-3 py-1 bg-primary/20 text-primary text-sm inter-regular rounded-full"
-                          >
-                            {specialty}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    <Button
-                      onClick={() => handleSelectAgent(agent.id)}
-                      className="w-full bg-gradient-to-r from-primary to-primary-medium hover:from-primary-medium hover:to-primary text-primary-foreground inter-medium font-semibold py-4 text-lg rounded-2xl transition-all duration-300 shadow-md hover:shadow-lg"
-                    >
-                      Start Chat
-                    </Button>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
+          {/* Main Feature Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            whileHover={{ y: -8 }}
+            className="mb-12"
+          >
+            <Card className="service-card cursor-pointer bg-white/95 backdrop-blur-sm border border-border/50 hover:border-primary/50 hover:shadow-lg transition-all duration-300">
+              <CardContent className="p-12 text-center">
+                <div className="text-8xl mb-8">🧘‍♀️</div>
+                <h2 className="text-3xl poppins-semibold text-foreground mb-4">
+                  Personalized Meditation
+                </h2>
+                <p className="text-muted-foreground text-lg inter-regular leading-relaxed mb-8 max-w-2xl mx-auto">
+                  Answer a few questions about how you're feeling and what you
+                  want to achieve. Our AI will create a custom meditation
+                  session just for you, with guided audio and background music
+                  to help you find your inner peace.
+                </p>
 
-          {/* Features Info */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                  <div className="p-4 bg-background/50 rounded-xl border border-border/30">
+                    <div className="text-3xl mb-2">🎯</div>
+                    <h3 className="font-semibold text-foreground mb-2">
+                      Targeted
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Based on your current emotional state
+                    </p>
+                  </div>
+                  <div className="p-4 bg-background/50 rounded-xl border border-border/30">
+                    <div className="text-3xl mb-2">🎵</div>
+                    <h3 className="font-semibold text-foreground mb-2">
+                      Audio Guided
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Soothing voice and background music
+                    </p>
+                  </div>
+                  <div className="p-4 bg-background/50 rounded-xl border border-border/30">
+                    <div className="text-3xl mb-2">⚡</div>
+                    <h3 className="font-semibold text-foreground mb-2">
+                      AI Powered
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Intelligent personalization
+                    </p>
+                  </div>
+                </div>
+
+                <Button
+                  onClick={handleStartDhyaanAI}
+                  className="bg-gradient-to-r from-primary to-primary-medium hover:from-primary-medium hover:to-primary text-primary-foreground inter-medium font-semibold py-4 px-8 text-lg rounded-2xl transition-all duration-300 shadow-md hover:shadow-lg"
+                >
+                  Start Your Journey
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Features Grid */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
+            className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12"
+          >
+            <Card className="bg-white/95 backdrop-blur-sm border border-border/50">
+              <CardContent className="p-8">
+                <div className="text-5xl mb-4">🌱</div>
+                <h3 className="text-xl poppins-semibold text-foreground mb-3">
+                  Beginner Friendly
+                </h3>
+                <p className="text-muted-foreground inter-regular leading-relaxed">
+                  Whether you're new to meditation or an experienced
+                  practitioner, our AI adapts to your experience level and
+                  provides appropriate guidance.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/95 backdrop-blur-sm border border-border/50">
+              <CardContent className="p-8">
+                <div className="text-5xl mb-4">🎨</div>
+                <h3 className="text-xl poppins-semibold text-foreground mb-3">
+                  Multiple Styles
+                </h3>
+                <p className="text-muted-foreground inter-regular leading-relaxed">
+                  Choose from various meditation types including mindfulness,
+                  visualization, sound healing, and more to find what resonates
+                  with you.
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* How It Works */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
             className="p-8 bg-white/95 rounded-2xl border border-border/30 backdrop-blur-sm shadow-lg"
           >
             <h3 className="text-2xl md:text-3xl poppins-semibold text-foreground mb-8 text-center">
-              Chat Features
+              How It Works
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
               <div className="space-y-4">
-                <div className="text-4xl">💬</div>
-                <p className="text-base inter-regular text-muted-foreground">Real-time messaging</p>
+                <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto">
+                  <span className="text-primary font-bold">1</span>
+                </div>
+                <h4 className="font-semibold text-foreground">
+                  Share Your State
+                </h4>
+                <p className="text-sm inter-regular text-muted-foreground">
+                  Tell us how you're feeling right now
+                </p>
               </div>
               <div className="space-y-4">
-                <div className="text-4xl">🎭</div>
-                <p className="text-base inter-regular text-muted-foreground">Multiple personalities</p>
+                <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto">
+                  <span className="text-primary font-bold">2</span>
+                </div>
+                <h4 className="font-semibold text-foreground">Set Your Goal</h4>
+                <p className="text-sm inter-regular text-muted-foreground">
+                  Choose what you want to feel
+                </p>
               </div>
               <div className="space-y-4">
-                <div className="text-4xl">🧠</div>
-                <p className="text-base inter-regular text-muted-foreground">Specialized expertise</p>
+                <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto">
+                  <span className="text-primary font-bold">3</span>
+                </div>
+                <h4 className="font-semibold text-foreground">AI Creates</h4>
+                <p className="text-sm inter-regular text-muted-foreground">
+                  Personalized meditation is generated
+                </p>
               </div>
               <div className="space-y-4">
-                <div className="text-4xl">🔒</div>
-                <p className="text-base inter-regular text-muted-foreground">Private & secure</p>
+                <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto">
+                  <span className="text-primary font-bold">4</span>
+                </div>
+                <h4 className="font-semibold text-foreground">Find Peace</h4>
+                <p className="text-sm inter-regular text-muted-foreground">
+                  Enjoy your guided meditation
+                </p>
               </div>
             </div>
           </motion.div>

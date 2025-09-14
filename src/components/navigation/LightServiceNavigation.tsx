@@ -22,7 +22,12 @@ const LightServiceNavigation: React.FC = () => {
     { id: "profile", label: "Profile", icon: User, path: "/profile" },
     { id: "manga", label: "Manga", icon: BookOpen, path: "/mental-wellness" },
     { id: "voice", label: "Voice", icon: Mic, path: "/voice" },
-    { id: "chat", label: "Chat", icon: MessageCircle, path: "/services/chat" },
+    {
+      id: "chat",
+      label: "Dhyaan AI",
+      icon: MessageCircle,
+      path: "/services/chat",
+    },
   ];
 
   const handleNavigation = (path: string) => {
