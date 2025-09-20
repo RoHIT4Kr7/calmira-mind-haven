@@ -67,7 +67,7 @@ export function Component({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="w-full max-w-sm relative z-10"
+        className="w-full max-w-md relative z-10"
         style={{ perspective: 1500 }}
       >
         <motion.div
@@ -257,7 +257,7 @@ export function Component({
 
             <div className="absolute -inset-[0.5px] rounded-2xl bg-gradient-to-r from-white/3 via-white/7 to-white/3 opacity-0 group-hover:opacity-70 transition-opacity duration-500" />
 
-            <div className="relative bg-black/40 backdrop-blur-xl rounded-2xl p-6 border border-white/[0.05] shadow-2xl overflow-hidden">
+            <div className="relative bg-black/40 backdrop-blur-xl rounded-2xl p-8 border border-white/[0.05] shadow-2xl overflow-hidden">
               <div
                 className="absolute inset-0 opacity-[0.03]"
                 style={{
@@ -266,24 +266,24 @@ export function Component({
                 }}
               />
 
-              <div className="text-center space-y-2 mb-5">
+              <div className="text-center space-y-3 mb-8">
                 <motion.div
                   initial={{ scale: 0.5, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ type: "spring", duration: 0.8 }}
-                  className="mx-auto w-14 h-14 rounded-full border border-white/10 flex items-center justify-center relative overflow-hidden bg-white/5"
+                  className="mx-auto w-16 h-16 rounded-full border border-white/10 flex items-center justify-center relative overflow-hidden bg-white/5"
                 >
                   <img
                     src="/images/logocalmira.jpg"
                     alt="Calmira logo"
-                    className="w-10 h-10 object-contain"
+                    className="w-12 h-12 object-contain"
                   />
                 </motion.div>
                 <motion.h1
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
-                  className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-white to-white/80"
+                  className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-white to-white/80"
                 >
                   Welcome to Calmira AI
                 </motion.h1>
@@ -291,14 +291,14 @@ export function Component({
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.3 }}
-                  className="text-white/70 text-xs"
+                  className="text-white/70 text-sm leading-relaxed"
                 >
                   Mindful creativity meets AI—generate stories, voice, and
                   guided meditations crafted just for you.
                 </motion.p>
               </div>
               {/* Google Sign-In (only flow) */}
-              <div className="relative mt-4 flex flex-col items-center justify-center gap-2">
+              <div className="relative mt-6 flex flex-col items-center justify-center gap-3">
                 <GoogleLogin
                   onSuccess={(resp) => {
                     setIsLoading(true);

@@ -283,179 +283,189 @@ const DhyaanAI: React.FC<DhyaanAIProps> = ({ onBack }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
-      {/* Header */}
-      <div className="flex items-center justify-between p-6 bg-black/20 backdrop-blur-lg border-b border-white/10">
-        <Button
-          variant="ghost"
-          onClick={onBack}
-          className="p-2 hover:bg-white/10 rounded-xl text-white"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <h1 className="text-lg font-semibold text-white">Dhyaan AI</h1>
-        <div className="w-10" /> {/* Spacer */}
-      </div>
-
-      <div className="p-6">
-        {/* Dhyaan AI Header */}
-        <Card className="mb-6 bg-white/5 backdrop-blur-lg border-white/10">
-          <CardContent className="p-4 flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center">
-                <span className="text-sm">🧘</span>
-              </div>
-              <div>
-                <h2 className="font-semibold text-white">Dhyaan AI</h2>
-                <span className="text-xs bg-white/20 text-white px-2 py-1 rounded">
-                  BETA
-                </span>
-              </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-white hover:bg-white/10"
-            >
-              <Info className="h-4 w-4" />
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Description */}
-        <div className="mb-8">
-          <p className="text-white/70 text-sm leading-relaxed">
-            Generate a personalized meditation with the power of AI and step by
-            step guidance.
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
+      {/* Compact Container */}
+      <div className="w-full max-w-md">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 bg-black/20 backdrop-blur-lg border border-white/10 rounded-t-xl">
+          <Button
+            variant="ghost"
+            onClick={onBack}
+            className="p-2 hover:bg-white/10 rounded-xl text-white"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h1 className="text-lg font-semibold text-white">Dhyaan AI</h1>
+          <div className="w-8" /> {/* Spacer */}
         </div>
 
-        {/* Form */}
-        <div className="space-y-6">
-          {/* Current Feeling */}
-          <div>
-            <label className="block text-white font-medium mb-3">
-              What are you feeling right now?
-            </label>
-            <Select
-              value={form.currentFeeling}
-              onValueChange={(value) =>
-                setForm({ ...form, currentFeeling: value })
-              }
-            >
-              <SelectTrigger className="w-full bg-white/10 border-white/20 rounded-xl text-white">
-                <SelectValue placeholder="Sad" />
-              </SelectTrigger>
-              <SelectContent className="bg-white/10 backdrop-blur-lg border-white/20 text-white">
-                {currentFeelings.map((feeling) => (
-                  <SelectItem
-                    key={feeling}
-                    value={feeling.toLowerCase()}
-                    className="text-white hover:bg-white/20 focus:bg-white/20"
-                  >
-                    {feeling}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        {/* Main Content */}
+        <div className="bg-white/5 backdrop-blur-lg border-x border-b border-white/10 rounded-b-xl p-6">
+          {/* Dhyaan AI Header */}
+          <Card className="mb-4 bg-white/10 backdrop-blur-lg border-white/20">
+            <CardContent className="p-3 flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-6 h-6 bg-white/10 rounded-full flex items-center justify-center">
+                  <span className="text-xs">🧘</span>
+                </div>
+                <div>
+                  <h2 className="font-semibold text-white text-sm">
+                    Dhyaan AI
+                  </h2>
+                  <span className="text-xs bg-purple-500/30 text-purple-200 px-2 py-0.5 rounded">
+                    BETA
+                  </span>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-white hover:bg-white/10 p-1"
+              >
+                <Info className="h-3 w-3" />
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Description */}
+          <div className="mb-6">
+            <p className="text-purple-200/80 text-sm leading-relaxed">
+              Generate a personalized meditation with the power of AI and step
+              by step guidance.
+            </p>
           </div>
 
-          {/* Desired Feeling */}
-          <div>
-            <label className="block text-white font-medium mb-3">
-              What do you want to feel?
-            </label>
-            <Select
-              value={form.desiredFeeling}
-              onValueChange={(value) =>
-                setForm({ ...form, desiredFeeling: value })
-              }
-            >
-              <SelectTrigger className="w-full bg-white/10 border-white/20 rounded-xl text-white">
-                <SelectValue placeholder="Peaceful" />
-              </SelectTrigger>
-              <SelectContent className="bg-white/10 backdrop-blur-lg border-white/20 text-white">
-                {desiredFeelings.map((feeling) => (
-                  <SelectItem
-                    key={feeling}
-                    value={feeling.toLowerCase()}
-                    className="text-white hover:bg-white/20 focus:bg-white/20"
-                  >
-                    {feeling}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Form */}
+          <div className="space-y-5">
+            {/* Current Feeling */}
+            <div>
+              <label className="block text-purple-200 font-medium mb-2 text-sm">
+                What are you feeling right now?
+              </label>
+              <Select
+                value={form.currentFeeling}
+                onValueChange={(value) =>
+                  setForm({ ...form, currentFeeling: value })
+                }
+              >
+                <SelectTrigger className="w-full bg-white/10 border-purple-300/30 rounded-lg text-white hover:bg-white/15">
+                  <SelectValue placeholder="Sad" />
+                </SelectTrigger>
+                <SelectContent className="bg-purple-900/90 backdrop-blur-lg border-purple-300/30 text-white">
+                  {currentFeelings.map((feeling) => (
+                    <SelectItem
+                      key={feeling}
+                      value={feeling.toLowerCase()}
+                      className="text-white hover:bg-purple-700/50 focus:bg-purple-700/50"
+                    >
+                      {feeling}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          {/* Experience Level */}
-          <div>
-            <label className="block text-white font-medium mb-3">
-              What is your meditation expertise?
-            </label>
-            <div className="space-y-3">
-              {experienceLevels.map((level) => (
-                <label
-                  key={level.value}
-                  className="flex items-center space-x-3 cursor-pointer"
-                >
-                  <input
-                    type="radio"
-                    name="experience"
-                    value={level.value}
-                    checked={form.experience === level.value}
-                    onChange={(e) =>
-                      setForm({ ...form, experience: e.target.value })
-                    }
-                    className="w-5 h-5 text-purple-500 border-white/30 focus:ring-purple-500"
-                  />
-                  <span className="text-white">{level.label}</span>
-                </label>
-              ))}
+            {/* Desired Feeling */}
+            <div>
+              <label className="block text-purple-200 font-medium mb-2 text-sm">
+                What do you want to feel?
+              </label>
+              <Select
+                value={form.desiredFeeling}
+                onValueChange={(value) =>
+                  setForm({ ...form, desiredFeeling: value })
+                }
+              >
+                <SelectTrigger className="w-full bg-white/10 border-purple-300/30 rounded-lg text-white hover:bg-white/15">
+                  <SelectValue placeholder="Peaceful" />
+                </SelectTrigger>
+                <SelectContent className="bg-purple-900/90 backdrop-blur-lg border-purple-300/30 text-white">
+                  {desiredFeelings.map((feeling) => (
+                    <SelectItem
+                      key={feeling}
+                      value={feeling.toLowerCase()}
+                      className="text-white hover:bg-purple-700/50 focus:bg-purple-700/50"
+                    >
+                      {feeling}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Experience Level */}
+            <div>
+              <label className="block text-purple-200 font-medium mb-2 text-sm">
+                What is your meditation expertise?
+              </label>
+              <div className="space-y-2">
+                {experienceLevels.map((level) => (
+                  <label
+                    key={level.value}
+                    className="flex items-center space-x-3 cursor-pointer group"
+                  >
+                    <input
+                      type="radio"
+                      name="experience"
+                      value={level.value}
+                      checked={form.experience === level.value}
+                      onChange={(e) =>
+                        setForm({ ...form, experience: e.target.value })
+                      }
+                      className="w-4 h-4 text-purple-400 bg-white/10 border-purple-300/30 focus:ring-purple-400 focus:ring-2"
+                    />
+                    <span className="text-white group-hover:text-purple-200 text-sm">
+                      {level.label}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Meditation Type */}
+            <div>
+              <label className="block text-purple-200 font-medium mb-2 text-sm">
+                What type of meditation do you want to do?
+              </label>
+              <div className="space-y-2">
+                {meditationTypes.map((type) => (
+                  <label
+                    key={type.value}
+                    className="flex items-center space-x-3 cursor-pointer group"
+                  >
+                    <input
+                      type="radio"
+                      name="meditationType"
+                      value={type.value}
+                      checked={form.meditationType === type.value}
+                      onChange={(e) =>
+                        setForm({ ...form, meditationType: e.target.value })
+                      }
+                      className="w-4 h-4 text-purple-400 bg-white/10 border-purple-300/30 focus:ring-purple-400 focus:ring-2"
+                    />
+                    <span className="text-white group-hover:text-purple-200 text-sm">
+                      {type.label}
+                    </span>
+                  </label>
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* Meditation Type */}
-          <div>
-            <label className="block text-white font-medium mb-3">
-              What type of meditation do you want to do?
-            </label>
-            <div className="space-y-3">
-              {meditationTypes.map((type) => (
-                <label
-                  key={type.value}
-                  className="flex items-center space-x-3 cursor-pointer"
-                >
-                  <input
-                    type="radio"
-                    name="meditationType"
-                    value={type.value}
-                    checked={form.meditationType === type.value}
-                    onChange={(e) =>
-                      setForm({ ...form, meditationType: e.target.value })
-                    }
-                    className="w-5 h-5 text-purple-500 border-white/30 focus:ring-purple-500"
-                  />
-                  <span className="text-white">{type.label}</span>
-                </label>
-              ))}
-            </div>
-          </div>
+          {/* Start Meditation Button */}
+          <Button
+            onClick={handleFormSubmit}
+            disabled={
+              !form.currentFeeling ||
+              !form.desiredFeeling ||
+              !form.experience ||
+              !form.meditationType
+            }
+            className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white py-3 rounded-lg text-base font-medium disabled:opacity-50 disabled:cursor-not-allowed mt-6 transition-all duration-200 shadow-lg hover:shadow-purple-500/25"
+          >
+            Start Meditation
+          </Button>
         </div>
-
-        {/* Start Meditation Button */}
-        <Button
-          onClick={handleFormSubmit}
-          disabled={
-            !form.currentFeeling ||
-            !form.desiredFeeling ||
-            !form.experience ||
-            !form.meditationType
-          }
-          className="w-full bg-gradient-to-r from-purple-800 to-purple-900 hover:from-purple-900 hover:to-black text-white py-4 rounded-xl text-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed mt-8"
-        >
-          Start Meditation
-        </Button>
       </div>
     </div>
   );

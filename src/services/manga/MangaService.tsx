@@ -4,6 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { API_BASE_URL } from "@/lib/api";
 import MangaViewer from "@/components/manga-viewer/MangaViewer";
 import OnboardingScreen from "@/components/OnboardingScreen";
+import LoadingScreen from "@/components/LoadingScreen";
 import LightServiceNavigation from "@/components/navigation/LightServiceNavigation";
 import { SigninGradientBackground } from "@/components/ui/signin-gradient-background";
 
@@ -35,7 +36,27 @@ const MangaService: React.FC = () => {
   const [story, setStory] = useState<StoryPanel[] | null>(null);
   const [storyId, setStoryId] = useState<string | null>(null);
   const [loadingProgress, setLoadingProgress] = useState<string>("");
+  const [messageIndex, setMessageIndex] = useState(0);
   const socketRef = useRef<Socket | null>(null);
+
+  const defaultMessages = [
+    "Connecting to AI services...",
+    "Creating your personalized manga story...",
+    "Generating artwork for your panels...",
+    "Recording narration and audio...",
+    "Finalizing your story experience...",
+  ];
+
+  // Cycle through default messages when no specific progress message is provided
+  useEffect(() => {
+    if (!loadingProgress && appState === "loading") {
+      const interval = setInterval(() => {
+        setMessageIndex((prev) => (prev + 1) % defaultMessages.length);
+      }, 3000);
+
+      return () => clearInterval(interval);
+    }
+  }, [loadingProgress, appState, defaultMessages.length]);
 
   // Initialize Socket.IO connection
   useEffect(() => {
@@ -232,15 +253,9 @@ const MangaService: React.FC = () => {
           return <OnboardingScreen onCreateStory={handleCreateStory} />;
 
         case "loading":
-          return (
-            <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
-              <div className="text-center text-white">
-                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
-                <h2 className="text-2xl font-bold mb-2">{loadingProgress}</h2>
-                <p className="text-lg opacity-80">Please wait...</p>
-              </div>
-            </div>
-          );
+          const currentMessage =
+            loadingProgress || defaultMessages[messageIndex];
+          return <LoadingScreen progressMessage={currentMessage} />;
 
         case "viewing":
           if (story && story.length > 0) {
@@ -256,15 +271,9 @@ const MangaService: React.FC = () => {
           } else {
             console.log("🎬 No story data, showing loading screen");
             return (
-              <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
-                <div className="text-center text-white">
-                  <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
-                  <h2 className="text-2xl font-bold mb-2">
-                    {loadingProgress || "Loading story..."}
-                  </h2>
-                  <p className="text-lg opacity-80">Please wait...</p>
-                </div>
-              </div>
+              <LoadingScreen
+                progressMessage={loadingProgress || "Loading story..."}
+              />
             );
           }
 
