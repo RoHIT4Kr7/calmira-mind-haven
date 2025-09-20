@@ -12,6 +12,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { Socket } from "socket.io-client";
 import LumaSpin from "@/components/ui/luma-spin";
+import { SigninGradientBackground } from "@/components/ui/signin-gradient-background";
 
 interface MangaPanel {
   id: string;
@@ -207,185 +208,189 @@ const MangaViewer = ({
   // Show loading if no panels available
   if (!currentPanelData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
-        <div className="text-center text-white flex flex-col items-center">
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex flex-col items-center justify-center">
+        <div className="text-center space-y-6 flex flex-col items-center">
           <LumaSpin />
-          <h2 className="text-2xl font-bold mt-4 mb-2">
-            Loading your story...
-          </h2>
-          <p className="text-lg opacity-80">
-            {mangaPanels.length > 0
-              ? `Panel ${currentPanelIndex + 1} of ${mangaPanels.length}`
-              : "Waiting for panels to load..."}
-          </p>
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-400 mb-4">
+              Generating Your Story
+            </h2>
+            <p className="text-white/70 text-lg">
+              Creating a personalized manga experience just for you...
+            </p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex flex-col">
-      {/* Header with panel indicators */}
-      <div className="bg-black/20 backdrop-blur-sm border-b border-white/10 p-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-white">Your Manga Story</h1>
+    <SigninGradientBackground>
+      <div className="min-h-screen flex flex-col">
+        {/* Header with panel indicators */}
+        <div className="bg-black/20 backdrop-blur-lg border-b border-white/10 p-4">
+          <div className="max-w-4xl mx-auto flex items-center justify-between">
+            <h1 className="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-400">
+              Your Manga Story
+            </h1>
 
-          {/* Panel indicators */}
-          <div className="flex items-center space-x-2">
-            {mangaPanels.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentPanelIndex(index)}
-                className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                  index === currentPanelIndex
-                    ? "bg-white scale-125"
-                    : index < currentPanelIndex
-                    ? "bg-green-400"
-                    : "bg-white/30"
-                }`}
-                title={`Panel ${index + 1}`}
-              />
-            ))}
-          </div>
+            {/* Panel indicators */}
+            <div className="flex items-center space-x-2">
+              {mangaPanels.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentPanelIndex(index)}
+                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                    index === currentPanelIndex
+                      ? "bg-white scale-125"
+                      : index < currentPanelIndex
+                      ? "bg-purple-400"
+                      : "bg-white/30"
+                  }`}
+                  title={`Panel ${index + 1}`}
+                />
+              ))}
+            </div>
 
-          {/* Panel counter */}
-          <div className="text-white text-sm">
-            Panel {currentPanelIndex + 1} of {mangaPanels.length}
+            {/* Panel counter */}
+            <div className="text-white/70 text-sm">
+              Panel {currentPanelIndex + 1} of {mangaPanels.length}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Main content area */}
-      <div className="flex-1 flex items-center justify-center p-4">
-        <div className="max-w-4xl w-full">
-          {/* Panel image */}
-          <div className="relative bg-black/20 backdrop-blur-sm rounded-2xl overflow-hidden shadow-2xl border border-white/10">
-            <AnimatePresence mode="wait">
-              <motion.img
-                key={currentPanelIndex}
-                src={currentPanelData.imageUrl}
-                alt={`Manga Panel ${currentPanelIndex + 1}`}
-                className="w-full h-auto max-h-[70vh] object-contain"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 1.05 }}
-                transition={{ duration: 0.5 }}
-                onLoad={() =>
-                  console.log(
-                    `🖼️ Image loaded for panel ${currentPanelIndex + 1}`
-                  )
-                }
-                onError={(e) =>
-                  console.error(
-                    `❌ Image error for panel ${currentPanelIndex + 1}:`,
-                    e
-                  )
-                }
-              />
-            </AnimatePresence>
+        {/* Main content area */}
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="max-w-4xl w-full">
+            {/* Panel image */}
+            <div className="relative bg-white/5 backdrop-blur-lg rounded-2xl overflow-hidden shadow-2xl border border-white/10">
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={currentPanelIndex}
+                  src={currentPanelData.imageUrl}
+                  alt={`Manga Panel ${currentPanelIndex + 1}`}
+                  className="w-full h-auto max-h-[70vh] object-contain"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 1.05 }}
+                  transition={{ duration: 0.5 }}
+                  onLoad={() =>
+                    console.log(
+                      `🖼️ Image loaded for panel ${currentPanelIndex + 1}`
+                    )
+                  }
+                  onError={(e) =>
+                    console.error(
+                      `❌ Image error for panel ${currentPanelIndex + 1}:`,
+                      e
+                    )
+                  }
+                />
+              </AnimatePresence>
 
-            {/* Audio controls overlay */}
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
-              {/* Audio controls */}
-              <div className="flex items-center justify-between text-white">
-                <div className="flex items-center space-x-4">
+              {/* Audio controls overlay */}
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
+                {/* Audio controls */}
+                <div className="flex items-center justify-between text-white">
+                  <div className="flex items-center space-x-4">
+                    <Button
+                      onClick={goToPreviousPanel}
+                      disabled={isFirstPanel}
+                      variant="ghost"
+                      size="icon"
+                      className="p-2 rounded-full bg-white/10 backdrop-blur-lg border border-white/20 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/20 transition-colors"
+                      title="Previous Panel"
+                    >
+                      <ChevronLeft className="w-6 h-6" />
+                    </Button>
+
+                    <Button
+                      onClick={handlePlayPause}
+                      variant="ghost"
+                      size="icon"
+                      className="p-3 rounded-full bg-white/10 backdrop-blur-lg border border-white/20 hover:bg-white/20 transition-colors"
+                      title={isPlaying ? "Pause" : "Play"}
+                    >
+                      {isPlaying ? (
+                        <Pause className="w-8 h-8" />
+                      ) : (
+                        <Play className="w-8 h-8" />
+                      )}
+                    </Button>
+
+                    <Button
+                      onClick={goToNextPanel}
+                      disabled={isLastPanel}
+                      variant="ghost"
+                      size="icon"
+                      className="p-2 rounded-full bg-white/10 backdrop-blur-lg border border-white/20 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/20 transition-colors"
+                      title="Next Panel"
+                    >
+                      <ChevronRight className="w-6 h-6" />
+                    </Button>
+                  </div>
+
+                  {/* Mute button */}
                   <Button
-                    onClick={goToPreviousPanel}
-                    disabled={isFirstPanel}
+                    onClick={toggleMute}
                     variant="ghost"
                     size="icon"
-                    className="p-2 rounded-full bg-white/20 backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/30 transition-colors"
-                    title="Previous Panel"
+                    className="p-2 rounded-full bg-white/10 backdrop-blur-lg border border-white/20 hover:bg-white/20 transition-colors"
+                    title={isAudioMuted ? "Unmute" : "Mute"}
                   >
-                    <ChevronLeft className="w-6 h-6" />
-                  </Button>
-
-                  <Button
-                    onClick={handlePlayPause}
-                    variant="ghost"
-                    size="icon"
-                    className="p-3 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-colors"
-                    title={isPlaying ? "Pause" : "Play"}
-                  >
-                    {isPlaying ? (
-                      <Pause className="w-8 h-8" />
+                    {isAudioMuted ? (
+                      <VolumeX className="w-6 h-6" />
                     ) : (
-                      <Play className="w-8 h-8" />
+                      <Volume2 className="w-6 h-6" />
                     )}
                   </Button>
-
-                  <Button
-                    onClick={goToNextPanel}
-                    disabled={isLastPanel}
-                    variant="ghost"
-                    size="icon"
-                    className="p-2 rounded-full bg-white/20 backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/30 transition-colors"
-                    title="Next Panel"
-                  >
-                    <ChevronRight className="w-6 h-6" />
-                  </Button>
                 </div>
-
-                {/* Mute button */}
-                <Button
-                  onClick={toggleMute}
-                  variant="ghost"
-                  size="icon"
-                  className="p-2 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-colors"
-                  title={isAudioMuted ? "Unmute" : "Mute"}
-                >
-                  {isAudioMuted ? (
-                    <VolumeX className="w-6 h-6" />
-                  ) : (
-                    <Volume2 className="w-6 h-6" />
-                  )}
-                </Button>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Read Again Button */}
-      {isStoryFinished && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="flex justify-center pb-8"
-        >
-          <Button
-            onClick={restartStory}
-            variant="outline"
-            className="bg-white/10 backdrop-blur-sm text-white border-white/20 hover:bg-white/20"
+        {/* Read Again Button */}
+        {isStoryFinished && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="flex justify-center pb-8"
           >
-            <RotateCcw className="mr-2 w-4 h-4" />
-            Read Again
-          </Button>
-        </motion.div>
-      )}
+            <Button
+              onClick={restartStory}
+              variant="outline"
+              className="bg-white/10 backdrop-blur-lg border-white/20 text-white hover:bg-white/20 rounded-xl"
+            >
+              <RotateCcw className="mr-2 w-4 h-4" />
+              Read Again
+            </Button>
+          </motion.div>
+        )}
 
-      {/* Audio element (hidden) */}
-      {currentPanelData && (
-        <audio
-          ref={audioRef}
-          key={`panel-${currentPanelIndex}-audio`}
-          src={currentPanelData.narrationUrl}
-          preload="metadata"
-          muted={isAudioMuted}
-          onPlay={() => setIsPlaying(true)}
-          onPause={() => setIsPlaying(false)}
-          onEnded={handleAudioEnded}
-          onError={(e) =>
-            console.error(
-              `❌ Audio error for panel ${currentPanelIndex + 1}:`,
-              e
-            )
-          }
-          className="hidden"
-        />
-      )}
-    </div>
+        {/* Audio element (hidden) */}
+        {currentPanelData && (
+          <audio
+            ref={audioRef}
+            key={`panel-${currentPanelIndex}-audio`}
+            src={currentPanelData.narrationUrl}
+            preload="metadata"
+            muted={isAudioMuted}
+            onPlay={() => setIsPlaying(true)}
+            onPause={() => setIsPlaying(false)}
+            onEnded={handleAudioEnded}
+            onError={(e) =>
+              console.error(
+                `❌ Audio error for panel ${currentPanelIndex + 1}:`,
+                e
+              )
+            }
+            className="hidden"
+          />
+        )}
+      </div>
+    </SigninGradientBackground>
   );
 };
 
