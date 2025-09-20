@@ -1,22 +1,56 @@
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react-swc";
+import react from "@vitejs/plugin-react";
+import { viteStaticCopy } from "vite-plugin-static-copy";
 import path from "path";
-import { componentTagger } from "lovable-tagger";
-
-// https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
+import tsconfigPaths from "vite-tsconfig-paths";
+const config = {
+  mode: "development",
   server: {
-    host: "::",
     port: 8080,
-  },
-  plugins: [
-    react(),
-    mode === 'development' &&
-    componentTagger(),
-  ].filter(Boolean),
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
+    host: true,
+    proxy: {
+      "/api/v1": {
+        target: "http://localhost:8000",
+        changeOrigin: true,
+        secure: false,
+        ws: true,
+      },
+      "/socket.io": {
+        target: "http://localhost:8000",
+        changeOrigin: true,
+        ws: true,
+      },
     },
   },
-}));
+  preview: {
+    port: 8080,
+    host: true,
+  },
+  build: {
+    outDir: "dist",
+    emptyOutDir: true,
+    sourcemap: true,
+    minify: false,
+    cssMinify: false,
+    terserOptions: { compress: false, mangle: false },
+  },
+  define: { "process.env.NODE_ENV": "'development'" },
+  esbuild: { jsx: 'automatic' as const, jsxImportSource: "react" },
+  plugins: [
+    react(),
+    viteStaticCopy({
+      targets: [
+        { src: "./assets/*", dest: "assets" },
+        {
+          src: "./public/assets/{*,}",
+          dest: path.join("dist", "public/assets"),
+        },
+        { src: "src/assets/*", dest: path.join("dist", "assets") },
+      ],
+      silent: true,
+    }),
+    tsconfigPaths(),
+  ] as any[],
+  resolve: {},
+};
+export default defineConfig(config);

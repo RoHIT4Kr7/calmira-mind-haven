@@ -23,22 +23,22 @@ interface OnboardingScreenProps {
 const OnboardingScreen = ({ onCreateStory }: OnboardingScreenProps) => {
   const [step, setStep] = useState(1);
   const [storyInputs, setStoryInputs] = useState({
-    mood: '',
-    coreValue: '',
-    supportSystem: '',
-    pastResilience: '',
-    innerDemon: '',
-    desiredOutcome: '',
-    nickname: '',
-    secretWeapon: '',
-    age: '',
-    gender: ''
+    mood: "",
+    coreValue: "",
+    supportSystem: "",
+    pastResilience: "",
+    innerDemon: "",
+    desiredOutcome: "",
+    nickname: "",
+    secretWeapon: "",
+    age: "",
+    gender: "",
   });
 
   const totalSteps = 4;
 
   const updateStoryInputs = (key: string, value: string) => {
-    setStoryInputs(prev => ({ ...prev, [key]: value }));
+    setStoryInputs((prev) => ({ ...prev, [key]: value }));
   };
 
   const nextStep = () => {
@@ -58,51 +58,52 @@ const OnboardingScreen = ({ onCreateStory }: OnboardingScreenProps) => {
     onCreateStory(storyInputs);
   };
 
-  const isStep4Valid = storyInputs.nickname.trim() &&
-                      storyInputs.secretWeapon.trim() &&
-                      storyInputs.age &&
-                      storyInputs.gender;
+  const isStep4Valid =
+    storyInputs.nickname.trim() &&
+    storyInputs.secretWeapon.trim() &&
+    storyInputs.age &&
+    storyInputs.gender;
 
   // Step 1: Your Inner Compass
   const renderInnerCompassStep = () => (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h1 className="text-xl font-semibold text-foreground">
+        <h1 className="text-xl font-semibold text-white">
           Your Inner Compass 🧭
         </h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-white/70">
           Let's ground you in your present emotional state and core values
         </p>
       </div>
-      
+
       {/* Mood Section */}
       <div className="space-y-3">
-        <h2 className="text-base font-medium text-foreground text-center">
+        <h2 className="text-base font-medium text-white text-center">
           How are you feeling right now?
         </h2>
         <div className="grid grid-cols-5 gap-2">
           {[
-            { emoji: '😊', label: 'Happy', value: 'happy' },
-            { emoji: '😟', label: 'Stressed', value: 'stressed' },
-            { emoji: '😐', label: 'Neutral', value: 'neutral' },
-            { emoji: '😤', label: 'Frustrated', value: 'frustrated' },
-            { emoji: '😢', label: 'Sad', value: 'sad' }
+            { emoji: "😊", label: "Happy", value: "happy" },
+            { emoji: "😟", label: "Stressed", value: "stressed" },
+            { emoji: "😐", label: "Neutral", value: "neutral" },
+            { emoji: "😤", label: "Frustrated", value: "frustrated" },
+            { emoji: "😢", label: "Sad", value: "sad" },
           ].map((mood) => (
             <button
               key={mood.value}
               type="button"
               onClick={(e) => {
                 e.preventDefault();
-                updateStoryInputs('mood', mood.value);
+                updateStoryInputs("mood", mood.value);
               }}
               className={`p-3 rounded-lg border-2 transition-all duration-200 hover:scale-105 ${
                 storyInputs.mood === mood.value
-                  ? 'border-primary bg-primary/10 shadow-lg'
-                  : 'border-border bg-card hover:border-primary/50'
+                  ? "border-purple-500 bg-purple-500/20 shadow-lg"
+                  : "border-white/20 bg-white/5 hover:border-purple-500/50"
               }`}
             >
               <div className="text-2xl mb-1">{mood.emoji}</div>
-              <div className="text-xs font-medium text-foreground">{mood.label}</div>
+              <div className="text-xs font-medium text-white">{mood.label}</div>
             </button>
           ))}
         </div>
@@ -110,36 +111,78 @@ const OnboardingScreen = ({ onCreateStory }: OnboardingScreenProps) => {
 
       {/* Core Value Section */}
       <div className="space-y-3">
-        <h2 className="text-base font-medium text-foreground text-center">
+        <h2 className="text-base font-medium text-white text-center">
           What principle guides your path?
         </h2>
         <div className="grid grid-cols-2 gap-2">
           {[
-            { emoji: '💝', label: 'Kindness', value: 'kindness', description: 'Compassion for others' },
-            { emoji: '🕊️', label: 'Freedom', value: 'freedom', description: 'Personal liberty' },
-            { emoji: '⚡', label: 'Strength', value: 'strength', description: 'Inner power' },
-            { emoji: '🎯', label: 'Purpose', value: 'purpose', description: 'Clear direction' },
-            { emoji: '🌟', label: 'Growth', value: 'growth', description: 'Continuous improvement' },
-            { emoji: '🤝', label: 'Connection', value: 'connection', description: 'Building bonds' },
-            { emoji: '🔥', label: 'Passion', value: 'passion', description: 'Following your fire' },
-            { emoji: '🧘', label: 'Peace', value: 'peace', description: 'Inner harmony' }
+            {
+              emoji: "💝",
+              label: "Kindness",
+              value: "kindness",
+              description: "Compassion for others",
+            },
+            {
+              emoji: "🕊️",
+              label: "Freedom",
+              value: "freedom",
+              description: "Personal liberty",
+            },
+            {
+              emoji: "⚡",
+              label: "Strength",
+              value: "strength",
+              description: "Inner power",
+            },
+            {
+              emoji: "🎯",
+              label: "Purpose",
+              value: "purpose",
+              description: "Clear direction",
+            },
+            {
+              emoji: "🌟",
+              label: "Growth",
+              value: "growth",
+              description: "Continuous improvement",
+            },
+            {
+              emoji: "🤝",
+              label: "Connection",
+              value: "connection",
+              description: "Building bonds",
+            },
+            {
+              emoji: "🔥",
+              label: "Passion",
+              value: "passion",
+              description: "Following your fire",
+            },
+            {
+              emoji: "🧘",
+              label: "Peace",
+              value: "peace",
+              description: "Inner harmony",
+            },
           ].map((value) => (
             <button
               key={value.value}
               type="button"
               onClick={(e) => {
                 e.preventDefault();
-                updateStoryInputs('coreValue', value.value);
+                updateStoryInputs("coreValue", value.value);
               }}
               className={`p-3 rounded-lg border-2 transition-all duration-200 hover:scale-105 ${
                 storyInputs.coreValue === value.value
-                  ? 'border-primary bg-primary/10 shadow-lg'
-                  : 'border-border bg-card hover:border-primary/50'
+                  ? "border-purple-500 bg-purple-500/20 shadow-lg"
+                  : "border-white/20 bg-white/5 hover:border-purple-500/50"
               }`}
             >
               <div className="text-xl mb-1">{value.emoji}</div>
-              <div className="text-xs font-medium text-foreground mb-1">{value.label}</div>
-              <div className="text-xs text-muted-foreground">{value.description}</div>
+              <div className="text-xs font-medium text-white mb-1">
+                {value.label}
+              </div>
+              <div className="text-xs text-white/70">{value.description}</div>
             </button>
           ))}
         </div>
@@ -151,45 +194,74 @@ const OnboardingScreen = ({ onCreateStory }: OnboardingScreenProps) => {
   const renderSourceOfStrengthStep = () => (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h1 className="text-xl font-semibold text-foreground">
+        <h1 className="text-xl font-semibold text-white">
           Your Source of Strength 💪
         </h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-white/70">
           Let's recognize your resilience and support systems
         </p>
       </div>
 
       {/* Support System Section */}
       <div className="space-y-3">
-        <h2 className="text-base font-medium text-foreground text-center">
+        <h2 className="text-base font-medium text-white text-center">
           Who stands by your side?
         </h2>
         <div className="grid grid-cols-1 gap-2">
           {[
-            { emoji: '👨‍🏫', label: 'A Wise Mentor', value: 'mentor', description: 'Someone who guides and teaches you' },
-            { emoji: '👯‍♂️', label: 'A Loyal Friend', value: 'friend', description: 'Your ride-or-die companion' },
-            { emoji: '🏆', label: 'A Friendly Rival', value: 'rival', description: 'Someone who pushes you to be better' },
-            { emoji: '👨‍👩‍👧‍👦', label: 'My Inner Circle', value: 'inner-circle', description: 'A group of trusted people' },
-            { emoji: '📖', label: 'My Journal/Self', value: 'self-reflection', description: 'Your own wisdom and reflection' }
+            {
+              emoji: "👨‍🏫",
+              label: "A Wise Mentor",
+              value: "mentor",
+              description: "Someone who guides and teaches you",
+            },
+            {
+              emoji: "👯‍♂️",
+              label: "A Loyal Friend",
+              value: "friend",
+              description: "Your ride-or-die companion",
+            },
+            {
+              emoji: "🏆",
+              label: "A Friendly Rival",
+              value: "rival",
+              description: "Someone who pushes you to be better",
+            },
+            {
+              emoji: "👨‍👩‍👧‍👦",
+              label: "My Inner Circle",
+              value: "inner-circle",
+              description: "A group of trusted people",
+            },
+            {
+              emoji: "📖",
+              label: "My Journal/Self",
+              value: "self-reflection",
+              description: "Your own wisdom and reflection",
+            },
           ].map((support) => (
             <button
               key={support.value}
               type="button"
               onClick={(e) => {
                 e.preventDefault();
-                updateStoryInputs('supportSystem', support.value);
+                updateStoryInputs("supportSystem", support.value);
               }}
               className={`p-3 rounded-lg border-2 transition-all duration-200 hover:scale-105 ${
                 storyInputs.supportSystem === support.value
-                  ? 'border-primary bg-primary/10 shadow-lg'
-                  : 'border-border bg-card hover:border-primary/50'
+                  ? "border-purple-500 bg-purple-500/20 shadow-lg"
+                  : "border-white/20 bg-white/5 hover:border-purple-500/50"
               }`}
             >
               <div className="flex items-center space-x-3">
                 <div className="text-xl">{support.emoji}</div>
                 <div className="text-left">
-                  <div className="text-sm font-medium text-foreground">{support.label}</div>
-                  <div className="text-xs text-muted-foreground">{support.description}</div>
+                  <div className="text-sm font-medium text-white">
+                    {support.label}
+                  </div>
+                  <div className="text-xs text-white/70">
+                    {support.description}
+                  </div>
                 </div>
               </div>
             </button>
@@ -199,16 +271,16 @@ const OnboardingScreen = ({ onCreateStory }: OnboardingScreenProps) => {
 
       {/* Past Resilience Section */}
       <div className="space-y-3">
-        <h2 className="text-base font-medium text-foreground text-center">
+        <h2 className="text-base font-medium text-white text-center">
           What's a challenge you've already conquered?
         </h2>
         <Textarea
           value={storyInputs.pastResilience}
-          onChange={(e) => updateStoryInputs('pastResilience', e.target.value)}
+          onChange={(e) => updateStoryInputs("pastResilience", e.target.value)}
           placeholder="e.g., I overcame my fear of public speaking by joining a debate club..."
-          className="bg-card border-border text-foreground placeholder:text-muted-foreground min-h-[80px] resize-none"
+          className="bg-white/5 border-white/20 text-white placeholder:text-white/50 min-h-[80px] resize-none"
         />
-        <p className="text-xs text-muted-foreground text-center">
+        <p className="text-xs text-white/70 text-center">
           This shows your inner strength and gives hope for future victories
         </p>
       </div>
@@ -219,42 +291,43 @@ const OnboardingScreen = ({ onCreateStory }: OnboardingScreenProps) => {
   const renderChallengeAheadStep = () => (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h1 className="text-xl font-semibold text-foreground">
+        <h1 className="text-xl font-semibold text-white">
           The Challenge Ahead ⚔️
         </h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-white/70">
           Let's identify your primary struggle and desired outcome
         </p>
       </div>
 
       {/* Inner Demon Section */}
       <div className="space-y-3">
-        <h2 className="text-base font-medium text-foreground text-center">
+        <h2 className="text-base font-medium text-white text-center">
           What is the main internal struggle you're facing?
         </h2>
         <Textarea
           value={storyInputs.innerDemon}
-          onChange={(e) => updateStoryInputs('innerDemon', e.target.value)}
+          onChange={(e) => updateStoryInputs("innerDemon", e.target.value)}
           placeholder="e.g., Self-doubt that whispers 'you're not good enough'..."
-          className="bg-card border-border text-foreground placeholder:text-muted-foreground min-h-[80px] resize-none"
+          className="bg-white/5 border-white/20 text-white placeholder:text-white/50 min-h-[80px] resize-none"
         />
-        <p className="text-xs text-muted-foreground text-center">
-          This becomes the villain in your story - the obstacle you must overcome
+        <p className="text-xs text-white/70 text-center">
+          This becomes the villain in your story - the obstacle you must
+          overcome
         </p>
       </div>
 
       {/* Desired Outcome Section */}
       <div className="space-y-3">
-        <h2 className="text-base font-medium text-foreground text-center">
+        <h2 className="text-base font-medium text-white text-center">
           What would overcoming this struggle look like for you?
         </h2>
         <Textarea
           value={storyInputs.desiredOutcome}
-          onChange={(e) => updateStoryInputs('desiredOutcome', e.target.value)}
+          onChange={(e) => updateStoryInputs("desiredOutcome", e.target.value)}
           placeholder="e.g., Feeling confident in my abilities and pursuing my dreams without fear..."
-          className="bg-card border-border text-foreground placeholder:text-muted-foreground min-h-[80px] resize-none"
+          className="bg-white/5 border-white/20 text-white placeholder:text-white/50 min-h-[80px] resize-none"
         />
-        <p className="text-xs text-muted-foreground text-center">
+        <p className="text-xs text-white/70 text-center">
           This is your hero's ultimate goal - the victory you're working towards
         </p>
       </div>
@@ -265,39 +338,40 @@ const OnboardingScreen = ({ onCreateStory }: OnboardingScreenProps) => {
   const renderHeroIdentityStep = () => (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h1 className="text-xl font-semibold text-foreground">
+        <h1 className="text-xl font-semibold text-white">
           Your Hero's Identity 🦸
         </h1>
-        <p className="text-sm text-muted-foreground">
-          Let's personalize your character and frame their inner strength as a superpower
+        <p className="text-sm text-white/70">
+          Let's personalize your character and frame their inner strength as a
+          superpower
         </p>
       </div>
 
       {/* Hero Name and Superpower */}
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="nickname" className="text-sm text-foreground">
+          <Label htmlFor="nickname" className="text-sm text-white">
             What is your hero's name?
           </Label>
           <Input
             id="nickname"
             value={storyInputs.nickname}
-            onChange={(e) => updateStoryInputs('nickname', e.target.value)}
+            onChange={(e) => updateStoryInputs("nickname", e.target.value)}
             placeholder="Enter your hero's name"
-            className="bg-card border-border text-foreground placeholder:text-muted-foreground"
+            className="bg-white/5 border-white/20 text-white placeholder:text-white/50"
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="secretWeapon" className="text-sm text-foreground">
+          <Label htmlFor="secretWeapon" className="text-sm text-white">
             What is your secret superpower?
           </Label>
           <Input
             id="secretWeapon"
             value={storyInputs.secretWeapon}
-            onChange={(e) => updateStoryInputs('secretWeapon', e.target.value)}
+            onChange={(e) => updateStoryInputs("secretWeapon", e.target.value)}
             placeholder="e.g., your kindness, your creativity, your perseverance"
-            className="bg-card border-border text-foreground placeholder:text-muted-foreground"
+            className="bg-white/5 border-white/20 text-white placeholder:text-white/50"
           />
         </div>
       </div>
@@ -306,32 +380,31 @@ const OnboardingScreen = ({ onCreateStory }: OnboardingScreenProps) => {
       <div className="space-y-4">
         {/* Age Selection */}
         <div className="space-y-3">
-          <h2 className="text-base font-medium text-foreground text-center">
+          <h2 className="text-base font-medium text-white text-center">
             What's your age range?
           </h2>
           <div className="grid grid-cols-3 gap-2">
             {[
-              { label: '13-17', value: 'teen' },
-              { label: '18-25', value: 'young-adult' },
-              { label: '26-35', value: 'adult' },
-              { label: '36-50', value: 'mature' },
-              { label: '51+', value: 'senior' },
-              { label: 'Prefer not to say', value: 'not-specified' }
+              { label: "13-17", value: "teen" },
+              { label: "18-25", value: "young-adult" },
+              { label: "26-35", value: "adult" },
             ].map((age) => (
               <button
                 key={age.value}
                 type="button"
                 onClick={(e) => {
                   e.preventDefault();
-                  updateStoryInputs('age', age.value);
+                  updateStoryInputs("age", age.value);
                 }}
                 className={`p-3 rounded-lg border-2 transition-all duration-200 hover:scale-105 ${
                   storyInputs.age === age.value
-                    ? 'border-primary bg-primary/10 shadow-lg'
-                    : 'border-border bg-card hover:border-primary/50'
+                    ? "border-purple-500 bg-purple-500/20 shadow-lg"
+                    : "border-white/20 bg-white/5 hover:border-purple-500/50"
                 }`}
               >
-                <div className="text-xs font-medium text-foreground">{age.label}</div>
+                <div className="text-xs font-medium text-white">
+                  {age.label}
+                </div>
               </button>
             ))}
           </div>
@@ -339,30 +412,30 @@ const OnboardingScreen = ({ onCreateStory }: OnboardingScreenProps) => {
 
         {/* Gender Selection */}
         <div className="space-y-3">
-          <h2 className="text-base font-medium text-foreground text-center">
+          <h2 className="text-base font-medium text-white text-center">
             How do you identify?
           </h2>
           <div className="grid grid-cols-2 gap-2">
             {[
-              { label: 'Female', value: 'female' },
-              { label: 'Male', value: 'male' },
-              { label: 'Non-binary', value: 'non-binary' },
-              { label: 'Prefer not to say', value: 'not-specified' }
+              { label: "Female", value: "female" },
+              { label: "Male", value: "male" },
             ].map((gender) => (
               <button
                 key={gender.value}
                 type="button"
                 onClick={(e) => {
                   e.preventDefault();
-                  updateStoryInputs('gender', gender.value);
+                  updateStoryInputs("gender", gender.value);
                 }}
                 className={`p-3 rounded-lg border-2 transition-all duration-200 hover:scale-105 ${
                   storyInputs.gender === gender.value
-                    ? 'border-primary bg-primary/10 shadow-lg'
-                    : 'border-border bg-card hover:border-primary/50'
+                    ? "border-purple-500 bg-purple-500/20 shadow-lg"
+                    : "border-white/20 bg-white/5 hover:border-purple-500/50"
                 }`}
               >
-                <div className="text-xs font-medium text-foreground">{gender.label}</div>
+                <div className="text-xs font-medium text-white">
+                  {gender.label}
+                </div>
               </button>
             ))}
           </div>
@@ -370,7 +443,6 @@ const OnboardingScreen = ({ onCreateStory }: OnboardingScreenProps) => {
       </div>
     </div>
   );
-
 
   const renderCurrentStep = () => {
     switch (step) {
@@ -388,47 +460,49 @@ const OnboardingScreen = ({ onCreateStory }: OnboardingScreenProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl">
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <Card className="w-full max-w-2xl bg-white/5 backdrop-blur-lg border-white/10">
         <CardHeader className="text-center pb-4">
           {/* Progress Bar */}
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Step {step} of {totalSteps}</span>
-              <span className="text-sm text-muted-foreground">
+              <span className="text-sm text-white/70">
+                Step {step} of {totalSteps}
+              </span>
+              <span className="text-sm text-white/70">
                 {Math.round((step / totalSteps) * 100)}% Complete
               </span>
             </div>
-            <div className="w-full bg-muted rounded-full h-2">
-              <div 
-                className="bg-primary h-2 rounded-full transition-all duration-300"
+            <div className="w-full bg-white/10 rounded-full h-2">
+              <div
+                className="bg-gradient-to-r from-purple-500 to-purple-700 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${(step / totalSteps) * 100}%` }}
               />
             </div>
           </div>
         </CardHeader>
-        
+
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             {renderCurrentStep()}
-            
+
             {/* Navigation Buttons */}
             <div className="flex justify-between pt-4">
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
                 onClick={prevStep}
                 disabled={step === 1}
-                className="text-foreground border-border hover:bg-card disabled:opacity-50"
+                className="text-white/80 border border-white/20 hover:bg-white/10 hover:text-white hover:border-white/30 disabled:opacity-50 disabled:text-white/30 disabled:border-white/10"
               >
                 Back
               </Button>
-              
+
               {step === totalSteps ? (
                 <Button
                   type="submit"
                   disabled={!isStep4Valid}
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-gradient-to-r from-purple-800 to-purple-900 hover:from-purple-900 hover:to-black text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Create My Story
                 </Button>
@@ -437,11 +511,16 @@ const OnboardingScreen = ({ onCreateStory }: OnboardingScreenProps) => {
                   type="button"
                   onClick={nextStep}
                   disabled={
-                    (step === 1 && (!storyInputs.mood || !storyInputs.coreValue)) ||
-                    (step === 2 && (!storyInputs.supportSystem || !storyInputs.pastResilience.trim())) ||
-                    (step === 3 && (!storyInputs.innerDemon.trim() || !storyInputs.desiredOutcome.trim()))
+                    (step === 1 &&
+                      (!storyInputs.mood || !storyInputs.coreValue)) ||
+                    (step === 2 &&
+                      (!storyInputs.supportSystem ||
+                        !storyInputs.pastResilience.trim())) ||
+                    (step === 3 &&
+                      (!storyInputs.innerDemon.trim() ||
+                        !storyInputs.desiredOutcome.trim()))
                   }
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-gradient-to-r from-purple-800 to-purple-900 hover:from-purple-900 hover:to-black text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Next
                 </Button>

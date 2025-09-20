@@ -60,12 +60,14 @@ const ImprovedNavigation: React.FC<ImprovedNavigationProps> = ({
           {/* Logo/Brand */}
           <div className="flex items-center px-6 py-8">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-medium rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold text-lg">MW</span>
-              </div>
+              <img
+                src="/images/logocalmira.jpg"
+                alt="Calmira"
+                className="w-10 h-10 object-contain"
+              />
               <div>
                 <h2 className="font-bold text-foreground text-xl kalam-bold">
-                  Mental Wellness
+                  CalmiraAI
                 </h2>
                 <p className="text-muted-foreground text-sm kalam-light">
                   Your companion
@@ -97,7 +99,7 @@ const ImprovedNavigation: React.FC<ImprovedNavigationProps> = ({
           {/* Sidebar Footer */}
           <div className="p-6 border-t border-border/30">
             <p className="text-muted-foreground text-sm text-center kalam-light">
-              Supporting your mental wellness journey
+              Supporting your wellness journey
             </p>
           </div>
         </div>
@@ -164,12 +166,14 @@ const ImprovedNavigation: React.FC<ImprovedNavigationProps> = ({
                 {/* Panel Header */}
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-medium rounded-xl flex items-center justify-center">
-                      <span className="text-white font-bold">MW</span>
-                    </div>
+                    <img
+                      src="/images/logocalmira.jpg"
+                      alt="Calmira"
+                      className="w-10 h-10 object-contain"
+                    />
                     <div>
                       <h2 className="font-bold text-foreground kalam-bold">
-                        Mental Wellness
+                        CalmiraAI
                       </h2>
                       <p className="text-muted-foreground text-sm kalam-light">
                         Your companion
@@ -209,7 +213,7 @@ const ImprovedNavigation: React.FC<ImprovedNavigationProps> = ({
                 {/* Mobile Panel Footer */}
                 <div className="mt-8 pt-6 border-t border-border/30">
                   <p className="text-muted-foreground text-sm text-center kalam-light">
-                    Supporting your mental wellness journey
+                    Supporting your wellness journey
                   </p>
                 </div>
               </div>

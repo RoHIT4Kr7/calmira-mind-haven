@@ -1,11 +1,14 @@
 const Footer = () => {
   return (
-    <footer className="py-12 px-6 border-t border-border/20">
-      <div className="container mx-auto text-center">
-        <div className="font-michroma text-lg font-bold gradient-text mb-4">
-          Calmira AI
-        </div>
-        <p className="text-muted-foreground">
+    <footer className="py-10 px-6 border-t border-border/20">
+      <div className="container mx-auto text-center flex flex-col items-center gap-3">
+        <img
+          src="/images/logocalmira.jpg"
+          alt="Calmira"
+          className="h-20 w-auto select-none"
+          draggable={false}
+        />
+        <p className="text-sm text-muted-foreground">
           © 2025 Calmira AI. Mental wellness for the next generation.
         </p>
       </div>

@@ -10,6 +10,7 @@ import {
   BookOpen,
   Mic,
   MessageCircle,
+  Brain,
 } from "lucide-react";
 
 const LightServiceNavigation: React.FC = () => {
@@ -20,8 +21,14 @@ const LightServiceNavigation: React.FC = () => {
   const navItems = [
     { id: "home", label: "Home", icon: Home, path: "/dashboard" },
     { id: "profile", label: "Profile", icon: User, path: "/profile" },
-    { id: "manga", label: "Manga", icon: BookOpen, path: "/mental-wellness" },
-    { id: "voice", label: "Voice", icon: Mic, path: "/voice" },
+    { id: "manga", label: "Manga", icon: BookOpen, path: "/services/manga" },
+    { id: "voice", label: "Voice", icon: Mic, path: "/services/voice" },
+    {
+      id: "meditation",
+      label: "Meditation",
+      icon: Brain,
+      path: "/services/meditation",
+    },
     {
       id: "chat",
       label: "Dhyaan AI",
@@ -47,9 +54,9 @@ const LightServiceNavigation: React.FC = () => {
           variant="ghost"
           size="sm"
           onClick={toggleMobileMenu}
-          className="p-3 bg-white/95 backdrop-blur-lg border border-border hover:bg-primary/10 rounded-xl shadow-md"
+          className="p-3 bg-white/10 backdrop-blur-lg border border-white/20 hover:bg-white/20 rounded-xl shadow-md"
         >
-          <Menu className="h-6 w-6 text-foreground" />
+          <Menu className="h-6 w-6 text-white" />
         </Button>
       </div>
 
@@ -58,23 +65,21 @@ const LightServiceNavigation: React.FC = () => {
         initial={{ x: -300 }}
         animate={{ x: 0 }}
         transition={{ duration: 0.3 }}
-        className="hidden lg:flex fixed top-0 left-0 h-full w-64 bg-white/95 backdrop-blur-lg border-r border-border flex-col z-40 shadow-lg"
+        className="hidden lg:flex fixed top-0 left-0 h-full w-64 bg-black/20 backdrop-blur-lg border-r border-white/10 flex-col z-40 shadow-lg"
       >
         {/* Sidebar Header */}
-        <div className="p-6 border-b border-border">
+        <div className="p-6 border-b border-white/10">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center shadow-md">
-              <span className="text-white font-semibold inter-semibold">
-                MW
-              </span>
-            </div>
+            <img
+              src="/images/logocalmira.jpg"
+              alt="Calmira"
+              className="w-10 h-10 object-contain"
+            />
             <div>
-              <h2 className="poppins-semibold text-foreground">
-                Mental Wellness
+              <h2 className="font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-400">
+                CalmiraAI
               </h2>
-              <p className="text-muted-foreground text-sm inter-regular">
-                Your companion
-              </p>
+              <p className="text-white/60 text-sm">Your companion</p>
             </div>
           </div>
         </div>
@@ -85,10 +90,10 @@ const LightServiceNavigation: React.FC = () => {
             <button
               key={item.id}
               onClick={() => handleNavigation(item.path)}
-              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 inter-medium ${
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                 location.pathname === item.path
-                  ? "bg-primary/10 text-primary border border-primary/20 shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  ? "bg-white/20 text-white border border-white/30 shadow-lg"
+                  : "text-white/70 hover:text-white hover:bg-white/10"
               }`}
             >
               <item.icon className="h-5 w-5" />
@@ -98,9 +103,9 @@ const LightServiceNavigation: React.FC = () => {
         </nav>
 
         {/* Sidebar Footer */}
-        <div className="p-4 border-t border-border">
-          <p className="text-xs text-muted-foreground inter-regular text-center">
-            &copy; 2025 Mental Wellness
+        <div className="p-4 border-t border-white/10">
+          <p className="text-xs text-white/50 text-center">
+            &copy; 2025 CalmiraAI
           </p>
         </div>
       </motion.div>
@@ -124,33 +129,31 @@ const LightServiceNavigation: React.FC = () => {
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 20, stiffness: 300 }}
-              className="lg:hidden fixed top-0 left-0 h-full w-80 max-w-[80vw] bg-white/95 backdrop-blur-lg border-r border-border z-50 overflow-y-auto shadow-2xl"
+              className="lg:hidden fixed top-0 left-0 h-full w-80 max-w-[80vw] bg-black/20 backdrop-blur-lg border-r border-white/10 z-50 overflow-y-auto shadow-2xl"
             >
               <div className="p-6">
                 {/* Panel Header */}
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center shadow-md">
-                      <span className="text-white font-semibold inter-semibold">
-                        MW
-                      </span>
-                    </div>
+                    <img
+                      src="/images/logocalmira.jpg"
+                      alt="Calmira"
+                      className="w-10 h-10 object-contain"
+                    />
                     <div>
-                      <h2 className="poppins-semibold text-foreground">
-                        Mental Wellness
+                      <h2 className="font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-400">
+                        CalmiraAI
                       </h2>
-                      <p className="text-muted-foreground text-sm inter-regular">
-                        Your companion
-                      </p>
+                      <p className="text-white/60 text-sm">Your companion</p>
                     </div>
                   </div>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="p-2 hover:bg-primary/10 rounded-xl"
+                    className="p-2 hover:bg-white/10 rounded-xl"
                   >
-                    <X className="h-5 w-5 text-foreground" />
+                    <X className="h-5 w-5 text-white" />
                   </Button>
                 </div>
 
@@ -162,10 +165,10 @@ const LightServiceNavigation: React.FC = () => {
                       whileHover={{ x: 4 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => handleNavigation(item.path)}
-                      className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 inter-medium ${
+                      className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                         location.pathname === item.path
-                          ? "bg-primary/10 text-primary border border-primary/20 shadow-sm"
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                          ? "bg-white/20 text-white border border-white/30 shadow-lg"
+                          : "text-white/70 hover:text-white hover:bg-white/10"
                       }`}
                     >
                       <item.icon className="h-5 w-5" />
