@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Component as LumaSpin } from "@/components/ui/luma-spin";
 
 interface LoadingScreenProps {
   progressMessage?: string;
@@ -10,7 +11,7 @@ const LoadingScreen = ({ progressMessage }: LoadingScreenProps) => {
   const defaultMessages = [
     "Sketching your first panel...",
     "Inking the details...",
-    "Bringing your story to life..."
+    "Bringing your story to life...",
   ];
 
   useEffect(() => {
@@ -30,54 +31,9 @@ const LoadingScreen = ({ progressMessage }: LoadingScreenProps) => {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       <div className="text-center space-y-8">
-        {/* Animated SVG - Pulsating Ink Drop */}
-        <div className="relative">
-          <svg
-            width="120"
-            height="120"
-            viewBox="0 0 120 120"
-            className="mx-auto"
-          >
-            {/* Outer glow circle */}
-            <circle
-              cx="60"
-              cy="60"
-              r="50"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              opacity="0.3"
-              className="animate-pulse"
-            />
-            
-            {/* Main ink drop */}
-            <path
-              d="M60 20 C40 20 30 40 30 60 C30 80 40 100 60 100 C80 100 90 80 90 60 C90 40 80 20 60 20 Z"
-              fill="currentColor"
-              className="text-primary animate-pulse"
-              style={{
-                animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite"
-              }}
-            />
-            
-            {/* Inner highlight */}
-            <ellipse
-              cx="50"
-              cy="45"
-              rx="8"
-              ry="12"
-              fill="currentColor"
-              opacity="0.3"
-              className="text-primary-foreground"
-            />
-            
-            {/* Dripping effect */}
-            <path
-              d="M55 100 L55 110 L65 110 L65 100"
-              fill="currentColor"
-              className="text-primary"
-            />
-          </svg>
+        {/* Unified loader */}
+        <div className="flex items-center justify-center">
+          <LumaSpin />
         </div>
 
         {/* Progress message */}

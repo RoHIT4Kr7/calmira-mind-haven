@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Loader2 } from "lucide-react";
+import { Component as LumaSpin } from "@/components/ui/luma-spin";
 
 const LoadingScreen = () => {
   return (
@@ -10,7 +10,9 @@ const LoadingScreen = () => {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Loader2 className="h-10 w-10 text-purple-400 animate-spin mb-4" />
+      <div className="mb-4">
+        <LumaSpin />
+      </div>
       <p className="text-white text-lg font-medium">Loading next panel...</p>
     </motion.div>
   );

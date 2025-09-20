@@ -10,6 +10,7 @@ import {
   BookOpen,
   Mic,
   MessageCircle,
+  Brain,
 } from "lucide-react";
 
 const ServiceNavigation: React.FC = () => {
@@ -24,9 +25,15 @@ const ServiceNavigation: React.FC = () => {
       id: "manga",
       label: "Manga Creation",
       icon: BookOpen,
-      path: "/mental-wellness",
+      path: "/services/manga",
     },
-    { id: "voice", label: "Voice Chat", icon: Mic, path: "/voice" },
+    { id: "voice", label: "Voice Chat", icon: Mic, path: "/services/voice" },
+    {
+      id: "meditation",
+      label: "Meditation",
+      icon: Brain,
+      path: "/services/meditation",
+    },
     {
       id: "chat",
       label: "Dhyaan AI",
@@ -68,11 +75,13 @@ const ServiceNavigation: React.FC = () => {
         {/* Sidebar Header */}
         <div className="p-6 border-b border-white/10">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-medium rounded-xl flex items-center justify-center shadow-lg">
-              <span className="text-white font-bold kalam-bold">MW</span>
-            </div>
+            <img
+              src="/images/logocalmira.jpg"
+              alt="Calmira"
+              className="w-10 h-10 object-contain"
+            />
             <div>
-              <h2 className="kalam-bold text-white">Mental Wellness</h2>
+              <h2 className="kalam-bold text-white">CalmiraAI</h2>
               <p className="text-white/70 text-sm kalam-light">
                 Your companion
               </p>
@@ -101,7 +110,7 @@ const ServiceNavigation: React.FC = () => {
         {/* Sidebar Footer */}
         <div className="p-4 border-t border-white/10">
           <p className="text-xs text-white/50 kalam-light text-center">
-            &copy; 2024 Mental Wellness
+            &copy; 2025 CalmiraAI
           </p>
         </div>
       </motion.div>
@@ -131,13 +140,13 @@ const ServiceNavigation: React.FC = () => {
                 {/* Panel Header */}
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-medium rounded-xl flex items-center justify-center shadow-lg">
-                      <span className="text-white font-bold kalam-bold">
-                        MW
-                      </span>
-                    </div>
+                    <img
+                      src="/images/logocalmira.jpg"
+                      alt="Calmira"
+                      className="w-10 h-10 object-contain"
+                    />
                     <div>
-                      <h2 className="kalam-bold text-white">Mental Wellness</h2>
+                      <h2 className="kalam-bold text-white">CalmiraAI</h2>
                       <p className="text-white/70 text-sm kalam-light">
                         Your companion
                       </p>

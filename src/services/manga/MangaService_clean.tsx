@@ -4,8 +4,8 @@ import { useAuth } from "@/context/AuthContext";
 import { API_BASE_URL } from "@/lib/api";
 import MangaViewer from "@/components/manga-viewer/MangaViewer";
 import OnboardingScreen from "@/components/OnboardingScreen";
+import LoadingScreen from "@/services/manga/LoadingScreen";
 import LightServiceNavigation from "@/components/navigation/LightServiceNavigation";
-import { SigninGradientBackground } from "@/components/ui/signin-gradient-background";
 
 interface StoryPanel {
   id: string;
@@ -15,16 +15,12 @@ interface StoryPanel {
 }
 
 interface UserData {
-  mood: string;
-  coreValue: string;
-  supportSystem: string;
-  pastResilience: string;
-  innerDemon: string;
-  desiredOutcome: string;
   nickname: string;
-  secretWeapon: string;
   age: string;
   gender: string;
+  mood: string;
+  vibe: string;
+  situation: string;
 }
 
 const MangaService: React.FC = () => {
@@ -107,15 +103,6 @@ const MangaService: React.FC = () => {
       return;
     }
 
-    // Basic client-side validation for required fields to avoid 422s
-    if (!userData.coreValue?.trim() || !userData.supportSystem?.trim()) {
-      setLoadingProgress(
-        "Please fill in your Core Value and Support System to create your story."
-      );
-      setTimeout(() => setAppState("onboarding"), 2000);
-      return;
-    }
-
     try {
       setAppState("loading");
       setLoadingProgress("Connecting to Nano-Banana Pipeline...");
@@ -123,37 +110,14 @@ const MangaService: React.FC = () => {
       console.log("🚀 Creating story with nano-banana pipeline...");
 
       const response = await fetch(
-        `${API_BASE_URL}/generate-manga-nano-banana`,
+        `${API_BASE_URL}/api/v1/generate-manga-nano-banana`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({
-            // Match backend models.schemas.StoryInputs exactly
-            inputs: {
-              mood: userData.mood, // required Literal
-              coreValue: userData.coreValue.trim(), // required
-              supportSystem: userData.supportSystem.trim(), // required
-              pastResilience:
-                userData.pastResilience?.trim() ||
-                "I have overcome challenges before and learned from each experience, building my inner strength.",
-              innerDemon:
-                userData.innerDemon?.trim() ||
-                "Sometimes I struggle with self-doubt and uncertainty about my path forward.",
-              desiredOutcome:
-                userData.desiredOutcome?.trim() ||
-                "I want to feel more confident and at peace with myself, knowing I can handle whatever comes my way.",
-              nickname: userData.nickname.trim(), // required
-              secretWeapon:
-                userData.secretWeapon?.trim() ||
-                "inner strength and determination",
-              age: userData.age, // teen | young-adult | adult (or string mapped by server)
-              gender: userData.gender,
-              // Legacy optional fields intentionally omitted (vibe, situation, etc.)
-            },
-          }),
+          body: JSON.stringify({ inputs: userData }),
         }
       );
 
@@ -232,15 +196,7 @@ const MangaService: React.FC = () => {
           return <OnboardingScreen onCreateStory={handleCreateStory} />;
 
         case "loading":
-          return (
-            <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
-              <div className="text-center text-white">
-                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
-                <h2 className="text-2xl font-bold mb-2">{loadingProgress}</h2>
-                <p className="text-lg opacity-80">Please wait...</p>
-              </div>
-            </div>
-          );
+          return <LoadingScreen progressMessage={loadingProgress} />;
 
         case "viewing":
           if (story && story.length > 0) {
@@ -256,15 +212,9 @@ const MangaService: React.FC = () => {
           } else {
             console.log("🎬 No story data, showing loading screen");
             return (
-              <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
-                <div className="text-center text-white">
-                  <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
-                  <h2 className="text-2xl font-bold mb-2">
-                    {loadingProgress || "Loading story..."}
-                  </h2>
-                  <p className="text-lg opacity-80">Please wait...</p>
-                </div>
-              </div>
+              <LoadingScreen
+                progressMessage={loadingProgress || "Loading story..."}
+              />
             );
           }
 
@@ -288,12 +238,10 @@ const MangaService: React.FC = () => {
   };
 
   return (
-    <SigninGradientBackground>
-      <div className="min-h-screen flex">
-        <LightServiceNavigation />
-        <div className="flex-1 ml-0 lg:ml-64">{renderCurrentComponent()}</div>
-      </div>
-    </SigninGradientBackground>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background-soft to-background flex">
+      <LightServiceNavigation />
+      <div className="flex-1 ml-0 lg:ml-64">{renderCurrentComponent()}</div>
+    </div>
   );
 };
 
