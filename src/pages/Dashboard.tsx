@@ -20,10 +20,25 @@ import {
 } from "recharts";
 import { useNavigate } from "react-router-dom";
 
+type MoodDataPoint = {
+  date: string;
+  mood: number | null;
+  color: string;
+  count: number;
+  sources: string[];
+  mood_details: Array<{
+    score: number;
+    source: string;
+    color: string;
+    time: string;
+    mood_text?: string;
+  }>;
+};
+
 type DashboardStats = {
   consistency_streak_days: number;
   mood_improvement_pct: number | null;
-  mood_trend_30d: Array<{ date: string; mood: number | null }>;
+  mood_trend_30d: Array<MoodDataPoint>;
   recent_creations: Array<
     | {
         type: "manga";
@@ -59,6 +74,88 @@ const Dashboard: React.FC = () => {
   const [dailyQuote, setDailyQuote] = useState<string>("");
   const [showQuote, setShowQuote] = useState(false);
   const navigate = useNavigate();
+
+  // Custom tooltip for mood data
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload as MoodDataPoint;
+      if (!data.mood) return null;
+
+      const moodEmojis = {
+        1: "😞",
+        2: "🙁",
+        3: "😐",
+        4: "🙂",
+        5: "😄",
+      };
+
+      const formatDate = (dateStr: string) => {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        });
+      };
+
+      return (
+        <div className="bg-black/80 backdrop-blur-lg border border-white/20 rounded-lg p-3 text-white text-sm">
+          <p className="font-medium">{formatDate(data.date)}</p>
+          <p className="flex items-center gap-2">
+            <span className="text-lg">
+              {moodEmojis[Math.round(data.mood) as keyof typeof moodEmojis]}
+            </span>
+            Mood: {data.mood.toFixed(1)}/5
+          </p>
+          <p className="text-xs text-white/70">
+            {data.count} entries from {data.sources.join(", ")}
+          </p>
+          {data.mood_details.length > 0 && (
+            <div className="mt-2 space-y-1">
+              {data.mood_details.slice(0, 3).map((detail, idx) => (
+                <div key={idx} className="text-xs flex items-center gap-2">
+                  <div
+                    className="w-2 h-2 rounded-full"
+                    style={{ backgroundColor: detail.color }}
+                  ></div>
+                  <span className="capitalize">{detail.source}</span>
+                  {detail.mood_text && (
+                    <span className="text-white/60">({detail.mood_text})</span>
+                  )}
+                </div>
+              ))}
+              {data.mood_details.length > 3 && (
+                <p className="text-xs text-white/60">
+                  +{data.mood_details.length - 3} more
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // Custom dot renderer for the line chart
+  const CustomDot = (props: any) => {
+    const { cx, cy, payload } = props;
+    if (!payload.mood) return null;
+
+    return (
+      <circle
+        cx={cx}
+        cy={cy}
+        r={6}
+        fill={payload.color || "#ffffff"}
+        stroke="#ffffff"
+        strokeWidth={2}
+        className="hover:r-8 transition-all cursor-pointer"
+        style={{
+          filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
+        }}
+      />
+    );
+  };
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -307,8 +404,23 @@ const Dashboard: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-4xl font-bold text-white">
-                    {stats?.mood_improvement_pct ?? "—"}%
+                    {stats?.mood_improvement_pct !== null &&
+                    stats?.mood_improvement_pct !== undefined
+                      ? `${stats.mood_improvement_pct > 0 ? "+" : ""}${
+                          stats.mood_improvement_pct
+                        }%`
+                      : "—%"}
                   </p>
+                  {stats?.mood_improvement_pct !== null &&
+                    stats?.mood_improvement_pct !== undefined && (
+                      <p className="text-sm text-white/70 mt-2">
+                        {stats.mood_improvement_pct > 0
+                          ? "📈 Mood is improving!"
+                          : stats.mood_improvement_pct < 0
+                          ? "📉 Let's work on boosting your mood"
+                          : "😐 Mood is stable"}
+                      </p>
+                    )}
                 </CardContent>
               </Card>
             </div>
@@ -320,33 +432,93 @@ const Dashboard: React.FC = () => {
                   Last 30 days mood trend
                 </CardTitle>
               </CardHeader>
-              <CardContent style={{ height: 260 }}>
+              <CardContent style={{ height: 280 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={stats?.mood_trend_30d || []}>
-                    <XAxis dataKey="date" hide />
+                    <XAxis
+                      dataKey="date"
+                      tick={{ fill: "white", fontSize: 12 }}
+                      tickFormatter={(value) => {
+                        const date = new Date(value);
+                        return `${date.getMonth() + 1}/${date.getDate()}`;
+                      }}
+                      interval="preserveStartEnd"
+                    />
                     <YAxis
                       domain={[1, 5]}
                       ticks={[1, 2, 3, 4, 5]}
-                      tick={{ fill: "white" }}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "rgba(255, 255, 255, 0.1)",
-                        border: "1px solid rgba(255, 255, 255, 0.2)",
-                        borderRadius: "8px",
-                        backdropFilter: "blur(10px)",
-                        color: "white",
+                      tick={{ fill: "white", fontSize: 12 }}
+                      tickFormatter={(value) => {
+                        const emojis = {
+                          1: "😞",
+                          2: "🙁",
+                          3: "😐",
+                          4: "🙂",
+                          5: "😄",
+                        };
+                        return (
+                          emojis[value as keyof typeof emojis] ||
+                          value.toString()
+                        );
                       }}
                     />
+                    <Tooltip content={<CustomTooltip />} />
                     <Line
                       type="monotone"
                       dataKey="mood"
-                      stroke="#ffffff"
+                      stroke="url(#moodGradient)"
                       strokeWidth={3}
-                      dot={{ fill: "#ffffff", strokeWidth: 2, r: 4 }}
+                      dot={<CustomDot />}
+                      connectNulls={false}
                     />
+                    <defs>
+                      <linearGradient
+                        id="moodGradient"
+                        x1="0%"
+                        y1="0%"
+                        x2="100%"
+                        y2="0%"
+                      >
+                        <stop
+                          offset="0%"
+                          style={{ stopColor: "#ef4444", stopOpacity: 1 }}
+                        />
+                        <stop
+                          offset="25%"
+                          style={{ stopColor: "#f97316", stopOpacity: 1 }}
+                        />
+                        <stop
+                          offset="50%"
+                          style={{ stopColor: "#eab308", stopOpacity: 1 }}
+                        />
+                        <stop
+                          offset="75%"
+                          style={{ stopColor: "#22c55e", stopOpacity: 1 }}
+                        />
+                        <stop
+                          offset="100%"
+                          style={{ stopColor: "#8b5cf6", stopOpacity: 1 }}
+                        />
+                      </linearGradient>
+                    </defs>
                   </LineChart>
                 </ResponsiveContainer>
+
+                {/* Mood Source Legend */}
+                <div className="mt-4 flex flex-wrap gap-4 justify-center text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-purple-500"></div>
+                    <span className="text-white/70">Daily Check-in</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-pink-500"></div>
+                    <span className="text-white/70">Manga Creation</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                    <span className="text-white/70">Meditation Session</span>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 

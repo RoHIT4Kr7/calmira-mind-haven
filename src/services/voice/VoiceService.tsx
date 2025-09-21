@@ -39,7 +39,7 @@ const VoiceService: React.FC = () => {
     setSelectedOption(null);
   };
 
-  const getContactInfo = (optionId: string) => {
+  const getContactInfo = (_optionId: string) => {
     return {
       name: "Dr. Sarah - AI Therapist",
       avatar: "/images/therapist-avatar.png",
@@ -77,17 +77,14 @@ const VoiceService: React.FC = () => {
               {/* Voice Interface */}
               <div className="flex-1">
                 <VoiceInterface
-                  contactName={contactInfo.name.split(" - ")[0]}
                   contactDescription={contactInfo.status}
-                  onVoiceStart={() => {
+                  onConversationStart={() => {
                     console.log(`Voice session started with ${selectedOption}`);
                   }}
-                  onVoiceStop={() => {
+                  onConversationEnd={() => {
                     console.log(`Voice session stopped with ${selectedOption}`);
                   }}
-                  onVoiceMessage={(message) => {
-                    console.log(`Voice message to ${selectedOption}:`, message);
-                  }}
+                  backendUrl="localhost:8000"
                 />
               </div>
             </motion.div>

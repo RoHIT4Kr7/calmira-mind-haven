@@ -1,429 +1,373 @@
-import React, { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Mic, Volume2, VolumeX, Square } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useAuth } from "@/context/AuthContext";
+import React, { useState, useRef, useEffect } from "react";
+import { Send, PlugZap, Mic, Volume2 } from "lucide-react";
 import { VoiceAgentClient, createVoiceAgent } from "./VoiceAgentClient";
+import { api, authHeader } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 
 interface VoiceInterfaceProps {
-  contactName: string;
-  contactAvatar?: string;
   contactDescription?: string;
-  onVoiceStart?: () => void;
-  onVoiceStop?: () => void;
-  onVoiceMessage?: (message: string) => void;
+  onConversationStart?: () => void;
+  onConversationEnd?: () => void;
+  backendUrl?: string;
 }
 
+type ConnectionStatus =
+  | "disconnected"
+  | "initializing"
+  | "connecting"
+  | "connected"
+  | "error";
+
 const VoiceInterface: React.FC<VoiceInterfaceProps> = ({
-  contactName,
-  contactAvatar,
-  contactDescription,
-  onVoiceStart,
-  onVoiceStop,
-  onVoiceMessage,
+  onConversationStart,
+  onConversationEnd,
+  backendUrl = "localhost:8000",
 }) => {
   const { token } = useAuth();
+  // Connection and session state
+  const [connectionStatus, setConnectionStatus] =
+    useState<ConnectionStatus>("disconnected");
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
-  // State management
+  // UX state
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [transcript, setTranscript] = useState<string[]>([]);
-  const [audioLevel, setAudioLevel] = useState(0);
-  const [sessionTime, setSessionTime] = useState(0);
-  const [connectionStatus, setConnectionStatus] = useState<
-    "disconnected" | "connecting" | "connected" | "error" | "initializing"
-  >("disconnected");
   const [wsError, setWsError] = useState<string | null>(null);
+  const [aiResponse, setAiResponse] = useState("");
+  const [textInput, setTextInput] = useState("");
 
-  // Voice agent client reference
+  // Capability gates from backend/live session
+  const [audioEnabled, setAudioEnabled] = useState(false);
+  const [sessionReady, setSessionReady] = useState(false);
+
+  // Client handle
   const voiceClientRef = useRef<VoiceAgentClient | null>(null);
-  const sessionIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Audio level animation when recording
-  useEffect(() => {
-    let interval: NodeJS.Timeout | null = null;
-    if (isRecording) {
-      interval = setInterval(() => {
-        setAudioLevel(Math.random() * 100);
-      }, 100);
-    } else {
-      setAudioLevel(0);
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isRecording]);
-
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      cleanup();
+      if (voiceClientRef.current) voiceClientRef.current.disconnect();
     };
   }, []);
 
-  /**
-   * Initialize voice agent client
-   */
-  const initializeVoiceClient = async (): Promise<boolean> => {
+  const resetError = () => setWsError(null);
+
+  // Explicit connect (always clears prior client to avoid stale sockets)
+  const connectVoice = async () => {
     try {
-      console.log("🎤 Initializing voice client...");
+      if (voiceClientRef.current) {
+        voiceClientRef.current.disconnect();
+        voiceClientRef.current = null;
+      }
+
       setConnectionStatus("initializing");
-      setWsError(null);
+      resetError();
 
-      const sessionId = `session_${Date.now()}`;
-      const backendUrl = window.location.host;
+      const newSessionId = `voice_session_${Date.now()}_${Math.random()
+        .toString(36)
+        .slice(2, 9)}`;
+      setSessionId(newSessionId);
 
-      // Create voice agent client with callbacks
-      const voiceClient = await createVoiceAgent(sessionId, backendUrl, {
-        onTranscription: (text: string) => {
-          console.log("📝 Transcription:", text);
-          setTranscript((prev) => [...prev, `You: ${text}`]);
-          onVoiceMessage?.(text);
+      // First, call the start-session endpoint to create DB record with proper user_id
+      try {
+        await api.post(
+          "/voice/start-session",
+          {
+            session_id: newSessionId,
+            context: "voice_chat",
+          },
+          {
+            headers: { ...authHeader(token) },
+          }
+        );
+        console.log("✅ Voice session initialized in database");
+      } catch (error) {
+        console.warn(
+          "Failed to initialize session in database, continuing with WebSocket:",
+          error
+        );
+        // Continue anyway - WebSocket will create the DB record
+      }
+
+      setConnectionStatus("connecting");
+
+      const vc = await createVoiceAgent(newSessionId, backendUrl, {
+        onStatusChange: (status) => {
+          if (status === "connected" || status === "setup_complete")
+            setConnectionStatus("connected");
+          if (status === "disconnected") {
+            setConnectionStatus("disconnected");
+            setIsRecording(false);
+            setIsPlaying(false);
+            setSessionReady(false);
+          }
+          if (status === "recording") setIsRecording(true);
+          if (status === "stopped") setIsRecording(false);
         },
-
-        onResponse: (text: string) => {
-          console.log("🤖 AI Response:", text);
-          setTranscript((prev) => [...prev, `AI: ${text}`]);
+        onCapabilitiesChange: (caps) => {
+          setAudioEnabled(caps.audioEnabled);
+          setSessionReady(caps.sessionReady);
+        },
+        onResponse: (text) => {
+          setAiResponse(text);
+          setIsPlaying(false);
+        },
+        onAudioResponse: () => {
           setIsPlaying(true);
-
-          // Simulate playing animation
-          setTimeout(() => setIsPlaying(false), 2000);
+          // indicator only; actual playback is queued in the client
+          setTimeout(() => setIsPlaying(false), 3000);
         },
-
-        onError: (error: string) => {
-          console.error("❌ Voice error:", error);
+        onError: (error) => {
           setWsError(error);
           setConnectionStatus("error");
           setIsRecording(false);
-          stopSessionTimer();
+          setIsPlaying(false);
         },
-
-        onStatusChange: (status: string) => {
-          console.log("📊 Status changed:", status);
-
-          switch (status) {
-            case "connected":
-              setConnectionStatus("connected");
-              setWsError(null);
-              break;
-            case "disconnected":
-              setConnectionStatus("disconnected");
-              setIsRecording(false);
-              stopSessionTimer();
-              break;
-            case "recording":
-              setIsRecording(true);
-              onVoiceStart?.();
-              startSessionTimer();
-              break;
-            case "stopped":
-              setIsRecording(false);
-              onVoiceStop?.();
-              stopSessionTimer();
-              break;
-            case "error":
-              setConnectionStatus("error");
-              setIsRecording(false);
-              stopSessionTimer();
-              break;
-          }
+        onTurnComplete: () => {
+          // turn boundary; UI already updates via events
         },
       });
 
-      voiceClientRef.current = voiceClient;
-      console.log("✅ Voice client initialized successfully");
-
-      return true;
-    } catch (error) {
-      console.error("❌ Failed to initialize voice client:", error);
-      const errorMsg =
-        error instanceof Error
-          ? error.message
-          : "Failed to initialize voice system";
-      setWsError(errorMsg);
-      setConnectionStatus("error");
-      return false;
-    }
-  };
-
-  /**
-   * Start voice recording
-   */
-  const startRecording = async () => {
-    try {
-      // Initialize client if not already done
-      if (!voiceClientRef.current) {
-        const initialized = await initializeVoiceClient();
-        if (!initialized) return;
-      }
-
-      const client = voiceClientRef.current;
-      if (!client) return;
-
-      // Check if client is connected
-      const status = client.getStatus();
-      if (!status.isConnected) {
-        setWsError("Not connected to voice service");
-        return;
-      }
-
-      // Start recording
-      await client.startRecording();
-    } catch (error) {
-      console.error("❌ Failed to start recording:", error);
-      const errorMsg =
-        error instanceof Error ? error.message : "Failed to start recording";
-      setWsError(errorMsg);
+      voiceClientRef.current = vc;
+      setConnectionStatus("connected");
+      if (onConversationStart) onConversationStart();
+    } catch (e) {
+      setWsError(
+        e instanceof Error ? e.message : "Failed to connect to voice service"
+      );
       setConnectionStatus("error");
     }
   };
 
-  /**
-   * Stop voice recording
-   */
-  const stopRecording = () => {
-    try {
-      if (voiceClientRef.current) {
-        voiceClientRef.current.stopRecording();
-      }
-    } catch (error) {
-      console.error("❌ Failed to stop recording:", error);
-    }
-  };
-
-  /**
-   * Start session timer
-   */
-  const startSessionTimer = () => {
-    if (sessionIntervalRef.current) {
-      clearInterval(sessionIntervalRef.current);
-    }
-
-    setSessionTime(0);
-    sessionIntervalRef.current = setInterval(() => {
-      setSessionTime((prev) => prev + 1);
-    }, 1000);
-  };
-
-  /**
-   * Stop session timer
-   */
-  const stopSessionTimer = () => {
-    if (sessionIntervalRef.current) {
-      clearInterval(sessionIntervalRef.current);
-      sessionIntervalRef.current = null;
-    }
-  };
-
-  /**
-   * Format session time
-   */
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs
-      .toString()
-      .padStart(2, "0")}`;
-  };
-
-  /**
-   * Clean up resources
-   */
-  const cleanup = () => {
-    console.log("🧹 Cleaning up voice interface...");
-
-    // Stop session timer
-    stopSessionTimer();
-
-    // Disconnect voice client
+  // Hard stop: close WS + mic + reset UI (keeps button always useful)
+  const stopAndClose = () => {
     if (voiceClientRef.current) {
       voiceClientRef.current.disconnect();
       voiceClientRef.current = null;
     }
-
-    // Reset state
+    setConnectionStatus("disconnected");
     setIsRecording(false);
     setIsPlaying(false);
-    setConnectionStatus("disconnected");
+    setSessionId(null);
+    setSessionReady(false);
+    setAudioEnabled(false);
     setWsError(null);
-    setTranscript([]);
-    setSessionTime(0);
+    if (onConversationEnd) onConversationEnd();
   };
 
-  /**
-   * Toggle recording state
-   */
-  const toggleRecording = async () => {
-    if (connectionStatus === "error") {
-      // Try to reinitialize on error
-      const initialized = await initializeVoiceClient();
-      if (!initialized) return;
+  // Start microphone recording only
+  const startMic = async () => {
+    if (!voiceClientRef.current) {
+      await connectVoice();
+    }
+    if (!voiceClientRef.current) return;
+
+    const caps = voiceClientRef.current.getCapabilities();
+    if (!caps.audioEnabled || !sessionReady) {
+      setWsError("Audio session not ready; try Connect again.");
+      setConnectionStatus("error");
+      return;
     }
 
-    if (isRecording) {
-      stopRecording();
-    } else {
-      await startRecording();
+    try {
+      const status = voiceClientRef.current.getStatus();
+      if (!status.isRecording) {
+        await voiceClientRef.current.startRecording();
+        setIsRecording(true);
+      }
+      resetError();
+    } catch (err) {
+      setWsError(
+        err instanceof Error ? err.message : "Failed to start recording"
+      );
+      setConnectionStatus("error");
     }
   };
+
+  const sendText = async () => {
+    if (
+      !textInput.trim() ||
+      !voiceClientRef.current ||
+      connectionStatus !== "connected"
+    )
+      return;
+    try {
+      await voiceClientRef.current.sendTextMessage(textInput);
+      setTextInput("");
+      resetError();
+    } catch (e) {
+      setWsError(e instanceof Error ? e.message : "Failed to send message");
+    }
+  };
+
+  const connected = connectionStatus === "connected";
 
   return (
-    <div className="voice-interface-container">
-      {/* Header */}
-      <div className="voice-header">
-        <div className="flex items-center space-x-3">
-          {contactAvatar && (
-            <img
-              src={contactAvatar}
-              alt={contactName}
-              className="w-10 h-10 rounded-full"
-            />
-          )}
-          <div>
-            <h2 className="text-white font-semibold">
-              {connectionStatus === "connecting" ||
-              connectionStatus === "initializing"
-                ? "Connecting..."
-                : connectionStatus === "error"
-                ? "Connection Error"
-                : connectionStatus === "disconnected" && !isRecording
-                ? "Ready to Start"
-                : isRecording
+    <div className="min-h-screen flex flex-col items-center justify-center p-4">
+      {/* Main centered content */}
+      <div className="flex flex-col items-center space-y-8 max-w-md mx-auto">
+        {/* Status and session info at top */}
+        {connected && (
+          <div className="text-center space-y-2">
+            <div className="text-white/60 text-sm">
+              Session: {sessionId?.slice(-8)}
+            </div>
+            <div className="text-white/60 text-sm">
+              {audioEnabled ? "Audio enabled" : "Audio: text-only"}
+            </div>
+          </div>
+        )}
+
+        {/* Large centered microphone with rings */}
+        <div className="relative">
+          {/* Main status text above mic */}
+          <div className="text-center mb-8">
+            <h2 className="text-white text-2xl font-semibold mb-2">
+              {connectionStatus === "connected" && isRecording
                 ? "Listening..."
-                : isPlaying
-                ? "Speaking..."
-                : "Ready to chat"}
+                : connectionStatus === "connected" && !isRecording
+                ? "Ready to Start"
+                : connectionStatus === "connecting" ||
+                  connectionStatus === "initializing"
+                ? "Connecting..."
+                : "Tap Connect, then Start to begin"}
             </h2>
-            <p className="text-white/70">
-              {connectionStatus === "connecting" ||
-              connectionStatus === "initializing"
-                ? "Establishing connection to voice agent..."
-                : connectionStatus === "error"
-                ? wsError || "Failed to connect to voice agent"
-                : connectionStatus === "disconnected" && !isRecording
-                ? "Tap the microphone to start a session"
-                : isRecording
-                ? "Speak naturally, I'm here to listen"
-                : isPlaying
-                ? "AI is responding..."
-                : "Tap the microphone to start talking"}
-            </p>
-            {wsError && <p className="text-sm text-red-400 mt-2">{wsError}</p>}
-            {contactDescription && (
-              <p className="text-xs text-white/50 mt-1">{contactDescription}</p>
+            {connectionStatus === "connected" && isRecording && (
+              <p className="text-white/70 text-base">
+                Speak naturally, I'm here to listen
+              </p>
+            )}
+            {connectionStatus === "connected" && !isRecording && (
+              <p className="text-white/70 text-base">
+                Tap the microphone to start a session
+              </p>
             )}
           </div>
+
+          {/* Large microphone button */}
+          <div className="relative flex flex-col items-center justify-center space-y-6">
+            <button
+              className={[
+                "relative w-32 h-32 rounded-full flex items-center justify-center transition-all duration-300",
+                connected && audioEnabled && sessionReady
+                  ? "bg-gradient-to-r from-purple-500 to-purple-600 shadow-lg shadow-purple-500/30 hover:shadow-purple-500/40"
+                  : "bg-white/10 backdrop-blur-lg border border-white/20 cursor-not-allowed opacity-50",
+              ].join(" ")}
+              onClick={connected && !isRecording ? startMic : undefined}
+              disabled={
+                !connected || !audioEnabled || !sessionReady || isRecording
+              }
+              aria-label="Start Recording"
+            >
+              <Mic size={32} className="text-white" />
+
+              {/* Animated rings for ready and recording states */}
+              {connected && audioEnabled && sessionReady && (
+                <div className="absolute inset-0 pointer-events-none">
+                  <div className="absolute inset-0 rounded-full border-2 border-purple-400/40 animate-ping" />
+                  <div
+                    className="absolute inset-0 rounded-full border-2 border-purple-400/30 animate-ping"
+                    style={{ animationDelay: "0.5s" }}
+                  />
+                  <div
+                    className="absolute inset-0 rounded-full border-2 border-purple-400/20 animate-ping"
+                    style={{ animationDelay: "1s" }}
+                  />
+                </div>
+              )}
+            </button>
+
+            {/* Stop button - centered below microphone when recording */}
+            {connected && isRecording && (
+              <button
+                className="w-12 h-12 bg-red-500 text-white rounded-lg flex items-center justify-center shadow-lg shadow-red-500/30 hover:shadow-red-500/40 transition-all duration-300 hover:bg-red-600"
+                onClick={stopAndClose}
+                aria-label="Stop Recording and Close Connection"
+              >
+                <div className="w-3 h-3 bg-white rounded-sm" />
+              </button>
+            )}
+          </div>
+
+          {/* Session ID display when connected */}
+          {connected && sessionId && (
+            <div className="text-center mt-6 text-white/50 text-sm">
+              Session: {sessionId}
+            </div>
+          )}
         </div>
 
-        {/* Session timer */}
-        {sessionTime > 0 && (
-          <div className="text-white/60 text-sm">{formatTime(sessionTime)}</div>
-        )}
-      </div>
-
-      {/* Voice controls */}
-      <div className="voice-controls">
-        <div className="flex items-center justify-center space-x-4">
-          {/* Main recording button */}
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button
-              onClick={toggleRecording}
+        {/* Connect button (shown when not connected) */}
+        {!connected && (
+          <div className="flex flex-col items-center space-y-4">
+            <button
+              className="px-8 py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-full font-medium hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-300"
+              onClick={connectVoice}
               disabled={
                 connectionStatus === "connecting" ||
                 connectionStatus === "initializing"
               }
-              className={`w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 ${
-                isRecording
-                  ? "bg-red-500 hover:bg-red-600 animate-pulse"
-                  : "bg-blue-500 hover:bg-blue-600"
-              } ${
-                connectionStatus === "error"
-                  ? "bg-gray-500 cursor-not-allowed"
-                  : ""
-              }`}
             >
-              {isRecording ? (
-                <Square className="w-6 h-6 text-white" />
-              ) : (
-                <Mic className="w-6 h-6 text-white" />
-              )}
-            </Button>
-          </motion.div>
-
-          {/* Volume indicator */}
-          <div className="flex items-center text-white/60">
-            {isPlaying ? (
-              <Volume2 className="w-5 h-5" />
-            ) : (
-              <VolumeX className="w-5 h-5" />
-            )}
+              <PlugZap size={20} className="inline mr-2" />
+              {connectionStatus === "connecting" ||
+              connectionStatus === "initializing"
+                ? "Connecting..."
+                : "Connect"}
+            </button>
           </div>
-        </div>
-
-        {/* Audio level indicator */}
-        {isRecording && (
-          <motion.div
-            className="mt-4 w-full bg-white/20 h-2 rounded-full overflow-hidden"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="h-full bg-gradient-to-r from-green-400 to-blue-500"
-              style={{
-                width: `${audioLevel}%`,
-              }}
-              transition={{ duration: 0.1 }}
-            />
-          </motion.div>
         )}
       </div>
 
-      {/* Transcript */}
-      {transcript.length > 0 && (
-        <div className="voice-transcript mt-6">
-          <h3 className="text-white font-medium mb-2">Conversation</h3>
-          <div className="bg-black/30 rounded-lg p-4 max-h-48 overflow-y-auto space-y-2">
-            <AnimatePresence>
-              {transcript.map((message, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className={`text-sm ${
-                    message.startsWith("You:")
-                      ? "text-blue-300"
-                      : "text-green-300"
-                  }`}
-                >
-                  {message}
-                </motion.div>
-              ))}
-            </AnimatePresence>
+      {/* Text input - hidden for now to match design */}
+      {false && connected && (
+        <div className="fixed bottom-6 left-4 right-4 max-w-md mx-auto">
+          <div className="flex gap-2">
+            <input
+              className="flex-1 px-4 py-3 bg-white/10 backdrop-blur-lg border border-white/20 rounded-full text-white placeholder-white/50 outline-none focus:border-purple-400/60 transition-colors"
+              placeholder="Or type your message here…"
+              value={textInput}
+              onChange={(e) => setTextInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && sendText()}
+            />
+            <button
+              className="px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-full hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-300"
+              onClick={sendText}
+            >
+              <Send size={16} />
+            </button>
           </div>
         </div>
       )}
 
-      {/* Status indicator */}
-      <div className="status-indicator mt-4 text-center">
-        <div
-          className={`inline-block w-3 h-3 rounded-full mr-2 ${
-            connectionStatus === "connected"
-              ? "bg-green-500"
-              : connectionStatus === "connecting" ||
-                connectionStatus === "initializing"
-              ? "bg-yellow-500 animate-pulse"
-              : connectionStatus === "error"
-              ? "bg-red-500"
-              : "bg-gray-500"
-          }`}
-        />
-        <span className="text-white/60 text-sm capitalize">
-          {connectionStatus === "initializing"
-            ? "Initializing"
-            : connectionStatus}
-        </span>
-      </div>
+      {/* Response display - positioned elegantly */}
+      {aiResponse && (
+        <div className="fixed top-20 left-4 right-4 max-w-md mx-auto">
+          <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-4">
+            <div className="text-white/60 text-xs mb-2">Latest Response</div>
+            <div className="text-white text-sm">{aiResponse}</div>
+            {isPlaying && (
+              <div className="flex items-center gap-2 text-green-400 text-xs mt-2">
+                <Volume2 size={12} />
+                Playing response…
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Error banner */}
+      {connectionStatus === "error" && wsError && (
+        <div className="fixed top-4 left-4 right-4 max-w-md mx-auto">
+          <div className="bg-red-500/20 backdrop-blur-lg border border-red-400/30 rounded-2xl p-4 flex items-center justify-between">
+            <span className="text-red-200 text-sm">{wsError}</span>
+            <button
+              className="px-4 py-2 bg-red-500/30 border border-red-400/40 text-red-200 rounded-lg text-sm hover:bg-red-500/40 transition-colors"
+              onClick={connectVoice}
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,21 +1,33 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { VoiceAgentClient, createVoiceAgent } from "./VoiceAgentClient";
 
 const VoiceTestComponent: React.FC = () => {
   const [connectionStatus, setConnectionStatus] = useState<
     "disconnected" | "connecting" | "connected" | "error"
   >("disconnected");
+
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<string[]>([]);
   const [testMessage, setTestMessage] = useState(
     "Hello, can you help me create an anime character?"
   );
+  const [isRecording, setIsRecording] = useState(false);
+
+  const voiceClientRef = useRef<VoiceAgentClient | null>(null);
+
+  const addMessage = (message: string) => {
+    setMessages((prev) => [
+      ...prev,
+      `${new Date().toLocaleTimeString()} - ${message}`,
+    ]);
+  };
 
   const testConnection = async () => {
     try {
       setConnectionStatus("connecting");
-      setMessages((prev) => [...prev, "🔄 Testing backend connection..."]);
+      addMessage("🔄 Testing backend connection...");
 
       // Test backend health
       const healthResponse = await fetch(
@@ -26,99 +38,117 @@ const VoiceTestComponent: React.FC = () => {
       }
 
       const healthData = await healthResponse.json();
-      setMessages((prev) => [
-        ...prev,
-        `✅ Backend is healthy - Status: ${healthData.status}`,
-      ]);
+      addMessage(`✅ Backend is healthy - Status: ${healthData.status}`);
+      addMessage(
+        `🎯 Available models: ${
+          healthData.checks?.available_models?.join(", ") || "Unknown"
+        }`
+      );
 
-      // Test WebSocket connection directly without starting a session via REST API
-      const sessionId = `test_session_${Date.now()}`;
-      const wsUrl = `ws://localhost:8000/api/v1/voice/ws/${sessionId}`;
-      setMessages((prev) => [...prev, `🔗 Connecting to WebSocket: ${wsUrl}`]);
+      // Create session ID and initialize voice client
+      const newSessionId = `test_session_${Date.now()}`;
+      setSessionId(newSessionId);
 
-      const ws = new WebSocket(wsUrl);
-      let wsConnected = false;
-
-      ws.onopen = () => {
-        wsConnected = true;
-        setConnectionStatus("connected");
-        setSessionId(sessionId);
-        setMessages((prev) => [...prev, "✅ WebSocket connected successfully"]);
-      };
-
-      ws.onmessage = (event) => {
-        try {
-          const message = JSON.parse(event.data);
-          setMessages((prev) => [
-            ...prev,
-            `📨 Received: ${message.type} - ${
-              message.message || message.text || JSON.stringify(message)
-            }`,
-          ]);
-        } catch (e) {
-          setMessages((prev) => [...prev, `📨 Received raw: ${event.data}`]);
+      // Create voice client with callbacks
+      const voiceClient = await createVoiceAgent(
+        newSessionId,
+        "localhost:8000",
+        {
+          onStatusChange: (status) => {
+            addMessage(`📊 Status: ${status}`);
+            if (status === "connected") {
+              setConnectionStatus("connected");
+            } else if (status === "disconnected") {
+              setConnectionStatus("disconnected");
+            }
+          },
+          onResponse: (text) => {
+            addMessage(`🤖 AI: ${text}`);
+          },
+          onAudioResponse: (audioData) => {
+            addMessage(
+              `🔊 Audio response received (${audioData.length} chars)`
+            );
+          },
+          onError: (error) => {
+            addMessage(`❌ Error: ${error}`);
+            setConnectionStatus("error");
+          },
+          onTurnComplete: () => {
+            addMessage(`🔚 Turn complete`);
+            setIsRecording(false);
+          },
         }
-      };
+      );
 
-      ws.onerror = (error) => {
-        setConnectionStatus("error");
-        setMessages((prev) => [...prev, "❌ WebSocket connection failed"]);
-        console.error("WebSocket error:", error);
-      };
-
-      ws.onclose = (event) => {
-        setConnectionStatus("disconnected");
-        setMessages((prev) => [
-          ...prev,
-          `🔌 WebSocket disconnected - Code: ${event.code}, Reason: ${
-            event.reason || "No reason provided"
-          }`,
-        ]);
-      };
-
-      // Wait for connection or timeout
-      const timeout = setTimeout(() => {
-        if (!wsConnected) {
-          setConnectionStatus("error");
-          setMessages((prev) => [...prev, "❌ WebSocket connection timeout"]);
-          ws.close();
-        }
-      }, 10000);
-
-      // Clean up after 30 seconds
-      setTimeout(() => {
-        clearTimeout(timeout);
-        if (ws.readyState === WebSocket.OPEN) {
-          ws.close();
-        }
-      }, 30000);
+      voiceClientRef.current = voiceClient;
+      setConnectionStatus("connected");
+      addMessage("✅ Voice client initialized and connected");
     } catch (error) {
       setConnectionStatus("error");
-      setMessages((prev) => [
-        ...prev,
-        `❌ Error: ${error instanceof Error ? error.message : "Unknown error"}`,
-      ]);
+      addMessage(
+        `❌ Error: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
     }
   };
 
-  const sendTestMessage = async () => {
-    if (!sessionId) {
-      setMessages((prev) => [
-        ...prev,
-        "❌ No active session - WebSocket test doesn't use REST session",
-      ]);
+  const startRecording = async () => {
+    if (!voiceClientRef.current) {
+      addMessage("❌ No voice client available");
       return;
     }
 
-    // For WebSocket test, we'll simulate a text message through the WebSocket
-    setMessages((prev) => [
-      ...prev,
-      `📤 Would send via WebSocket: ${testMessage}`,
-    ]);
-    setMessages((prev) => [
-      ...prev,
-      "ℹ️ Note: Direct WebSocket message sending not implemented in test component",
-    ]);
+    try {
+      await voiceClientRef.current.startRecording();
+      setIsRecording(true);
+      addMessage("🎙️ Recording started");
+    } catch (error) {
+      addMessage(
+        `❌ Failed to start recording: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+    }
+  };
+
+  const stopRecording = () => {
+    if (!voiceClientRef.current) {
+      addMessage("❌ No voice client available");
+      return;
+    }
+
+    voiceClientRef.current.stopRecording();
+    setIsRecording(false);
+    addMessage("🛑 Recording stopped");
+  };
+
+  const sendTestMessage = async () => {
+    if (!voiceClientRef.current) {
+      addMessage("❌ No voice client available");
+      return;
+    }
+
+    try {
+      await voiceClientRef.current.sendTextMessage(testMessage);
+      addMessage(`📤 Sent: ${testMessage}`);
+    } catch (error) {
+      addMessage(
+        `❌ Failed to send message: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+    }
+  };
+
+  const disconnect = () => {
+    if (voiceClientRef.current) {
+      voiceClientRef.current.disconnect();
+      voiceClientRef.current = null;
+    }
+    setConnectionStatus("disconnected");
+    setSessionId(null);
+    setIsRecording(false);
+    addMessage("🔌 Disconnected");
   };
 
   const clearMessages = () => {
@@ -126,15 +156,13 @@ const VoiceTestComponent: React.FC = () => {
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
+    <Card className="w-full max-w-4xl mx-auto">
       <CardHeader>
-        <CardTitle>Voice Agent WebSocket Test</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex items-center space-x-2">
-          <span className="font-medium">Status:</span>
+        <CardTitle>Voice Agent WebSocket Test - Gemini Live API</CardTitle>
+        <div className="flex items-center gap-4">
+          <span className="text-sm font-medium">Status:</span>
           <span
-            className={`px-2 py-1 rounded text-sm ${
+            className={`px-2 py-1 rounded text-xs font-bold ${
               connectionStatus === "connected"
                 ? "bg-green-100 text-green-800"
                 : connectionStatus === "connecting"
@@ -146,57 +174,87 @@ const VoiceTestComponent: React.FC = () => {
           >
             {connectionStatus}
           </span>
+          {sessionId && (
+            <span className="text-xs text-gray-600">Session: {sessionId}</span>
+          )}
         </div>
+      </CardHeader>
 
-        {sessionId && (
-          <div className="text-sm text-gray-600">Session ID: {sessionId}</div>
-        )}
-
-        <div className="flex space-x-2">
+      <CardContent className="space-y-4">
+        {/* Control Buttons */}
+        <div className="flex flex-wrap gap-2">
           <Button
             onClick={testConnection}
             disabled={connectionStatus === "connecting"}
+            variant="outline"
           >
-            Test Connection
+            {connectionStatus === "connecting"
+              ? "Connecting..."
+              : "Test Connection"}
           </Button>
+
           <Button
             onClick={sendTestMessage}
-            disabled={!sessionId}
+            disabled={connectionStatus !== "connected"}
             variant="outline"
           >
             Send Test Message
           </Button>
-          <Button onClick={clearMessages} variant="outline">
+
+          <Button
+            onClick={isRecording ? stopRecording : startRecording}
+            disabled={connectionStatus !== "connected"}
+            variant={isRecording ? "destructive" : "default"}
+          >
+            {isRecording ? "🛑 Stop Recording" : "🎙️ Start Recording"}
+          </Button>
+
+          <Button
+            onClick={disconnect}
+            disabled={connectionStatus === "disconnected"}
+            variant="outline"
+          >
+            Disconnect
+          </Button>
+
+          <Button onClick={clearMessages} variant="ghost">
             Clear Log
           </Button>
         </div>
 
-        <div className="space-y-2">
-          <label className="block text-sm font-medium">Test Message:</label>
+        {/* Test Message Input */}
+        <div>
+          <label className="text-sm font-medium text-gray-700">
+            Test Message:
+          </label>
           <input
             type="text"
             value={testMessage}
             onChange={(e) => setTestMessage(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md"
             placeholder="Enter test message..."
+            disabled={connectionStatus !== "connected"}
           />
         </div>
 
-        <div className="bg-gray-50 p-4 rounded-md max-h-60 overflow-y-auto">
-          <h4 className="font-medium mb-2">Connection Log:</h4>
-          {messages.length === 0 ? (
-            <p className="text-gray-500 text-sm">
-              No messages yet. Click "Test Connection" to start.
-            </p>
-          ) : (
-            <div className="space-y-1">
-              {messages.map((message, index) => (
-                <div key={index} className="text-sm font-mono">
+        {/* Connection Log */}
+        <div>
+          <h4 className="text-sm font-medium text-gray-700 mb-2">
+            Connection Log:
+          </h4>
+          <div className="bg-gray-50 border border-gray-200 rounded-md p-3 h-96 overflow-y-auto font-mono text-sm">
+            {messages.length === 0 ? (
+              <div className="text-gray-500 italic">
+                No messages yet. Click "Test Connection" to start.
+              </div>
+            ) : (
+              messages.map((message, index) => (
+                <div key={index} className="mb-1">
                   {message}
                 </div>
-              ))}
-            </div>
-          )}
+              ))
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>
