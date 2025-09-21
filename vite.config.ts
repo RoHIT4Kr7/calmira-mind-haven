@@ -10,15 +10,16 @@ const config = {
     host: true,
     proxy: {
       "/api/v1": {
-        target: "http://localhost:8000",
+        target: "https://manga-wellness-backend-rsijjqxv6a-uc.a.run.app",
         changeOrigin: true,
-        secure: false,
+        secure: true,
         ws: true,
       },
       "/socket.io": {
-        target: "http://localhost:8000",
+        target: "https://manga-wellness-backend-rsijjqxv6a-uc.a.run.app",
         changeOrigin: true,
         ws: true,
+        secure: true,
       },
     },
   },

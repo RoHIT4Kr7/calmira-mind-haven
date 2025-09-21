@@ -107,7 +107,8 @@ export class VoiceAgentClient {
 
   async connect(): Promise<void> {
     return new Promise((resolve, reject) => {
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      // Use wss:// for HTTPS backends (like Google App Engine and Cloud Run) and ws:// for HTTP backends  
+      const protocol = this.backendUrl.includes('appspot.com') || this.backendUrl.includes('run.app') || this.backendUrl.startsWith('https') ? 'wss:' : 'ws:';
       const wsUrl = `${protocol}//${this.backendUrl}/api/v1/voice/ws/${this.sessionId}`;
       this.websocket = new WebSocket(wsUrl);
 

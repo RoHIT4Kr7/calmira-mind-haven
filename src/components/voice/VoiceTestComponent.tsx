@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { VoiceAgentClient, createVoiceAgent } from "./VoiceAgentClient";
+import { API_BASE_URL } from "@/lib/api";
 
 const VoiceTestComponent: React.FC = () => {
   const [connectionStatus, setConnectionStatus] = useState<
@@ -30,9 +31,7 @@ const VoiceTestComponent: React.FC = () => {
       addMessage("🔄 Testing backend connection...");
 
       // Test backend health
-      const healthResponse = await fetch(
-        "http://localhost:8000/api/v1/voice/health"
-      );
+      const healthResponse = await fetch(`${API_BASE_URL}/voice/health`);
       if (!healthResponse.ok) {
         throw new Error("Backend health check failed");
       }
@@ -52,7 +51,7 @@ const VoiceTestComponent: React.FC = () => {
       // Create voice client with callbacks
       const voiceClient = await createVoiceAgent(
         newSessionId,
-        "localhost:8000",
+        API_BASE_URL.replace("/api/v1", ""),
         {
           onStatusChange: (status) => {
             addMessage(`📊 Status: ${status}`);

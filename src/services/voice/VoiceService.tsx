@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import LightServiceNavigation from "@/components/navigation/LightServiceNavigation";
 import VoiceInterface from "@/components/voice/VoiceInterface";
 import { SigninGradientBackground } from "@/components/ui/signin-gradient-background";
+import { API_BASE_URL } from "@/lib/api";
 
 interface VoiceOption {
   id: string;
@@ -84,7 +85,7 @@ const VoiceService: React.FC = () => {
                   onConversationEnd={() => {
                     console.log(`Voice session stopped with ${selectedOption}`);
                   }}
-                  backendUrl="localhost:8000"
+                  backendUrl={API_BASE_URL.replace("/api/v1", "")}
                 />
               </div>
             </motion.div>

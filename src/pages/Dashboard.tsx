@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 // import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/context/AuthContext";
-import { api, authHeader } from "@/lib/api";
+import { api, authHeader, API_BASE_URL } from "@/lib/api";
 import {
   Line,
   LineChart,
@@ -76,7 +76,7 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate();
 
   // Custom tooltip for mood data
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload as MoodDataPoint;
       if (!data.mood) return null;
@@ -162,19 +162,37 @@ const Dashboard: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
+        console.log(
+          "🔍 Dashboard: Fetching stats with token:",
+          token ? "present" : "missing"
+        );
+        console.log("🔗 API URL:", `${API_BASE_URL}/dashboard/stats`);
+
         const res = await api.get(`/dashboard/stats`, {
           headers: { ...authHeader(token) },
         });
+        console.log("✅ Dashboard stats received:", res.data);
         setStats(res.data);
       } catch (e: any) {
-        setError(
-          e?.response?.data?.detail || e?.message || "Failed to load stats"
-        );
+        console.error("❌ Dashboard stats error:", e);
+        console.error("Error response:", e?.response?.data);
+        console.error("Error status:", e?.response?.status);
+
+        const errorMessage =
+          e?.response?.data?.detail || e?.message || "Failed to load stats";
+        console.error("Final error message:", errorMessage);
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
     };
-    fetchStats();
+
+    if (token) {
+      fetchStats();
+    } else {
+      console.log("🔍 Dashboard: No token available, skipping stats fetch");
+      setLoading(false);
+    }
   }, [token]);
 
   const moodOptions = useMemo(
@@ -274,14 +292,19 @@ const Dashboard: React.FC = () => {
       setMood(0);
 
       // Refresh stats after checkin
+      console.log("🔄 Refreshing stats after check-in");
       const res = await api.get(`/dashboard/stats`, {
         headers: { ...authHeader(token) },
       });
+      console.log("✅ Stats refreshed:", res.data);
       setStats(res.data);
     } catch (e: any) {
-      alert(
-        e?.response?.data?.detail || e?.message || "Failed to submit check-in"
-      );
+      console.error("❌ Check-in error:", e);
+      console.error("Error response:", e?.response?.data);
+
+      const errorMessage =
+        e?.response?.data?.detail || e?.message || "Failed to submit check-in";
+      alert(errorMessage);
     }
   };
 

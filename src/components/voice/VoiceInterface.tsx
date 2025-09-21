@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Send, PlugZap, Mic, Volume2 } from "lucide-react";
 import { VoiceAgentClient, createVoiceAgent } from "./VoiceAgentClient";
-import { api, authHeader } from "@/lib/api";
+import { api, authHeader, API_BASE_URL } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 
 interface VoiceInterfaceProps {
@@ -21,7 +21,7 @@ type ConnectionStatus =
 const VoiceInterface: React.FC<VoiceInterfaceProps> = ({
   onConversationStart,
   onConversationEnd,
-  backendUrl = "localhost:8000",
+  backendUrl = API_BASE_URL.replace("/api/v1", ""),
 }) => {
   const { token } = useAuth();
   // Connection and session state
@@ -69,6 +69,9 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({
 
       // First, call the start-session endpoint to create DB record with proper user_id
       try {
+        console.log("🔌 Voice: Starting session with backend URL:", backendUrl);
+        console.log("🔑 Voice: Using token:", token ? "present" : "missing");
+
         await api.post(
           "/voice/start-session",
           {
@@ -81,6 +84,7 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({
         );
         console.log("✅ Voice session initialized in database");
       } catch (error) {
+        console.error("❌ Voice: Failed to initialize session:", error);
         console.warn(
           "Failed to initialize session in database, continuing with WebSocket:",
           error

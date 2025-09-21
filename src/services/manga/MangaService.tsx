@@ -62,7 +62,9 @@ const MangaService: React.FC = () => {
   useEffect(() => {
     if (!socketRef.current) {
       console.log("🔌 Initializing Socket.IO connection...");
-      socketRef.current = io("http://localhost:8000", {
+      // Convert API_BASE_URL to socket URL (remove /api/v1 suffix)
+      const socketUrl = API_BASE_URL.replace("/api/v1", "");
+      socketRef.current = io(socketUrl, {
         transports: ["polling", "websocket"],
         reconnectionAttempts: 10,
         reconnectionDelay: 500,
