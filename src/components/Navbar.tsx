@@ -4,9 +4,12 @@ const Navbar = () => {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-black/20 backdrop-blur-md border-b border-red-500/20">
       <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-        <div className="font-michroma text-xl font-bold text-white">
-          Calmira AI
-        </div>
+        <Link to="/" className="flex items-center gap-2">
+          <img src="/favicon-32x32.png" alt="Calmira" className="w-8 h-8" />
+          <div className="font-michroma text-xl font-bold text-white">
+            Calmira AI
+          </div>
+        </Link>
         <Link to="/dashboard" className="custom-launch-button font-michroma">
           <svg
             height="24"
