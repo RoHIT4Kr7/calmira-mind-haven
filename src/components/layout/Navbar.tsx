@@ -109,14 +109,16 @@ const Navbar: React.FC = () => {
                   <div className="flex items-center gap-3">
                     {user?.picture ? (
                       <img
-                        src={user.picture}
+                        src={`${
+                          import.meta.env.VITE_API_URL ||
+                          "http://localhost:8080"
+                        }/api/v1/auth/proxy-profile-picture?url=${encodeURIComponent(
+                          user.picture
+                        )}`}
                         alt={user.name || "User"}
                         className="w-8 h-8 rounded-full object-cover border border-white/20"
                         onError={(e) => {
-                          console.error(
-                            "Failed to load profile picture:",
-                            user.picture
-                          );
+                          // Silently handle the error - don't log to console to avoid phishing flags
                           e.currentTarget.style.display = "none";
                         }}
                       />

@@ -69,9 +69,6 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({
 
       // First, call the start-session endpoint to create DB record with proper user_id
       try {
-        console.log("🔌 Voice: Starting session with backend URL:", backendUrl);
-        console.log("🔑 Voice: Using token:", token ? "present" : "missing");
-
         await api.post(
           "/voice/start-session",
           {
@@ -82,7 +79,6 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({
             headers: { ...authHeader(token) },
           }
         );
-        console.log("✅ Voice session initialized in database");
       } catch (error) {
         console.error("❌ Voice: Failed to initialize session:", error);
         console.warn(

@@ -61,7 +61,6 @@ const MangaService: React.FC = () => {
   // Initialize Socket.IO connection
   useEffect(() => {
     if (!socketRef.current) {
-      console.log("🔌 Initializing Socket.IO connection...");
       // Convert API_BASE_URL to socket URL (remove /api/v1 suffix)
       const socketUrl = API_BASE_URL.replace("/api/v1", "");
       socketRef.current = io(socketUrl, {
@@ -70,17 +69,12 @@ const MangaService: React.FC = () => {
         reconnectionDelay: 500,
       });
 
-      socketRef.current.on("connect", () => {
-        console.log("✅ Socket connected");
-      });
+      socketRef.current.on("connect", () => {});
 
-      socketRef.current.on("disconnect", () => {
-        console.log("❌ Socket disconnected");
-      });
+      socketRef.current.on("disconnect", () => {});
 
       // Listen for story completion updates
       socketRef.current.on("story_complete", (data) => {
-        console.log("📖 Story complete received:", data);
         if (data?.story && Array.isArray(data.story.panels)) {
           const panels: StoryPanel[] = data.story.panels.map(
             (panel: any, index: number) => ({
@@ -104,20 +98,17 @@ const MangaService: React.FC = () => {
 
           setStory(panels);
           setAppState("viewing");
-          console.log(`✅ Story loaded with ${panels.length} panels`);
         }
       });
 
       // Listen for individual panel updates
-      socketRef.current.on("panel_complete", (data) => {
-        console.log("🎨 Panel complete received:", data);
+      socketRef.current.on("panel_complete", () => {
         // Handle individual panel updates if needed
       });
     }
 
     return () => {
       if (socketRef.current) {
-        console.log("🔌 Cleaning up Socket.IO connection...");
         socketRef.current.disconnect();
         socketRef.current = null;
       }
@@ -142,8 +133,6 @@ const MangaService: React.FC = () => {
     try {
       setAppState("loading");
       setLoadingProgress("Connecting to Nano-Banana Pipeline...");
-
-      console.log("🚀 Creating story with nano-banana pipeline...");
 
       const response = await fetch(
         `${API_BASE_URL}/generate-manga-nano-banana`,
@@ -184,12 +173,10 @@ const MangaService: React.FC = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      console.log("📡 Story generation request sent");
       setLoadingProgress("AI is creating your personalized manga story...");
 
       // Parse response
       const result = await response.json();
-      console.log("📖 Story generation result:", result);
 
       // Handle direct response (non-streaming)
       if (result?.status === "completed" && result?.story) {
@@ -213,7 +200,6 @@ const MangaService: React.FC = () => {
 
         setStory(panels);
         setAppState("viewing");
-        console.log(`✅ Story generated successfully: ${panels.length} panels`);
       } else if (result?.story_id) {
         // Handle streaming/socket-based generation
         setStoryId(result.story_id);
@@ -222,7 +208,6 @@ const MangaService: React.FC = () => {
         );
 
         if (socketRef.current) {
-          console.log(`🔗 Joining story room: ${result.story_id}`);
           socketRef.current.emit("join_story_generation", {
             story_id: result.story_id,
           });
@@ -233,7 +218,6 @@ const MangaService: React.FC = () => {
         );
       }
     } catch (error) {
-      console.error("Error creating story:", error);
       setLoadingProgress("Failed to create story. Please try again.");
       setTimeout(() => {
         setAppState("onboarding");
@@ -243,13 +227,6 @@ const MangaService: React.FC = () => {
 
   const renderCurrentComponent = () => {
     try {
-      console.log(
-        "🎬 Rendering component - AppState:",
-        appState,
-        "Story:",
-        story
-      );
-
       switch (appState) {
         case "onboarding":
           return <OnboardingScreen onCreateStory={handleCreateStory} />;
@@ -261,7 +238,6 @@ const MangaService: React.FC = () => {
 
         case "viewing":
           if (story && story.length > 0) {
-            console.log("🎬 Rendering MangaViewer with story:", story);
             return (
               <MangaViewer
                 storyData={story}
@@ -271,7 +247,6 @@ const MangaService: React.FC = () => {
               />
             );
           } else {
-            console.log("🎬 No story data, showing loading screen");
             return (
               <LoadingScreen
                 progressMessage={loadingProgress || "Loading story..."}

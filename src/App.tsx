@@ -57,7 +57,6 @@ const MentalWellnessApp = () => {
   useEffect(() => {
     // Always connect to Socket.IO when component mounts
     if (!socketRef.current) {
-      console.log("🔌 Initializing Socket.IO connection...");
       // Use relative path so dev proxy forwards to backend
       socketRef.current = io("/", {
         path: "/socket.io",
@@ -66,33 +65,17 @@ const MentalWellnessApp = () => {
         reconnectionDelay: 500,
       });
 
-      socketRef.current.on("connect", () => {
-        console.log("✅ Connected to backend Socket.IO");
-      });
-
-      // Debug: Listen to all events
-      socketRef.current.onAny((eventName, ...args) => {
-        console.log(`🔔 Socket event received: ${eventName}`, args);
-      });
+      socketRef.current.on("connect", () => {});
 
       // Listen for room join confirmation
-      socketRef.current.on("joined_generation", (data: any) => {
-        console.log("✅ Successfully joined story generation room:", data);
-      });
+      socketRef.current.on("joined_generation", () => {});
 
-      socketRef.current.on("disconnect", () => {
-        console.log("Disconnected from backend Socket.IO");
-      });
+      socketRef.current.on("disconnect", () => {});
 
       // Listen for story generation progress (global events)
       socketRef.current.on("generation_progress", (data: any) => {
-        console.log("🚨 CRITICAL: Generation progress received:", data);
-
         // Join story room ASAP when we see the first event containing story_id
         if (data?.data?.story_id && socketRef.current && !storyId) {
-          console.log(
-            `🔗 Auto-joining story room from progress event: ${data.data.story_id}`
-          );
           socketRef.current.emit("join_story_generation", {
             story_id: data.data.story_id,
           });
@@ -123,11 +106,9 @@ const MentalWellnessApp = () => {
             setAppState("viewing");
           }
         } else if (data.event_type === "story_generation_error") {
-          console.error("Story generation failed:", data.data?.error);
           setLoadingProgress("Story generation failed. Please try again.");
         } else if (data.event_type === "panel_processing_complete") {
           // Handle panel completion here too
-          console.log("🎯 PANEL COMPLETED via generation_progress:", data);
           const panelNumber = data.data?.panel_number || "X";
           setLoadingProgress(
             `Panel ${panelNumber} completed! Assets generated.`
@@ -156,8 +137,6 @@ const MentalWellnessApp = () => {
             setStory([initialPanel]);
             setStoryId(data.story_id || data.data.story_id);
             setAppState("viewing");
-
-            console.log("🎬 STARTING SLIDESHOW IMMEDIATELY!", initialPanel);
           }
         } else {
           // Update loading progress
@@ -167,7 +146,6 @@ const MentalWellnessApp = () => {
 
       // Listen for individual panel updates
       socketRef.current.on("panel_processing_complete", (data: any) => {
-        console.log("Panel completed:", data);
         const panelNumber = data.data?.panel_number || "X";
         setLoadingProgress(`Panel ${panelNumber} completed! Assets generated.`);
 
@@ -193,15 +171,11 @@ const MentalWellnessApp = () => {
           setStory([initialPanel]);
           setStoryId(data.story_id || data.data.story_id);
           setAppState("viewing");
-
-          console.log("🎬 Starting slideshow with first panel!", initialPanel);
         }
       });
 
       // Listen for additional panels and update existing story
       socketRef.current.on("panel_update", (data: any) => {
-        console.log("Panel update received:", data);
-
         // Update existing story with new panel
         if (data.data?.panel_data && story) {
           const newPanel: StoryPanel = {
@@ -236,18 +210,15 @@ const MentalWellnessApp = () => {
 
       // Listen for music streaming events
       socketRef.current.on("music_streaming_started", () => {
-        console.log("🎵 Music streaming started");
         setLoadingProgress("Background music streaming started...");
       });
 
-      socketRef.current.on("audio_chunk", (data: any) => {
+      socketRef.current.on("audio_chunk", () => {
         // Handle real-time audio chunks
-        console.log("Received audio chunk:", data.timestamp);
       });
 
       return () => {
         if (socketRef.current) {
-          console.log("🔌 Disconnecting Socket.IO...");
           socketRef.current.disconnect();
           socketRef.current = null;
         }
@@ -294,7 +265,6 @@ const MentalWellnessApp = () => {
     gender: string;
   }) => {
     try {
-      console.log("Creating story with user data:", userData);
       setAppState("loading");
       setLoadingProgress("Connecting to AI services...");
 
@@ -411,7 +381,6 @@ const MentalWellnessApp = () => {
           "Non-JSON response from backend, proceeding with socket events only."
         );
       }
-      console.log("Story generation initiated:", result);
 
       if (result?.story_id) {
         setStoryId(result.story_id);
@@ -419,9 +388,6 @@ const MentalWellnessApp = () => {
 
         // Join the actual story room with the real story ID from backend
         if (socketRef.current) {
-          console.log(`🔗 Joining actual story room: ${result.story_id}`);
-          console.log(`🔌 Socket connected: ${socketRef.current.connected}`);
-
           // Ensure socket is connected before joining room
           if (socketRef.current.connected) {
             socketRef.current.emit("join_story_generation", {
@@ -430,9 +396,6 @@ const MentalWellnessApp = () => {
           } else {
             // Wait for connection then join
             socketRef.current.on("connect", () => {
-              console.log(
-                `🔗 Now joining story room after connection: ${result.story_id}`
-              );
               socketRef.current?.emit("join_story_generation", {
                 story_id: result.story_id,
               });
@@ -441,7 +404,6 @@ const MentalWellnessApp = () => {
         }
       }
     } catch (error) {
-      console.error("Error creating story:", error);
       setLoadingProgress("Failed to create story. Please try again.");
       setTimeout(() => {
         setAppState("onboarding");

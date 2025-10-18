@@ -1,10 +1,19 @@
 import axios from "axios";
 
 // Allow overriding the API base via env (useful for different hosts/ports)
-export const API_BASE_URL =
-  (import.meta as any).env.VITE_API_BASE_URL || "https://manga-wellness-backend-rsijjqxv6a-uc.a.run.app/api/v1";
+// In production, use relative URLs to avoid cross-domain issues and phishing detection
+const isDevelopment = import.meta.env.DEV;
+const envApiUrl = (import.meta as any).env.VITE_API_BASE_URL;
 
-console.log("🔗 API Base URL:", API_BASE_URL);
+export const API_BASE_URL = isDevelopment && envApiUrl
+  ? envApiUrl
+  : isDevelopment
+  ? "http://localhost:8000/api/v1"  // Local development fallback
+  : "/api/v1"; // Use relative URL in production
+
+if (isDevelopment) {
+  // Development logging removed
+}
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -17,11 +26,15 @@ export const api = axios.create({
 // Add request interceptor for debugging
 api.interceptors.request.use(
   (config) => {
-    console.log(`🔄 API Request: ${config.method?.toUpperCase()} ${config.url}`);
+    if (isDevelopment) {
+      // Development logging removed
+    }
     return config;
   },
   (error) => {
-    console.error("🚨 API Request Error:", error);
+    if (isDevelopment) {
+      // API Request Error logging removed
+    }
     return Promise.reject(error);
   }
 );
@@ -29,17 +42,15 @@ api.interceptors.request.use(
 // Add response interceptor for debugging
 api.interceptors.response.use(
   (response) => {
-    console.log(`✅ API Response: ${response.status} ${response.config.url}`);
+    if (isDevelopment) {
+      // Development logging removed
+    }
     return response;
   },
   (error) => {
-    console.error("🚨 API Response Error:", {
-      url: error.config?.url,
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      data: error.response?.data,
-      message: error.message,
-    });
+    if (isDevelopment) {
+      // API Response Error logging removed
+    }
     return Promise.reject(error);
   }
 );

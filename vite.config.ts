@@ -1,27 +1,26 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { viteStaticCopy } from "vite-plugin-static-copy";
-import path from "path";
 import tsconfigPaths from "vite-tsconfig-paths";
 const config = {
-  mode: "development",
+  mode: process.env.NODE_ENV === "production" ? "production" : "development",
   server: {
     port: 8080,
     host: true,
-    proxy: {
+    proxy: process.env.NODE_ENV === "production" ? {
       "/api/v1": {
-        target: "https://manga-wellness-backend-rsijjqxv6a-uc.a.run.app",
+        target: "https://manga-wellness-backend-rsijjqxv6a-el.a.run.app",
         changeOrigin: true,
         secure: true,
         ws: true,
       },
       "/socket.io": {
-        target: "https://manga-wellness-backend-rsijjqxv6a-uc.a.run.app",
+        target: "https://manga-wellness-backend-rsijjqxv6a-el.a.run.app",
         changeOrigin: true,
         ws: true,
         secure: true,
       },
-    },
+    } : undefined,
   },
   preview: {
     port: 8080,
@@ -30,23 +29,19 @@ const config = {
   build: {
     outDir: "dist",
     emptyOutDir: true,
-    sourcemap: true,
-    minify: false,
-    cssMinify: false,
-    terserOptions: { compress: false, mangle: false },
+    sourcemap: false,
+    minify: true,
+    cssMinify: true,
   },
-  define: { "process.env.NODE_ENV": "'development'" },
+  define: { "process.env.NODE_ENV": "'production'" },
   esbuild: { jsx: 'automatic' as const, jsxImportSource: "react" },
   plugins: [
     react(),
     viteStaticCopy({
       targets: [
-        { src: "./assets/*", dest: "assets" },
-        {
-          src: "./public/assets/{*,}",
-          dest: path.join("dist", "public/assets"),
-        },
-        { src: "src/assets/*", dest: path.join("dist", "assets") },
+        { src: "./public/audio/*", dest: "audio" },
+        { src: "./public/images/*", dest: "images" },
+        { src: "./src/assets/*", dest: "assets" },
       ],
       silent: true,
     }),

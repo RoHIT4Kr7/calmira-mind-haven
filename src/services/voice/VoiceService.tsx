@@ -79,12 +79,8 @@ const VoiceService: React.FC = () => {
               <div className="flex-1">
                 <VoiceInterface
                   contactDescription={contactInfo.status}
-                  onConversationStart={() => {
-                    console.log(`Voice session started with ${selectedOption}`);
-                  }}
-                  onConversationEnd={() => {
-                    console.log(`Voice session stopped with ${selectedOption}`);
-                  }}
+                  onConversationStart={() => {}}
+                  onConversationEnd={() => {}}
                   backendUrl={API_BASE_URL.replace("/api/v1", "")}
                 />
               </div>

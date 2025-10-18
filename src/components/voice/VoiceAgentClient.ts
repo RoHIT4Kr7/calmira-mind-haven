@@ -145,7 +145,6 @@ export class VoiceAgentClient {
         case 'audio_response': {
           // Start a new sequence only when a new turn begins
           if (this.awaitingNewTurnAudio) {
-            console.log('🎵 New turn audio - stopping previous audio and starting fresh sequence');
             this.stopCurrentAudio();
             this.audioSequenceId++;
             this.awaitingNewTurnAudio = false;
@@ -190,7 +189,6 @@ export class VoiceAgentClient {
 
         case 'turn_complete': {
           // Mark boundary; next audio starts a fresh sequence
-          console.log('🔚 Turn complete - next audio will start new sequence');
           this.awaitingNewTurnAudio = true;
           if (this.onTurnComplete) this.onTurnComplete();
           break;
@@ -317,7 +315,6 @@ export class VoiceAgentClient {
         const match = /rate=(\d{4,6})/.exec(mimeType);
         if (match) {
           sourceRate = parseInt(match[1], 10);
-          console.log(`🎵 Detected source rate: ${sourceRate}Hz from mime_type: ${mimeType}`);
         }
       }
 
@@ -343,7 +340,6 @@ export class VoiceAgentClient {
             : float32[i0] || 0;
         }
         finalAudio = resampled;
-        console.log(`🎵 Resampled from ${sourceRate}Hz to ${ctx.sampleRate}Hz (${float32.length} -> ${outLen} samples)`);
       }
 
       // Create buffer at context rate
@@ -373,8 +369,6 @@ export class VoiceAgentClient {
       };
       
       src.start(startTime);
-      
-      console.log(`🎵 Queued audio chunk (${finalAudio.length} samples, ${buffer.duration.toFixed(3)}s) at ${startTime.toFixed(3)}s (next: ${this.nextPlayTime.toFixed(3)}s)`);
       
     } catch (error) {
       console.warn('Audio playback error:', error);

@@ -102,11 +102,8 @@ export const useAudioStateMachine = ({
   // State change callback
   const changeState = useCallback(
     (newState: AudioState) => {
-      console.log(`🎵 Audio FSM: ${currentState} -> ${newState}`);
-
       // Stop background music when story ends
       if (newState === "ended" && backgroundMusicRef.current) {
-        console.log(`🎵 Stopping background music - state changed to ended`);
         backgroundMusicRef.current.pause();
         backgroundMusicRef.current.currentTime = 0;
       }
@@ -122,9 +119,6 @@ export const useAudioStateMachine = ({
     setAudioQueue((prev) => {
       const newQueue = new Map(prev);
       newQueue.set(panelAudio.panelNumber, panelAudio);
-      console.log(
-        `🎵 Queued panel ${panelAudio.panelNumber}. Queue size: ${newQueue.size}`
-      );
       return newQueue;
     });
   }, []);
@@ -146,7 +140,6 @@ export const useAudioStateMachine = ({
       }
 
       if (currentState === "playing" && currentPanel === panelNumber) {
-        console.log(`🎵 Panel ${panelNumber} already playing`);
         return;
       }
 
@@ -199,12 +192,7 @@ export const useAudioStateMachine = ({
 
           // Set up ended event handler
           narrationRef.current.onended = () => {
-            console.log(`🎵 Panel ${panelNumber} narration ended`);
-
             if (!shouldAdvanceRef.current) {
-              console.log(
-                `🎵 Auto-advance disabled, staying on panel ${panelNumber}`
-              );
               return;
             }
 
@@ -215,21 +203,14 @@ export const useAudioStateMachine = ({
               // Check immediately first
               const nextPanel = audioQueue.get(nextPanelNumber);
               if (nextPanel && nextPanel.ready) {
-                console.log(`🎵 Auto-advancing to panel ${nextPanelNumber}`);
                 playPanel(nextPanelNumber);
               } else {
-                console.log(
-                  `🎵 Panel ${nextPanelNumber} not ready, setting up listener...`
-                );
                 changeState("transitioning");
 
                 // Set up a polling mechanism to wait for the next panel
                 const checkNextPanel = () => {
                   const panel = audioQueue.get(nextPanelNumber);
                   if (panel && panel.ready) {
-                    console.log(
-                      `🎵 Panel ${nextPanelNumber} is now ready, auto-advancing!`
-                    );
                     playPanel(nextPanelNumber);
                   } else {
                     // Continue polling every 500ms until panel is ready
@@ -241,10 +222,8 @@ export const useAudioStateMachine = ({
                 setTimeout(checkNextPanel, 500);
               }
             } else {
-              console.log(`🎵 Story completed - all panels finished.`);
               // Stop background music when story ends
               if (backgroundMusicRef.current) {
-                console.log(`🎵 Stopping background music - story complete`);
                 backgroundMusicRef.current.pause();
                 backgroundMusicRef.current.currentTime = 0;
               }
@@ -276,8 +255,6 @@ export const useAudioStateMachine = ({
               console.warn("Background music autoplay blocked:", e);
             });
           }
-
-          console.log(`🎵 Started playing panel ${panelNumber}`);
         }
       } catch (error) {
         console.error(`🎵 Failed to play panel ${panelNumber}:`, error);
@@ -299,7 +276,6 @@ export const useAudioStateMachine = ({
   // Advance to next panel
   const advanceToNextPanel = useCallback(() => {
     if (isTransitioningRef.current) {
-      console.log("🎵 Already transitioning, ignoring advance request");
       return;
     }
 
@@ -308,7 +284,6 @@ export const useAudioStateMachine = ({
       changeState("transitioning");
       playPanel(nextPanel.panelNumber);
     } else {
-      console.log("🎵 No next panel available, ending story");
       changeState("ended");
     }
   }, [getNextPanel, playPanel, changeState]);
@@ -367,8 +342,6 @@ export const useAudioStateMachine = ({
     if (!socket || !storyId) return;
 
     const handlePanelUpdate = (data: any) => {
-      console.log("🎵 FSM received panel update:", data);
-
       if (data.data?.panel_data && data.story_id === storyId) {
         const panelNumber = Number(data.data.panel_number);
         const imageUrl = data.data.panel_data.image_url || "";
@@ -390,7 +363,6 @@ export const useAudioStateMachine = ({
 
           // If this is panel 1 and we're idle, start immediately
           if (panelNumber === 1 && currentState === "idle") {
-            console.log("🎵 Starting slideshow with panel 1");
             // Use setTimeout to ensure state is properly set
             setTimeout(() => playPanel(1), 100);
           }
@@ -400,9 +372,6 @@ export const useAudioStateMachine = ({
             currentState === "transitioning" &&
             panelNumber === currentPanel + 1
           ) {
-            console.log(
-              `🎵 Panel ${panelNumber} arrived while transitioning, playing now`
-            );
             setTimeout(() => playPanel(panelNumber), 100);
           }
         }
@@ -411,14 +380,11 @@ export const useAudioStateMachine = ({
 
     // Also listen for the older event format for compatibility
     const handlePanelProcessingComplete = (data: any) => {
-      console.log("🎵 FSM received panel_processing_complete:", data);
       handlePanelUpdate(data); // Reuse the same logic
     };
 
     // Listen for slideshow start event
     const handleSlideshowStart = (data: any) => {
-      console.log("🎵 FSM received slideshow_start:", data);
-
       if (data.story_id === storyId && data.first_panel) {
         const panelNumber = Number(data.first_panel.panel_number);
         const imageUrl = data.first_panel.image_url || "";
@@ -438,9 +404,6 @@ export const useAudioStateMachine = ({
           queuePanel(panelAudio);
 
           // Start slideshow immediately
-          console.log(
-            "🎵 Starting slideshow with panel 1 from slideshow_start event"
-          );
           setTimeout(() => playPanel(1), 100);
         }
       }
@@ -460,10 +423,6 @@ export const useAudioStateMachine = ({
   // Initialize with initial panel if provided
   useEffect(() => {
     if (initialPanel && currentState === "idle" && currentPanel === 1) {
-      console.log(
-        "🎵 Initializing AudioStateMachine with initial panel:",
-        initialPanel
-      );
       queuePanel(initialPanel);
       // Small delay to ensure everything is ready
       setTimeout(() => {

@@ -69,17 +69,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       });
       if (res.ok) {
         const userData = await res.json();
-        console.log("User data from backend:", userData);
         setUser({
           id: userData.id?.toString(),
           email: userData.email,
           name: userData.full_name,
           picture: userData.profile_picture_url,
         });
-        console.log("Set user picture:", userData.profile_picture_url);
       }
     } catch (e) {
-      console.error("Failed to fetch user profile", e);
       // If fetching profile fails, try to get user info from token
       try {
         const decoded = jwtDecode<DecodedToken>(authToken);
@@ -90,7 +87,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           picture: decoded.picture,
         });
       } catch {
-        console.error("Token decode failed during profile fallback");
+        // Silently handle token decode failures
       }
     }
   }, []);
@@ -102,7 +99,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         try {
           await fetchUserProfile(token);
         } catch (error) {
-          console.error("Failed to fetch profile during init:", error);
+          // Silently handle profile fetch errors during initialization
         }
       }
       setInitializing(false);
@@ -112,8 +109,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const login = useCallback(
     async (googleCredential: string) => {
-      console.log("🔐 Attempting login with backend:", API_BASE_URL);
-
       try {
         const res = await fetch(`${API_BASE_URL}/auth/google`, {
           method: "POST",
@@ -125,22 +120,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           body: JSON.stringify({ credential: googleCredential }),
         });
 
-        console.log("🔐 Login response status:", res.status);
-
         if (!res.ok) {
           let detail = "";
           try {
             detail = await res.text();
-            console.error("🚨 Login error response:", detail);
           } catch (textError) {
-            console.error("🚨 Could not read error response:", textError);
             detail = `HTTP ${res.status} ${res.statusText}`;
           }
           throw new Error(`Login failed: ${detail}`);
         }
 
         const data = await res.json();
-        console.log("🔐 Login successful, response:", data);
 
         // Expect backend to return { token: "...", user: {...} }
         const appToken: string | undefined =
@@ -153,22 +143,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
         // Set user data from response or fetch from /auth/me
         if (data?.user) {
-          console.log("Login user data:", data.user);
           setUser({
             id: data.user.id?.toString(),
             email: data.user.email,
             name: data.user.full_name,
             picture: data.user.profile_picture_url,
           });
-          console.log(
-            "Set user picture from login:",
-            data.user.profile_picture_url
-          );
         } else {
           fetchUserProfile(appToken);
         }
       } catch (error) {
-        console.error("🚨 Login error:", error);
         throw error;
       }
     },

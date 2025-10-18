@@ -36,8 +36,6 @@ const MangaViewer = ({
   socket,
   onPanelUpdate,
 }: MangaViewerProps) => {
-  console.log("🎬 MangaViewer rendering with storyData:", storyData);
-
   const [mangaPanels, setMangaPanels] = useState<MangaPanel[]>(storyData || []);
   const [currentPanelIndex, setCurrentPanelIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -47,7 +45,6 @@ const MangaViewer = ({
 
   // Update panels when storyData changes
   useEffect(() => {
-    console.log("🎬 StoryData changed:", storyData);
     if (storyData && storyData.length > 0) {
       const normalized = storyData.map((p, index) => ({
         ...p,
@@ -55,7 +52,6 @@ const MangaViewer = ({
         ready: Boolean(p.imageUrl && p.narrationUrl),
       }));
       setMangaPanels(normalized);
-      console.log("🎬 Normalized panels:", normalized);
     }
   }, [storyData]);
 
@@ -63,8 +59,6 @@ const MangaViewer = ({
   useEffect(() => {
     if (socket && storyId) {
       const handlePanelUpdate = (data: any) => {
-        console.log("🔄 Panel update received:", data);
-
         if (data.data?.panel_data && data.data?.panel_number) {
           const panelData = data.data.panel_data;
           const panelNum = data.data.panel_number;
@@ -198,7 +192,7 @@ const MangaViewer = ({
       setTimeout(() => {
         if (audioRef.current) {
           audioRef.current.play().catch(() => {
-            console.log("Auto-play prevented by browser");
+            // Auto-play prevented by browser
           });
         }
       }, 1000);
@@ -274,11 +268,7 @@ const MangaViewer = ({
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 1.05 }}
                   transition={{ duration: 0.5 }}
-                  onLoad={() =>
-                    console.log(
-                      `🖼️ Image loaded for panel ${currentPanelIndex + 1}`
-                    )
-                  }
+                  onLoad={() => {}}
                   onError={(e) =>
                     console.error(
                       `❌ Image error for panel ${currentPanelIndex + 1}:`,

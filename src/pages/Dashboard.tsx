@@ -162,25 +162,27 @@ const Dashboard: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        console.log(
-          "🔍 Dashboard: Fetching stats with token:",
-          token ? "present" : "missing"
-        );
-        console.log("🔗 API URL:", `${API_BASE_URL}/dashboard/stats`);
+        if (import.meta.env.DEV) {
+          // Development logging removed
+        }
 
         const res = await api.get(`/dashboard/stats`, {
           headers: { ...authHeader(token) },
         });
-        console.log("✅ Dashboard stats received:", res.data);
+        if (import.meta.env.DEV) {
+          // Development logging removed
+        }
         setStats(res.data);
       } catch (e: any) {
-        console.error("❌ Dashboard stats error:", e);
-        console.error("Error response:", e?.response?.data);
-        console.error("Error status:", e?.response?.status);
+        if (import.meta.env.DEV) {
+          // Dashboard stats error logging removed
+        }
 
         const errorMessage =
           e?.response?.data?.detail || e?.message || "Failed to load stats";
-        console.error("Final error message:", errorMessage);
+        if (import.meta.env.DEV) {
+          // Final error message logging removed
+        }
         setError(errorMessage);
       } finally {
         setLoading(false);
@@ -190,7 +192,9 @@ const Dashboard: React.FC = () => {
     if (token) {
       fetchStats();
     } else {
-      console.log("🔍 Dashboard: No token available, skipping stats fetch");
+      if (import.meta.env.DEV) {
+        // Development logging removed
+      }
       setLoading(false);
     }
   }, [token]);
@@ -292,15 +296,20 @@ const Dashboard: React.FC = () => {
       setMood(0);
 
       // Refresh stats after checkin
-      console.log("🔄 Refreshing stats after check-in");
+      if (import.meta.env.DEV) {
+        // Development logging removed
+      }
       const res = await api.get(`/dashboard/stats`, {
         headers: { ...authHeader(token) },
       });
-      console.log("✅ Stats refreshed:", res.data);
+      if (import.meta.env.DEV) {
+        // Development logging removed
+      }
       setStats(res.data);
     } catch (e: any) {
-      console.error("❌ Check-in error:", e);
-      console.error("Error response:", e?.response?.data);
+      if (import.meta.env.DEV) {
+        // Check-in error logging removed
+      }
 
       const errorMessage =
         e?.response?.data?.detail || e?.message || "Failed to submit check-in";

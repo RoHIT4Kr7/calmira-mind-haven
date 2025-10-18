@@ -128,26 +128,16 @@ const DhyaanAI: React.FC<DhyaanAIProps> = ({ onBack }) => {
       setStep("loading");
       setError("");
 
-      // Debug authentication
-      console.log("🔐 Auth Debug:", {
-        user,
-        token: token ? "present" : "missing",
-      });
-      console.log("🔗 API Call:", `${API_BASE_URL}/generate-meditation`);
-
-      // Debug authentication
-      console.log("🔐 Auth Debug:", {
-        user,
-        token: token ? "present" : "missing",
-      });
-      console.log("🔗 API Call:", `${API_BASE_URL}/generate-meditation`);
+      // Only log safe information for debugging
+      if (process.env.NODE_ENV === "development") {
+        // Development logging removed
+      }
 
       try {
         const headers = {
           "Content-Type": "application/json",
           ...authHeader(token),
         };
-        console.log("📤 Request headers:", headers);
 
         const response = await fetch(`${API_BASE_URL}/generate-meditation`, {
           method: "POST",
@@ -161,23 +151,29 @@ const DhyaanAI: React.FC<DhyaanAIProps> = ({ onBack }) => {
           }),
         });
 
-        console.log("📥 Response status:", response.status);
+        if (import.meta.env.DEV) {
+          // Development logging removed
+        }
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
-          console.error("❌ API Error:", errorData);
           throw new Error(
             errorData.detail?.message ||
+              errorData.message ||
               `HTTP ${response.status}: ${response.statusText}`
           );
         }
 
         const data = await response.json();
-        console.log("✅ Meditation data received:", data);
+        if (import.meta.env.DEV) {
+          // Development logging removed
+        }
         setMeditationData(data);
         setStep("meditation");
       } catch (err) {
-        console.error("💥 Failed to generate meditation:", err);
+        if (import.meta.env.DEV) {
+          console.error("💥 Failed to generate meditation:", err);
+        }
         setError(
           err instanceof Error ? err.message : "Failed to generate meditation"
         );

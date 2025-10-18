@@ -16,7 +16,9 @@ const LoginPage: React.FC = () => {
       await login(cred);
       navigate(from, { replace: true });
     } catch (e) {
-      console.error("Login error", e);
+      if (import.meta.env.DEV) {
+        console.error("Login error", e);
+      }
       const msg = e instanceof Error ? e.message : "Login failed.";
       alert(msg);
     }
