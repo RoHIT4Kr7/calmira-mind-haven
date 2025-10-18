@@ -1,15 +1,15 @@
 import axios from "axios";
 
 // Allow overriding the API base via env (useful for different hosts/ports)
-// In production, use relative URLs to avoid cross-domain issues and phishing detection
+// Use the environment variable or fallback to production backend URL
 const isDevelopment = import.meta.env.DEV;
 const envApiUrl = (import.meta as any).env.VITE_API_BASE_URL;
 
-export const API_BASE_URL = isDevelopment && envApiUrl
+export const API_BASE_URL = envApiUrl
   ? envApiUrl
   : isDevelopment
   ? "http://localhost:8000/api/v1"  // Local development fallback
-  : "/api/v1"; // Use relative URL in production
+  : "https://manga-wellness-backend-rsijjqxv6a-el.a.run.app/api/v1"; // Production backend URL
 
 if (isDevelopment) {
   // Development logging removed
