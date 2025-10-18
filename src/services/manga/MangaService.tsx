@@ -117,7 +117,9 @@ const MangaService: React.FC = () => {
 
   const handleCreateStory = async (userData: UserData) => {
     if (!token) {
-      console.error("No authentication token available");
+      if (import.meta.env.DEV) {
+        console.error("No authentication token available");
+      }
       return;
     }
 

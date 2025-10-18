@@ -147,7 +147,7 @@ const Navigation: React.FC<NavigationProps> = ({
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center space-x-3">
                     <img
-                      src="/images/logocalmira.jpg"
+                      src="/apple-touch-icon.png"
                       alt="Calmira"
                       className="w-10 h-10 object-contain"
                     />

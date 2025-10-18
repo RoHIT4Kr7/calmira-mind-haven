@@ -274,7 +274,7 @@ export function Component({
                   className="mx-auto w-16 h-16 rounded-full border border-white/10 flex items-center justify-center relative overflow-hidden bg-white/5"
                 >
                   <img
-                    src="/images/logocalmira.jpg"
+                    src="/apple-touch-icon.png"
                     alt="Calmira logo"
                     className="w-12 h-12 object-contain"
                   />

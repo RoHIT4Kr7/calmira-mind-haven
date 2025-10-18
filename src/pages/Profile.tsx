@@ -68,28 +68,7 @@ const Profile: React.FC = () => {
               className="text-center mb-12"
             >
               <Avatar className="w-32 h-32 mx-auto mb-6 border-4 border-white/20">
-                <AvatarImage
-                  src={
-                    user?.picture
-                      ? `${
-                          import.meta.env.VITE_API_URL ||
-                          "http://localhost:8080"
-                        }/api/v1/auth/proxy-profile-picture?url=${encodeURIComponent(
-                          user.picture
-                        )}`
-                      : undefined
-                  }
-                  alt="User"
-                  onError={() => {
-                    // Silently handle errors in production to avoid phishing flags
-                    if (import.meta.env.DEV) {
-                      console.error(
-                        "Failed to load profile picture:",
-                        user?.picture
-                      );
-                    }
-                  }}
-                />
+                <AvatarImage src={user?.picture} alt="User" />
                 <AvatarFallback className="bg-white/10 backdrop-blur-lg text-white text-4xl">
                   {user?.name?.charAt(0)?.toUpperCase() ||
                     user?.email?.charAt(0)?.toUpperCase() || (

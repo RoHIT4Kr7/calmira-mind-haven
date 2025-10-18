@@ -109,17 +109,25 @@ const Navbar: React.FC = () => {
                   <div className="flex items-center gap-3">
                     {user?.picture ? (
                       <img
-                        src={`${
-                          import.meta.env.VITE_API_URL ||
-                          "http://localhost:8080"
-                        }/api/v1/auth/proxy-profile-picture?url=${encodeURIComponent(
-                          user.picture
-                        )}`}
+                        src={user.picture}
                         alt={user.name || "User"}
                         className="w-8 h-8 rounded-full object-cover border border-white/20"
                         onError={(e) => {
-                          // Silently handle the error - don't log to console to avoid phishing flags
-                          e.currentTarget.style.display = "none";
+                          // Fallback to initials on error
+                          const target = e.currentTarget;
+                          const parent = target.parentElement;
+                          if (parent) {
+                            target.style.display = "none";
+                            const fallback = document.createElement("div");
+                            fallback.className =
+                              "w-8 h-8 rounded-full bg-white/10 flex items-center justify-center border border-white/20";
+                            fallback.innerHTML = `<span class="text-white text-xs font-medium">${
+                              user?.name?.charAt(0)?.toUpperCase() ||
+                              user?.email?.charAt(0)?.toUpperCase() ||
+                              "U"
+                            }</span>`;
+                            parent.appendChild(fallback);
+                          }
                         }}
                       />
                     ) : (
