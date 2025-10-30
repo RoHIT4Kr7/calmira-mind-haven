@@ -18,6 +18,11 @@ import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import AboutUs from "./pages/AboutUs";
+import ContactUs from "./pages/ContactUs";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsAndConditions from "./pages/TermsAndConditions";
+import RefundPolicy from "./pages/RefundPolicy";
 import MangaService from "./services/manga/MangaService";
 import VoiceService from "./services/voice/VoiceService";
 import ChatService from "./services/chat/ChatService";
@@ -454,6 +459,13 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/mental-wellness" element={<MentalWellnessApp />} />
+
+            {/* Footer Pages */}
+            <Route path="/about" element={<AboutUs />} />
+            <Route path="/contact" element={<ContactUs />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsAndConditions />} />
+            <Route path="/refund-policy" element={<RefundPolicy />} />
 
             {/* Service Routes */}
             <Route path="/services/manga" element={<MangaService />} />
